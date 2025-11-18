@@ -29,10 +29,20 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("authToken")
-      localStorage.removeItem("userData")
-      window.location.href = "/login"
+    // CORRECTION: Ne rediriger que si on a un token ET qu'il est invalide
+    // Ne PAS rediriger lors d'une tentative de connexion échouée
+    const isLoginAttempt = error.config?.url?.includes('/auth/signin') || 
+                           error.config?.url?.includes('/auth/google') ||
+                           error.config?.url?.includes('/auth/admin/signin');
+    
+    if (error.response?.status === 401 && !isLoginAttempt) {
+      // Token expiré ou invalide - rediriger uniquement si on était déjà connecté
+      const hadToken = localStorage.getItem("authToken");
+      if (hadToken) {
+        localStorage.removeItem("authToken")
+        localStorage.removeItem("userData")
+        window.location.href = "/login"
+      }
     }
     return Promise.reject(error)
   },
