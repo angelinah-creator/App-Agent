@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { padding: 20px; text-align: center; color: white; }
+        .header.paid { background: #10B981; }
+        .header.unpaid { background: #aa2121; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header {{status}}">
+            <h1>Facture {{statusText}}</h1>
+        </div>
+        <div class="content">
+            <p>Bonjour {{agentName}},</p>
+            
+            <p>Votre facture a été <strong>{{statusText}}</strong>.</p>
+            
+            <h3>Détails de la facture :</h3>
+            <ul>
+                <li><strong>Référence :</strong> {{reference}}</li>
+                <li><strong>Période :</strong> {{month}}/{{year}}</li>
+                {{#if amount}}<li><strong>Montant :</strong> {{amount}} Ar</li>{{/if}}
+                {{#if paymentDate}}<li><strong>Date de paiement :</strong> {{paymentDate}}</li>{{/if}}
+                {{#if transferReference}}<li><strong>Référence virement :</strong> {{transferReference}}</li>{{/if}}
+            </ul>
+            
+            <p>Vous pouvez consulter le statut de toutes vos factures dans votre espace personnel.</p>
+        </div>
+        <div class="footer">
+            <p>Agent Code Talent - Système de gestion</p>
+        </div>
+    </div>
+</body>
+</html>
