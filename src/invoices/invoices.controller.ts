@@ -12,6 +12,7 @@ import {
   UseGuards,
   Req,
   Res,
+  ForbiddenException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import type { Response } from 'express';
@@ -128,8 +129,18 @@ export class InvoicesController {
   }
 
   @Delete(':id')
-  @UseGuards(AdminGuard)
-  async deleteInvoice(@Param('id') id: string) {
+  async deleteInvoice(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
+    const invoice = await this.invoicesService.getInvoiceById(id);
+    
+    // Vérifier les permissions: admin OU propriétaire de la facture
+    const isAdmin = req.user.profile === 'admin';
+    const agentId = this.extractUserId(invoice.agentId);
+    const isOwner = agentId === req.user.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('Accès réservé aux administrateurs ou au propriétaire de la facture');
+    }
+
     await this.invoicesService.deleteInvoice(id);
     return { message: 'Facture supprimée avec succès' };
   }
