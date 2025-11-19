@@ -19,8 +19,11 @@ export class UsersService {
     return created.save();
   }
 
-  async findAll(): Promise<UserDocument[]> {
-    return this.userModel.find().exec();
+  async findAll(includeArchived: boolean = false): Promise<UserDocument[]> {
+    if (includeArchived) {
+      return this.userModel.find().exec();
+    }
+    return this.userModel.find({ archived: false }).exec();
   }
 
   async findOne(id: string): Promise<UserDocument> {
@@ -287,19 +290,31 @@ export class UsersService {
   }
 
   // Statistiques des utilisateurs
+  /**
+   * Récupérer les statistiques incluant les archives
+   */
   async getUserStats(): Promise<any> {
     const stats = await this.userModel.aggregate([
       {
         $group: {
-          _id: '$profile',
+          _id: {
+            profile: '$profile',
+            archived: '$archived',
+          },
           count: { $sum: 1 },
         },
       },
     ]);
 
+    const total = await this.userModel.countDocuments();
+    const active = await this.userModel.countDocuments({ archived: false });
+    const archived = await this.userModel.countDocuments({ archived: true });
+
     return {
-      total: await this.userModel.countDocuments(),
-      byProfile: stats,
+      total,
+      active,
+      archived,
+      byProfileAndStatus: stats,
     };
   }
 
@@ -315,5 +330,68 @@ export class UsersService {
       return user;
     }
     throw new Error("Format d'ID utilisateur invalide");
+  }
+
+  /**
+   * Archiver un utilisateur au lieu de le supprimer
+   */
+  async archiveUser(id: string, archiveReason?: string): Promise<UserDocument> {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new NotFoundException(`User ${id} not found`);
+    }
+
+    const updated = await this.userModel
+      .findByIdAndUpdate(
+        id,
+        {
+          archived: true,
+          archivedAt: new Date(),
+          archiveReason: archiveReason || "Archivé par l'administrateur",
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!updated) {
+      throw new NotFoundException(`User ${id} not found after update`);
+    }
+
+    return updated;
+  }
+
+  /**
+   * Restaurer un utilisateur archivé
+   */
+  async restoreUser(id: string): Promise<UserDocument> {
+    const user = await this.userModel.findById(id);
+    if (!user) {
+      throw new NotFoundException(`User ${id} not found`);
+    }
+
+    const updated = await this.userModel
+      .findByIdAndUpdate(
+        id,
+        {
+          archived: false,
+          archivedAt: null,
+          archiveReason: null,
+        },
+        { new: true },
+      )
+      .exec();
+
+    if (!updated) {
+      throw new NotFoundException(`User ${id} not found after update`);
+    }
+
+    return updated;
+  }
+
+  /**
+   * Récupérer uniquement les utilisateurs archivés
+   */
+  async findArchived(): Promise<UserDocument[]> {
+    return this.userModel.find({ archived: true }).exec();
   }
 }

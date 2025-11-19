@@ -9,6 +9,7 @@ import {
   HttpCode,
   UseGuards,
   Req,
+  Query,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -37,11 +38,11 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  @Get()
-  @UseGuards(AdminGuard)
-  findAll() {
-    return this.usersService.findAll();
-  }
+  // @Get()
+  // @UseGuards(AdminGuard)
+  // findAll() {
+  //   return this.usersService.findAll();
+  // }
 
   @Get('stats')
   @UseGuards(AdminGuard)
@@ -134,6 +135,58 @@ export class UsersController {
     return this.usersService.changeAdminProfile(id, profile as any);
   }
 
+  // @Delete(':id')
+  // @HttpCode(204)
+  // @UseGuards(AdminGuard)
+  // remove(@Param('id') id: string) {
+  //   return this.usersService.remove(id);
+  // }
+
+  // Dans la classe UsersController
+
+  /**
+   * Récupérer tous les utilisateurs avec option d'inclure les archivés
+   */
+  @Get()
+  @UseGuards(AdminGuard)
+  findAll(@Query('includeArchived') includeArchived: string) {
+    const include = includeArchived === 'true';
+    return this.usersService.findAll(include);
+  }
+
+  /**
+   * Récupérer uniquement les utilisateurs archivés
+   */
+  @Get('archived')
+  @UseGuards(AdminGuard)
+  findArchived() {
+    return this.usersService.findArchived();
+  }
+
+  /**
+   * Archiver un utilisateur
+   */
+  @Patch(':id/archive')
+  @UseGuards(AdminGuard)
+  archiveUser(
+    @Param('id') id: string,
+    @Body('archiveReason') archiveReason?: string,
+  ) {
+    return this.usersService.archiveUser(id, archiveReason);
+  }
+
+  /**
+   * Restaurer un utilisateur archivé
+   */
+  @Patch(':id/restore')
+  @UseGuards(AdminGuard)
+  restoreUser(@Param('id') id: string) {
+    return this.usersService.restoreUser(id);
+  }
+
+  /**
+   * Supprimer définitivement un utilisateur (optionnel - garder pour admin)
+   */
   @Delete(':id')
   @HttpCode(204)
   @UseGuards(AdminGuard)

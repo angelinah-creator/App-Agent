@@ -70,6 +70,15 @@ export class User {
   @Prop({ required: true, select: false })
   password: string;
 
+  @Prop({ default: false })
+  archived: boolean;
+
+  @Prop()
+  archivedAt?: Date;
+
+  @Prop()
+  archiveReason?: string;
+
   // Champs optionnels pour les deux profils
   @Prop()
   mission?: string;

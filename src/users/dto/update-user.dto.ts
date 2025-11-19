@@ -1,7 +1,7 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
-import { IsEnum, IsOptional, IsBoolean } from 'class-validator';
-import { UserProfile } from '../schemas/user.schema'; // Utiliser le même enum
+import { IsEnum, IsOptional, IsBoolean, IsDate, IsString } from 'class-validator';
+import { UserProfile } from '../schemas/user.schema'; 
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsEnum(UserProfile)
@@ -11,4 +11,16 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsBoolean()
   @IsOptional()
   isActive?: boolean;
+
+  @IsBoolean()
+  @IsOptional()
+  archived?: boolean;
+
+  @IsDate()
+  @IsOptional()
+  archivedAt?: Date;
+
+  @IsString()
+  @IsOptional()
+  archiveReason?: string;
 }
