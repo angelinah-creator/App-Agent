@@ -297,52 +297,52 @@ export function AgentsSection({
           </CardContent>
         </Card>
 
-        <Card className="border-green-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <Card className="border-blue-100 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Actifs
+              Stagiaires
             </CardTitle>
-            <div className="w-3 h-3 bg-green-500 rounded-full" />
+            <div className="w-3 h-3 bg-blue-600 rounded-full" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-green-600">
-              {activeAgents.length}
+            <div className="text-3xl font-bold text-blue-600">
+              
+              {" "}
+              {activeAgents.filter((a) => a.profile === "stagiaire").length}
             </div>
-            <p className="text-xs text-gray-600 mt-1">Agents en activité</p>
           </CardContent>
         </Card>
 
-        <Card className="border-gray-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <Card className="border-green-100 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Archivés
+              Prestataires
             </CardTitle>
-            <div className="w-3 h-3 bg-gray-500 rounded-full" />
+            <div className="w-3 h-3 bg-green-600 rounded-full" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-gray-600">
-              {archivedAgents.length}
+            <div className="text-3xl font-bold text-green-600">
+              
+              {" "}
+              {activeAgents.filter((a) => a.profile === "prestataire").length}
             </div>
-            <p className="text-xs text-gray-600 mt-1">Agents archivés</p>
           </CardContent>
         </Card>
 
         <Card className="border-violet-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Par Profil
+              Agents actifs et archivés
             </CardTitle>
             <Users className="w-5 h-5 text-violet-600" />
           </CardHeader>
           <CardContent>
             <div className="text-sm text-gray-600">
               <p>
-                Stagiaires:{" "}
-                {activeAgents.filter((a) => a.profile === "stagiaire").length}
+                Actifs: {activeAgents.length}
               </p>
               <p>
-                Prestataires:{" "}
-                {activeAgents.filter((a) => a.profile === "prestataire").length}
+                Archivés: {archivedAgents.length}
               </p>
             </div>
           </CardContent>
@@ -571,7 +571,7 @@ export function AgentsSection({
                             agent.archived ? "text-gray-600" : "text-gray-800"
                           }`}
                         >
-                          {agent.mission || agent.poste}
+                          {agent.poste}
                         </p>
                       </td>
                       {showArchived && (

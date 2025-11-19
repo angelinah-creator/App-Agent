@@ -89,7 +89,6 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      // Construction de l'adresse complète
       const adresse = `${formData.adresseLot}, ${formData.adresseFokontany}`;
 
       const registerData: RegisterData = {
@@ -497,7 +496,7 @@ export default function SignupPage() {
                           id="indemnite"
                           type="number"
                           placeholder="200000"
-                          value={formData.indemnite}
+                          value={formData.indemnite || ""}
                           onChange={(e) =>
                             handleInputChange(
                               "indemnite",
@@ -520,7 +519,7 @@ export default function SignupPage() {
                           id="indemniteConnexion"
                           type="number"
                           placeholder="50000"
-                          value={formData.indemniteConnexion}
+                          value={formData.indemniteConnexion || ""}
                           onChange={(e) =>
                             handleInputChange(
                               "indemniteConnexion",
