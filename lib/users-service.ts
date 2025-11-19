@@ -1,5 +1,4 @@
-const API_BASE_URL =
-  process.env.NEXT_PUBLIC_API_URL || "http://localhost:5000/api";
+const API_BASE_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:3001";
 
 export enum Genre {
   Homme = "Homme",
@@ -34,6 +33,10 @@ export interface Agent {
   domainePrestation?: string;
   tarifJournalier?: number;
   dureeJournaliere?: number;
+
+  archived: boolean;
+  archivedAt?: string;
+  archiveReason?: string;
 }
 
 export interface CreateAgentDto {
@@ -123,17 +126,17 @@ export const usersService = {
     return result;
   },
 
-  async getAllAgents(): Promise<Agent[]> {
-    const response = await fetch(`${API_BASE_URL}/users`, {
-      headers: getAuthHeaders(),
-    });
+  // async getAllAgents(): Promise<Agent[]> {
+  //   const response = await fetch(`${API_BASE_URL}/users`, {
+  //     headers: getAuthHeaders(),
+  //   });
 
-    if (!response.ok) {
-      throw new Error("Erreur lors de la récupération des agents");
-    }
+  //   if (!response.ok) {
+  //     throw new Error("Erreur lors de la récupération des agents");
+  //   }
 
-    return response.json();
-  },
+  //   return response.json();
+  // },
 
   async createAgent(data: CreateAgentDto): Promise<Agent> {
     const response = await fetch(`${API_BASE_URL}/users`, {
@@ -205,6 +208,93 @@ export const usersService = {
 
     if (!response.ok) {
       throw new Error("Erreur lors de la récupération des statistiques");
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Archiver un agent
+   */
+  async archiveAgent(agentId: string, archiveReason?: string): Promise<Agent> {
+    const response = await fetch(`${API_BASE_URL}/users/${agentId}/archive`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ archiveReason }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorText;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Restaurer un agent archivé
+   */
+  async restoreAgent(agentId: string): Promise<Agent> {
+    const response = await fetch(`${API_BASE_URL}/users/${agentId}/restore`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorText;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Récupérer les agents archivés
+   */
+  async getArchivedAgents(): Promise<Agent[]> {
+    const response = await fetch(`${API_BASE_URL}/users/archived`, {
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de la récupération des agents archivés');
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Récupérer tous les agents (avec option d'inclure les archivés)
+   */
+  async getAllAgents(includeArchived: boolean = false): Promise<Agent[]> {
+    const url = includeArchived 
+      ? `${API_BASE_URL}/users?includeArchived=true`
+      : `${API_BASE_URL}/users`;
+
+    const response = await fetch(url, {
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      throw new Error('Erreur lors de la récupération des agents');
     }
 
     return response.json();

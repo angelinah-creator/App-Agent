@@ -256,22 +256,6 @@ export function DocumentsSection({
             </div>
           </CardContent>
         </Card>
-
-        {/* <Card className="border-slate-200/50 hover:shadow-xl hover:shadow-purple-200/50 transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white to-purple-50/30 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                <BarChart3 className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 font-medium">Espace utilisé</p>
-                <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  {calculateTotalSize(documents).toFixed(2)} MB
-                </p>
-              </div>
-            </div>
-          </CardContent>
-        </Card> */}
       </div>
     </div>
   )

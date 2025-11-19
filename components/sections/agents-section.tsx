@@ -13,6 +13,8 @@ import {
   FileText,
   Plus,
   Edit,
+  Archive,
+  RefreshCw,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -40,30 +42,37 @@ import type {
 } from "@/lib/users-service";
 import { usersService } from "@/lib/users-service";
 import { ChangeProfileModal } from "@/components/modals/change-profile-modal";
-import { RefreshCw } from "lucide-react";
 
 interface AgentsSectionProps {
   agents: Agent[];
   agentsLoading: boolean;
   stats?: any;
-  onDeleteAgent: (agentId: string) => void;
-  deleteAgentPending: boolean;
+  onArchiveAgent: (agentId: string, archiveReason?: string) => void;
+  onRestoreAgent: (agentId: string) => void;
+  archiveAgentPending: boolean;
   onAgentCreated?: () => void;
   onAgentProfileChanged?: () => void;
+  showArchived: boolean;
+  onToggleArchived: (show: boolean) => void;
 }
 
 export function AgentsSection({
   agents,
   agentsLoading,
   stats,
-  onDeleteAgent,
-  deleteAgentPending,
+  onArchiveAgent,
+  onRestoreAgent,
+  archiveAgentPending,
   onAgentCreated,
+  showArchived,
+  onToggleArchived,
 }: AgentsSectionProps) {
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showDetailsModal, setShowDetailsModal] = useState(false);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
+  const [showArchiveModal, setShowArchiveModal] = useState(false);
+  const [archiveReason, setArchiveReason] = useState("");
   const [filterProfile, setFilterProfile] = useState<
     "all" | "stagiaire" | "prestataire"
   >("all");
@@ -93,6 +102,10 @@ export function AgentsSection({
 
   const [editFormData, setEditFormData] = useState<any>({});
 
+  // Calculer les statistiques locales
+  const activeAgents = agents.filter((agent) => !agent.archived);
+  const archivedAgents = agents.filter((agent) => agent.archived);
+
   const handleViewDetails = (agent: Agent) => {
     setSelectedAgent(agent);
     setShowDetailsModal(true);
@@ -114,9 +127,7 @@ export function AgentsSection({
       );
       setShowChangeProfileModal(false);
       setAgentToChangeProfile(null);
-      onAgentCreated?.(); // Rafraichir la liste
-      // ou si vous avez onAgentProfileChanged:
-      // onAgentProfileChanged?.();
+      onAgentCreated?.();
     } catch (error: any) {
       console.error("Erreur changement profil:", error);
       alert(error.message || "Erreur lors du changement de profil");
@@ -175,6 +186,24 @@ export function AgentsSection({
     console.log("📝 Données formatées pour modification:", formattedData);
     setEditFormData(formattedData);
     setShowEditModal(true);
+  };
+
+  const handleArchive = (agent: Agent) => {
+    setSelectedAgent(agent);
+    setShowArchiveModal(true);
+  };
+
+  const handleConfirmArchive = () => {
+    if (selectedAgent) {
+      onArchiveAgent(selectedAgent._id, archiveReason);
+      setShowArchiveModal(false);
+      setArchiveReason("");
+      setSelectedAgent(null);
+    }
+  };
+
+  const handleRestore = (agent: Agent) => {
+    onRestoreAgent(agent._id);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -236,15 +265,21 @@ export function AgentsSection({
     }
   };
 
-  const filteredAgents =
-    filterProfile === "all"
-      ? agents
-      : agents.filter((agent) => agent.profile === filterProfile);
+  // Filtrer les agents selon le statut d'archivage et le profil
+  const filteredAgents = agents.filter((agent) => {
+    // Filtre par statut d'archivage
+    if (showArchived && !agent.archived) return false;
+    if (!showArchived && agent.archived) return false;
+
+    // Filtre par profil
+    if (filterProfile === "all") return true;
+    return agent.profile === filterProfile;
+  });
 
   return (
     <>
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+      {/* Stats Cards mises à jour */}
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
         <Card className="border-violet-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
@@ -257,63 +292,97 @@ export function AgentsSection({
               {agents.length}
             </div>
             <p className="text-xs text-gray-600 mt-1">
-              {agents.filter((a) => a.profile === "stagiaire").length}{" "}
-              stagiaires,{" "}
-              {agents.filter((a) => a.profile === "prestataire").length}{" "}
-              prestataires
+              {activeAgents.length} actifs, {archivedAgents.length} archivés
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-violet-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <Card className="border-green-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Stagiaires
+              Actifs
             </CardTitle>
-            <div className="w-3 h-3 bg-blue-500 rounded-full" />
+            <div className="w-3 h-3 bg-green-500 rounded-full" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-blue-600">
-              {agents.filter((a) => a.profile === "stagiaire").length}
+            <div className="text-3xl font-bold text-green-600">
+              {activeAgents.length}
             </div>
-            <p className="text-xs text-gray-600 mt-1">Agents en formation</p>
+            <p className="text-xs text-gray-600 mt-1">Agents en activité</p>
+          </CardContent>
+        </Card>
+
+        <Card className="border-gray-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
+          <CardHeader className="flex flex-row items-center justify-between pb-2">
+            <CardTitle className="text-sm font-medium text-gray-600">
+              Archivés
+            </CardTitle>
+            <div className="w-3 h-3 bg-gray-500 rounded-full" />
+          </CardHeader>
+          <CardContent>
+            <div className="text-3xl font-bold text-gray-600">
+              {archivedAgents.length}
+            </div>
+            <p className="text-xs text-gray-600 mt-1">Agents archivés</p>
           </CardContent>
         </Card>
 
         <Card className="border-violet-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
             <CardTitle className="text-sm font-medium text-gray-600">
-              Prestataires
+              Par Profil
             </CardTitle>
-            <div className="w-3 h-3 bg-emerald-500 rounded-full" />
+            <Users className="w-5 h-5 text-violet-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-3xl font-bold text-emerald-600">
-              {agents.filter((a) => a.profile === "prestataire").length}
+            <div className="text-sm text-gray-600">
+              <p>
+                Stagiaires:{" "}
+                {activeAgents.filter((a) => a.profile === "stagiaire").length}
+              </p>
+              <p>
+                Prestataires:{" "}
+                {activeAgents.filter((a) => a.profile === "prestataire").length}
+              </p>
             </div>
-            <p className="text-xs text-gray-600 mt-1">Consultants externes</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Liste des agents */}
-      <Card className="border-violet-200 bg-white/80 backdrop-blur-sm">
-        <CardHeader>
+      {/* Contrôles de filtrage */}
+      <Card className="border-violet-200 bg-white/80 backdrop-blur-sm mb-6">
+        <CardContent className="p-4">
           <div className="flex items-center justify-between">
-            <div>
-              <CardTitle className="text-xl">Liste des Agents</CardTitle>
-              <CardDescription>
-                Gérez vos stagiaires et prestataires
-              </CardDescription>
-            </div>
             <div className="flex gap-2">
               <Button
-                onClick={() => setShowAddModal(true)}
-                className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
+                variant={!showArchived ? "default" : "outline"}
+                size="sm"
+                onClick={() => onToggleArchived(false)}
+                className={
+                  !showArchived
+                    ? "bg-gradient-to-r from-violet-600 to-fuchsia-600"
+                    : "border-violet-300 hover:bg-violet-50"
+                }
               >
-                <Plus size={16} className="mr-2" />
-                Ajouter agent
+                <Users size={16} className="mr-2" />
+                Agents Actifs ({activeAgents.length})
               </Button>
+              <Button
+                variant={showArchived ? "default" : "outline"}
+                size="sm"
+                onClick={() => onToggleArchived(true)}
+                className={
+                  showArchived
+                    ? "bg-gray-600 hover:bg-gray-700"
+                    : "border-gray-300 hover:bg-gray-50"
+                }
+              >
+                <Archive size={16} className="mr-2" />
+                Agents Archivés ({archivedAgents.length})
+              </Button>
+            </div>
+
+            <div className="flex gap-2">
               <Button
                 variant={filterProfile === "all" ? "default" : "outline"}
                 size="sm"
@@ -354,6 +423,33 @@ export function AgentsSection({
               </Button>
             </div>
           </div>
+        </CardContent>
+      </Card>
+
+      {/* Liste des agents */}
+      <Card className="border-violet-200 bg-white/80 backdrop-blur-sm">
+        <CardHeader>
+          <div className="flex items-center justify-between">
+            <div>
+              <CardTitle className="text-xl">
+                {showArchived ? "Agents Archivés" : "Agents Actifs"}
+              </CardTitle>
+              <CardDescription>
+                {showArchived
+                  ? "Liste des agents archivés - Ces agents ne sont plus actifs"
+                  : "Gérez vos stagiaires et prestataires actifs"}
+              </CardDescription>
+            </div>
+            {!showArchived && (
+              <Button
+                onClick={() => setShowAddModal(true)}
+                className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
+              >
+                <Plus size={16} className="mr-2" />
+                Ajouter agent
+              </Button>
+            )}
+          </div>
         </CardHeader>
         <CardContent>
           {agentsLoading ? (
@@ -362,7 +458,9 @@ export function AgentsSection({
             </div>
           ) : filteredAgents.length === 0 ? (
             <div className="text-center py-8 text-gray-500">
-              Aucun agent trouvé
+              {showArchived
+                ? "Aucun agent archivé trouvé"
+                : "Aucun agent trouvé"}
             </div>
           ) : (
             <div className="overflow-x-auto">
@@ -381,6 +479,11 @@ export function AgentsSection({
                     <th className="text-left py-4 px-4 text-sm font-semibold text-violet-700">
                       Poste
                     </th>
+                    {showArchived && (
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-violet-700">
+                        Archivé le
+                      </th>
+                    )}
                     <th className="text-left py-4 px-4 text-sm font-semibold text-violet-700">
                       Actions
                     </th>
@@ -390,27 +493,47 @@ export function AgentsSection({
                   {filteredAgents.map((agent) => (
                     <tr
                       key={agent._id}
-                      className="border-b border-violet-100 hover:bg-violet-50/50 transition-colors"
+                      className={`border-b transition-colors ${
+                        agent.archived
+                          ? "bg-gray-50 hover:bg-gray-100 text-gray-500 border-gray-200"
+                          : "hover:bg-violet-50/50 border-violet-100"
+                      }`}
                     >
                       <td className="py-4 px-4">
                         <div className="flex items-center gap-3">
                           <div
                             className={`w-3 h-3 rounded-full ${
-                              agent.profile === "stagiaire"
+                              agent.archived
+                                ? "bg-gray-400"
+                                : agent.profile === "stagiaire"
                                 ? "bg-blue-500"
                                 : "bg-emerald-500"
                             }`}
                             title={
-                              agent.profile === "stagiaire"
+                              agent.archived
+                                ? "Archivé"
+                                : agent.profile === "stagiaire"
                                 ? "Stagiaire"
                                 : "Prestataire"
                             }
                           />
                           <div>
-                            <p className="font-semibold text-gray-900">
+                            <p
+                              className={`font-semibold ${
+                                agent.archived
+                                  ? "text-gray-600"
+                                  : "text-gray-900"
+                              }`}
+                            >
                               {agent.prenoms} {agent.nom}
                             </p>
-                            <p className="text-sm text-gray-600">
+                            <p
+                              className={`text-sm ${
+                                agent.archived
+                                  ? "text-gray-500"
+                                  : "text-gray-600"
+                              }`}
+                            >
                               {agent.email}
                             </p>
                           </div>
@@ -419,16 +542,23 @@ export function AgentsSection({
                       <td className="py-4 px-4">
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
-                            agent.profile === "stagiaire"
+                            agent.archived
+                              ? "bg-gray-100 text-gray-800"
+                              : agent.profile === "stagiaire"
                               ? "bg-blue-100 text-blue-800"
                               : "bg-emerald-100 text-emerald-800"
                           }`}
                         >
                           {agent.profile}
+                          {agent.archived && " (archivé)"}
                         </span>
                       </td>
                       <td className="py-4 px-4">
-                        <div className="text-sm text-gray-600">
+                        <div
+                          className={`text-sm ${
+                            agent.archived ? "text-gray-500" : "text-gray-600"
+                          }`}
+                        >
                           <p className="flex items-center gap-1">
                             <Phone className="w-3 h-3" />
                             {agent.telephone}
@@ -436,49 +566,97 @@ export function AgentsSection({
                         </div>
                       </td>
                       <td className="py-4 px-4">
-                        <p className="text-sm text-gray-800">
+                        <p
+                          className={`text-sm ${
+                            agent.archived ? "text-gray-600" : "text-gray-800"
+                          }`}
+                        >
                           {agent.mission || agent.poste}
                         </p>
                       </td>
+                      {showArchived && (
+                        <td className="py-4 px-4">
+                          <p className="text-sm text-gray-600">
+                            {agent.archivedAt
+                              ? new Date(agent.archivedAt).toLocaleDateString(
+                                  "fr-FR"
+                                )
+                              : "N/A"}
+                          </p>
+                          {agent.archiveReason && (
+                            <p className="text-xs text-gray-500 mt-1">
+                              {agent.archiveReason}
+                            </p>
+                          )}
+                        </td>
+                      )}
                       <td className="py-4 px-4">
                         <div className="flex items-center justify-end gap-2">
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleChangeProfile(agent)}
-                            className="border-purple-300 hover:bg-purple-600 hover:text-white"
-                            title="Changer le profil"
-                          >
-                            <RefreshCw size={14} />
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleViewDetails(agent)}
-                            className="border-violet-300 hover:bg-violet-300"
-                          >
-                            <Eye size={14} className="mr-1" />
-                            Détails
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => handleEdit(agent)}
-                            className="border-blue-300 hover:bg-blue-600 hover:text-white"
-                          >
-                            <Edit size={14} />
-                            Modifier
-                          </Button>
-                          <Button
-                            size="sm"
-                            variant="outline"
-                            onClick={() => onDeleteAgent(agent._id)}
-                            className="border-red-300 hover:bg-red-600 hover:text-white"
-                            disabled={deleteAgentPending}
-                          >
-                            <Trash2 size={14} />
-                            Supprimer
-                          </Button>
+                          {!agent.archived ? (
+                            // Actions pour les agents actifs
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleChangeProfile(agent)}
+                                className="border-purple-300 hover:bg-purple-600 hover:text-white"
+                                title="Changer le profil"
+                              >
+                                <RefreshCw size={14} />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleViewDetails(agent)}
+                                className="border-violet-300 hover:bg-violet-300"
+                              >
+                                <Eye size={14} className="mr-1" />
+                                Détails
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleEdit(agent)}
+                                className="border-blue-300 hover:bg-blue-600 hover:text-white"
+                              >
+                                <Edit size={14} />
+                                Modifier
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleArchive(agent)}
+                                className="border-orange-300 hover:bg-orange-600 hover:text-white"
+                                disabled={archiveAgentPending}
+                              >
+                                <Archive size={14} />
+                                Archiver
+                              </Button>
+                            </>
+                          ) : (
+                            // Actions pour les agents archivés
+                            <>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleViewDetails(agent)}
+                                className="border-violet-300 hover:bg-violet-300"
+                              >
+                                <Eye size={14} className="mr-1" />
+                                Détails
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="outline"
+                                onClick={() => handleRestore(agent)}
+                                className="border-green-300 hover:bg-green-600 hover:text-white"
+                                disabled={archiveAgentPending}
+                              >
+                                <RefreshCw size={14} className="mr-1" />
+                                Restaurer
+                              </Button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
@@ -489,6 +667,79 @@ export function AgentsSection({
           )}
         </CardContent>
       </Card>
+
+      {/* Modal de confirmation d'archivage */}
+      {showArchiveModal && selectedAgent && (
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
+            <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 rounded-t-2xl">
+              <h2 className="text-xl font-bold">Archiver l'agent</h2>
+              <p className="text-orange-100 mt-1">
+                Êtes-vous sûr de vouloir archiver {selectedAgent.prenoms}{" "}
+                {selectedAgent.nom} ?
+              </p>
+            </div>
+
+            <div className="p-6 space-y-4">
+              <div>
+                <Label
+                  htmlFor="archiveReason"
+                  className="text-sm font-medium text-gray-700"
+                >
+                  Raison de l'archivage (optionnel)
+                </Label>
+                <Input
+                  id="archiveReason"
+                  value={archiveReason}
+                  onChange={(e) => setArchiveReason(e.target.value)}
+                  placeholder="Ex: Fin de contrat, départ..."
+                  className="mt-1"
+                />
+              </div>
+
+              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
+                <div className="flex items-start gap-3">
+                  <div className="w-5 h-5 bg-amber-100 border border-amber-300 rounded-full flex items-center justify-center mt-0.5">
+                    <span className="text-amber-600 text-xs">!</span>
+                  </div>
+                  <div className="text-amber-800 text-sm">
+                    <p className="font-medium">Information</p>
+                    <p className="mt-1">
+                      L'agent sera marqué comme archivé et ne sera plus visible
+                      dans la liste des agents actifs. Toutes ses données
+                      seront conservées.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-3 p-6 border-t">
+              <Button
+                type="button"
+                variant="outline"
+                onClick={() => {
+                  setShowArchiveModal(false);
+                  setArchiveReason("");
+                  setSelectedAgent(null);
+                }}
+                className="flex-1"
+                disabled={archiveAgentPending}
+              >
+                Annuler
+              </Button>
+              <Button
+                type="button"
+                onClick={handleConfirmArchive}
+                className="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500"
+                disabled={archiveAgentPending}
+              >
+                {archiveAgentPending ? "Archivage..." : "Confirmer l'archivage"}
+              </Button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Modal d'ajout */}
       {showAddModal && (
@@ -1197,7 +1448,13 @@ export function AgentsSection({
       {showDetailsModal && selectedAgent && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
+            <div
+              className={`sticky top-0 text-white p-6 rounded-t-2xl flex items-center justify-between ${
+                selectedAgent.archived
+                  ? "bg-gradient-to-r from-gray-600 to-gray-500"
+                  : "bg-gradient-to-r from-violet-600 to-fuchsia-600"
+              }`}
+            >
               <div>
                 <h2 className="text-2xl font-bold">
                   {selectedAgent.prenoms} {selectedAgent.nom}
@@ -1205,13 +1462,16 @@ export function AgentsSection({
                 <div className="flex items-center gap-2 mt-1">
                   <div
                     className={`w-2 h-2 rounded-full ${
-                      selectedAgent.profile === "stagiaire"
+                      selectedAgent.archived
+                        ? "bg-gray-300"
+                        : selectedAgent.profile === "stagiaire"
                         ? "bg-blue-300"
                         : "bg-emerald-300"
                     }`}
                   />
                   <span className="text-sm capitalize">
                     {selectedAgent.profile}
+                    {selectedAgent.archived && " (archivé)"}
                   </span>
                 </div>
               </div>
@@ -1226,6 +1486,29 @@ export function AgentsSection({
             </div>
 
             <div className="p-6 space-y-6">
+              {selectedAgent.archived && (
+                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="w-5 h-5 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center mt-0.5">
+                      <span className="text-gray-600 text-xs">!</span>
+                    </div>
+                    <div className="text-gray-700 text-sm">
+                      <p className="font-medium">Agent archivé</p>
+                      <p className="mt-1">
+                        Cet agent a été archivé le{" "}
+                        {selectedAgent.archivedAt
+                          ? new Date(
+                              selectedAgent.archivedAt
+                            ).toLocaleDateString("fr-FR")
+                          : "N/A"}
+                        {selectedAgent.archiveReason &&
+                          ` - Raison: ${selectedAgent.archiveReason}`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
               {/* Informations personnelles */}
               <div>
                 <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
@@ -1254,9 +1537,9 @@ export function AgentsSection({
                   <div>
                     <p className="text-gray-600">Date de naissance</p>
                     <p className="font-medium text-gray-900">
-                      {new Date(selectedAgent.dateNaissance).toLocaleDateString(
-                        "fr-FR"
-                      )}
+                      {new Date(
+                        selectedAgent.dateNaissance
+                      ).toLocaleDateString("fr-FR")}
                     </p>
                   </div>
                   <div>
@@ -1381,34 +1664,57 @@ export function AgentsSection({
               <div className="flex gap-3 pt-4 border-t">
                 <Button
                   onClick={() => setShowDetailsModal(false)}
-                  className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
+                  className={`flex-1 ${
+                    selectedAgent.archived
+                      ? "bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400"
+                      : "bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
+                  }`}
                 >
                   Fermer
                 </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleEdit(selectedAgent)}
-                  className="border-blue-300 hover:bg-blue-50 hover:text-blue-600"
-                >
-                  <Edit size={16} className="mr-2" />
-                  Modifier
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => {
-                    setShowDetailsModal(false);
-                    onDeleteAgent(selectedAgent._id);
-                  }}
-                  className="border-red-300 hover:bg-red-50 hover:text-red-600"
-                >
-                  <Trash2 size={16} className="mr-2" />
-                  Supprimer
-                </Button>
+                {!selectedAgent.archived && (
+                  <>
+                    <Button
+                      variant="outline"
+                      onClick={() => handleEdit(selectedAgent)}
+                      className="border-blue-300 hover:bg-blue-50 hover:text-blue-600"
+                    >
+                      <Edit size={16} className="mr-2" />
+                      Modifier
+                    </Button>
+                    <Button
+                      variant="outline"
+                      onClick={() => {
+                        setShowDetailsModal(false);
+                        handleArchive(selectedAgent);
+                      }}
+                      className="border-orange-300 hover:bg-orange-50 hover:text-orange-600"
+                    >
+                      <Archive size={16} className="mr-2" />
+                      Archiver
+                    </Button>
+                  </>
+                )}
+                {selectedAgent.archived && (
+                  <Button
+                    variant="outline"
+                    onClick={() => {
+                      setShowDetailsModal(false);
+                      handleRestore(selectedAgent);
+                    }}
+                    className="border-green-300 hover:bg-green-50 hover:text-green-600"
+                  >
+                    <RefreshCw size={16} className="mr-2" />
+                    Restaurer
+                  </Button>
+                )}
               </div>
             </div>
           </div>
         </div>
       )}
+
+      {/* Modal de changement de profil */}
       {agentToChangeProfile && (
         <ChangeProfileModal
           isOpen={showChangeProfileModal}

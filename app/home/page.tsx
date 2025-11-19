@@ -43,6 +43,7 @@ function HomePage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [activeSection, setActiveSection] = useState("documents");
   const [isMounted, setIsMounted] = useState(false);
+  const [showArchivedAgents, setShowArchivedAgents] = useState(false);
   const { confirm, dialog } = useConfirmDialog();
 
   // Document upload state
@@ -136,8 +137,8 @@ function HomePage() {
   });
 
   const { data: agents = [], isLoading: agentsLoading } = useQuery({
-    queryKey: ["agents"],
-    queryFn: usersService.getAllAgents,
+    queryKey: ["agents", showArchivedAgents],
+    queryFn: () => usersService.getAllAgents(showArchivedAgents),
     enabled: !!userData && isAdmin,
   });
 
@@ -151,7 +152,7 @@ function HomePage() {
   const { data: allContracts = [], isLoading: allContractsLoading } = useQuery({
     queryKey: ["all-contracts"],
     queryFn: async () => {
-      const allAgents = await usersService.getAllAgents();
+      const allAgents = await usersService.getAllAgents(true); // Inclure les archivés
       const contractPromises = allAgents.map((agent) =>
         contractService.getUserContracts(agent._id)
       );
@@ -165,7 +166,7 @@ function HomePage() {
   const { data: allDocuments = [], isLoading: allDocumentsLoading } = useQuery({
     queryKey: ["all-documents"],
     queryFn: async () => {
-      const allAgents = await usersService.getAllAgents();
+      const allAgents = await usersService.getAllAgents(true); // Inclure les archivés
       const documentsPromises = allAgents.map((agent) =>
         documentService.getUserDocuments().catch(() => [])
       );
@@ -223,17 +224,34 @@ function HomePage() {
   });
 
   // Mutations
-  const deleteAgentMutation = useMutation({
-    mutationFn: usersService.deleteAgent,
+  // Supprimez la mutation deleteAgent existante et remplacez par :
+  const archiveAgentMutation = useMutation({
+    mutationFn: ({ agentId, archiveReason }: { agentId: string; archiveReason?: string }) => 
+      usersService.archiveAgent(agentId, archiveReason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agents"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
     },
     onError: (error: any) => {
-      console.error("Erreur suppression agent:", error);
+      console.error("Erreur archivage agent:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la suppression de l'agent"
+          "Erreur lors de l'archivage de l'agent"
+      );
+    },
+  });
+
+  const restoreAgentMutation = useMutation({
+    mutationFn: (agentId: string) => usersService.restoreAgent(agentId),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["agents"] });
+      queryClient.invalidateQueries({ queryKey: ["stats"] });
+    },
+    onError: (error: any) => {
+      console.error("Erreur restauration agent:", error);
+      alert(
+        error.response?.data?.message ||
+          "Erreur lors de la restauration de l'agent"
       );
     },
   });
@@ -273,11 +291,11 @@ function HomePage() {
       return invoiceService.createInvoice({ month, year, reference }, file);
     },
     onSuccess: async () => {
-      // Invalider TOUTES les requÃªtes liÃ©es aux factures
+      // Invalider TOUTES les requêtes liées aux factures
       await queryClient.invalidateQueries({ queryKey: ["invoices"] });
       await queryClient.invalidateQueries({ queryKey: ["all-invoices"] });
 
-      // Forcer le rechargement immÃ©diat
+      // Forcer le rechargement immédiat
       await queryClient.refetchQueries({ queryKey: ["invoices"] });
       await queryClient.refetchQueries({ queryKey: ["all-invoices"] });
     },
@@ -321,7 +339,7 @@ function HomePage() {
 
   const uploadKPIMutation = useMutation({
     mutationFn: () => {
-      if (!selectedKPIFile) throw new Error("Aucun fichier sÃ©lectionnÃ©");
+      if (!selectedKPIFile) throw new Error("Aucun fichier sélectionné");
       return kpiService.uploadKPI(selectedKPIFile, kpiUploadData);
     },
     onSuccess: async () => {
@@ -329,11 +347,11 @@ function HomePage() {
       await queryClient.invalidateQueries({ queryKey: ["kpis"] });
       await queryClient.invalidateQueries({ queryKey: ["all-kpis"] });
 
-      // Forcer le rechargement immÃ©diat
+      // Forcer le rechargement immédiat
       await queryClient.refetchQueries({ queryKey: ["kpis"] });
       await queryClient.refetchQueries({ queryKey: ["all-kpis"] });
 
-      // Fermer le modal et rÃ©initialiser
+      // Fermer le modal et réinitialiser
       setShowKPIModal(false);
       setSelectedKPIFile(null);
       setKPIUploadData({
@@ -378,7 +396,7 @@ function HomePage() {
 
   const uploadDocumentMutation = useMutation({
     mutationFn: () => {
-      if (!selectedFile) throw new Error("Aucun fichier sÃ©lectionnÃ©");
+      if (!selectedFile) throw new Error("Aucun fichier sélectionné");
       return documentService.uploadDocument(selectedFile, uploadData);
     },
     onSuccess: async () => {
@@ -386,11 +404,11 @@ function HomePage() {
       await queryClient.invalidateQueries({ queryKey: ["documents"] });
       await queryClient.invalidateQueries({ queryKey: ["all-documents"] });
 
-      // Forcer le rechargement immÃ©diat
+      // Forcer le rechargement immédiat
       await queryClient.refetchQueries({ queryKey: ["documents"] });
       await queryClient.refetchQueries({ queryKey: ["all-documents"] });
 
-      // Fermer le modal et rÃ©initialiser
+      // Fermer le modal et réinitialiser
       setShowUploadModal(false);
       setSelectedFile(null);
       setUploadData({ type: "cin_recto", description: "" });
@@ -434,6 +452,29 @@ function HomePage() {
   });
 
   // Handlers
+  // Ajoutez ces handlers après les handlers existants :
+  const handleArchiveAgent = async (agentId: string, archiveReason?: string) => {
+
+    archiveAgentMutation.mutate({ agentId, archiveReason });
+  };
+
+
+  const handleRestoreAgent = async (agentId: string) => {
+    confirm({
+      title: "Restaurer cet agent",
+      description: "Êtes-vous sûr de vouloir restaurer cet agent ? L'agent redeviendra visible dans la liste des agents actifs.",
+      confirmText: "Restaurer",
+      cancelText: "Annuler",
+      onConfirm: () => {
+        restoreAgentMutation.mutate(agentId);
+      },
+    });
+  };
+
+  const handleToggleArchivedAgents = (show: boolean) => {
+    setShowArchivedAgents(show);
+  };
+
   const handleAddInvoice = (data: {
     month: number;
     year: number;
@@ -476,19 +517,6 @@ function HomePage() {
         alert("Impossible de télécharger la facture. Veuillez réessayer.");
       }
     }
-  };
-
-  const handleDeleteAgent = async (agentId: string) => {
-    confirm({
-      title: "Supprimer [élément]",
-      description: "Êtes-vous sûr de vouloir supprimer [détails] ?",
-      confirmText: "Supprimer",
-      cancelText: "Annuler",
-      variant: "destructive",
-      onConfirm: () => {
-        deleteAgentMutation.mutateAsync(agentId);
-      },
-    });
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -705,12 +733,15 @@ function HomePage() {
                     agents={agents}
                     agentsLoading={agentsLoading}
                     stats={stats}
-                    onDeleteAgent={handleDeleteAgent}
+                    onArchiveAgent={handleArchiveAgent}
+                    onRestoreAgent={handleRestoreAgent}
+                    archiveAgentPending={archiveAgentMutation.isPending || restoreAgentMutation.isPending}
                     onAgentCreated={() => {
                       queryClient.invalidateQueries({ queryKey: ["agents"] });
                       queryClient.invalidateQueries({ queryKey: ["stats"] });
                     }}
-                    deleteAgentPending={deleteAgentMutation.isPending}
+                    showArchived={showArchivedAgents}
+                    onToggleArchived={handleToggleArchivedAgents}
                   />
                 )}
 
