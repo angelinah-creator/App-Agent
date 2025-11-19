@@ -32,8 +32,10 @@ import {
   User,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 
 export function AbsencesSection() {
+  const { confirm, dialog } = useConfirmDialog();
   const queryClient = useQueryClient();
   const [showCreateDialog, setShowCreateDialog] = useState(false);
   const [formData, setFormData] = useState<CreateAbsenceDto>({
@@ -139,9 +141,16 @@ export function AbsencesSection() {
   };
 
   const handleDelete = (absenceId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette demande ?")) {
-      deleteAbsenceMutation.mutate(absenceId);
-    }
+    confirm({
+      title: "Supprimer cette demande",
+      description: "Êtes-vous sûr de vouloir supprimer cette demande ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteAbsenceMutation.mutate(absenceId);
+      },
+    });
   };
 
   const formatDate = (dateString: string) => {
@@ -201,6 +210,7 @@ export function AbsencesSection() {
 
   return (
     <div className="space-y-6">
+      {dialog}
       <Card>
         <CardHeader>
           <div className="flex items-center justify-between">

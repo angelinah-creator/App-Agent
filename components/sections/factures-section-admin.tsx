@@ -514,13 +514,7 @@ export function FacturesSectionAdmin({
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                          if (
-                            confirm(
-                              "Êtes-vous sûr de vouloir supprimer cette facture ?"
-                            )
-                          ) {
-                            onDelete(invoice._id);
-                          }
+                           onDelete(invoice._id);
                         }}
                         disabled={deleteInvoicePending}
                         className="hover:bg-red-600 hover:border-red-300 text-red-600"

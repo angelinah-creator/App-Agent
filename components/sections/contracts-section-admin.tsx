@@ -202,9 +202,7 @@ export function ContractsSectionAdmin({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        if (confirm("Êtes-vous sûr de vouloir supprimer ce contrat ?")) {
-                          onDelete(contract._id)
-                        }
+                        onDelete(contract._id)
                       }}
                       disabled={deleteContractPending}
                       className="border-red-300 hover:bg-red-600 hover:text-white"

@@ -261,15 +261,6 @@ export function DocumentsSectionAdmin({
                 </div>
 
                 <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
-                  {/* <Button
-                    variant="outline"
-                    size="sm"
-                    onClick={() => onView(doc)}
-                    className="flex-1 hover:bg-blue-50 hover:border-blue-300 text-xs"
-                  >
-                    <Eye className="w-3 h-3 mr-1" />
-                    Voir
-                  </Button> */}
                   <Button
                     variant="outline"
                     size="sm"
@@ -283,9 +274,7 @@ export function DocumentsSectionAdmin({
                     variant="outline"
                     size="sm"
                     onClick={() => {
-                      if (confirm("Êtes-vous sûr de vouloir supprimer ce document ?")) {
-                        onDelete(doc._id)
-                      }
+                      onDelete(doc._id)
                     }}
                     disabled={deleteDocumentPending}
                     className="hover:bg-red-600 hover:border-red-300 text-red-600 text-xs"

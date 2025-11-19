@@ -34,6 +34,7 @@ import {
   Mail,
   Key,
 } from "lucide-react";
+import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 
 export default function SignupPage() {
   const router = useRouter();
@@ -65,12 +66,18 @@ export default function SignupPage() {
     dureeJournaliere: 0,
   });
   const [isLoading, setIsLoading] = useState(false);
+  const { confirm, dialog } = useConfirmDialog();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
     if (formData.password !== formData.confirmPassword) {
-      alert("Les mots de passe ne correspondent pas");
+      confirm({
+        title: "Mots de passe différents",
+        description: "Les mots de passe ne correspondent pas",
+        confirmText: "OK",
+        onConfirm: () => {},
+      });
       return;
     }
 

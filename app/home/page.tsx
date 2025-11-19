@@ -34,6 +34,7 @@ import { DocumentsSectionAdmin } from "@/components/sections/documents-section-a
 import { UploadDocumentModal } from "@/components/modals/upload-document-modal";
 import { UploadKPIModal } from "@/components/modals/upload-kpi-modal";
 import { KPIsSectionAdmin } from "@/components/sections/kpis-section-admin";
+import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import { api } from "@/lib/api-config";
 
 function HomePage() {
@@ -42,6 +43,7 @@ function HomePage() {
   const [userData, setUserData] = useState<UserData | null>(null);
   const [activeSection, setActiveSection] = useState("documents");
   const [isMounted, setIsMounted] = useState(false);
+  const { confirm, dialog } = useConfirmDialog();
 
   // Document upload state
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -442,9 +444,16 @@ function HomePage() {
   };
 
   const handleDeleteInvoice = (invoiceId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer cette facture ?")) {
-      deleteInvoiceMutation.mutate(invoiceId);
-    }
+    confirm({
+      title: "Supprimer cette facture",
+      description: "Êtes-vous sûr de vouloir supprimer cette facture ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteInvoiceMutation.mutate(invoiceId);
+      },
+    });
   };
 
   const handleValidateInvoice = (invoiceId: string, data: any) => {
@@ -470,13 +479,16 @@ function HomePage() {
   };
 
   const handleDeleteAgent = async (agentId: string) => {
-    if (
-      confirm(
-        "Êtes-vous sûr de vouloir supprimer cet agent ? Cette action est irréversible."
-      )
-    ) {
-      await deleteAgentMutation.mutateAsync(agentId);
-    }
+    confirm({
+      title: "Supprimer [élément]",
+      description: "Êtes-vous sûr de vouloir supprimer [détails] ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteAgentMutation.mutateAsync(agentId);
+      },
+    });
   };
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -518,21 +530,42 @@ function HomePage() {
   };
 
   const handleDeleteDocument = (documentId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer ce document ?")) {
-      deleteDocumentMutation.mutate(documentId);
-    }
+    confirm({
+      title: "Supprimer ce document",
+      description: "Êtes-vous sûr de vouloir supprimer ce document ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteDocumentMutation.mutate(documentId);
+      },
+    });
   };
 
   const handleDeleteContract = (contractId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer ce contrat ?")) {
-      deleteContractMutation.mutate(contractId);
-    }
+    confirm({
+      title: "Supprimer ce contract",
+      description: "Êtes-vous sûr de vouloir supprimer ce contrat ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteContractMutation.mutate(contractId);
+      },
+    });
   };
 
   const handleDeleteKPI = (kpiId: string) => {
-    if (confirm("Êtes-vous sûr de vouloir supprimer ce KPI ?")) {
-      deleteKPIMutation.mutate(kpiId);
-    }
+    confirm({
+      title: "Supprimer ce KPI",
+      description: "Êtes-vous sûr de vouloir supprimer ce KPI ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteKPIMutation.mutate(kpiId);
+      },
+    });
   };
 
   const handleDownloadContract = async (contract: Contract) => {
@@ -638,6 +671,7 @@ function HomePage() {
           : "bg-gradient-to-br from-slate-50 via-blue-50/30 to-indigo-50/50"
       }`}
     >
+      {dialog}
       {/* Sidebar - reste fixe */}
       <div className="fixed left-0 top-0 h-screen w-64 z-40">
         <Sidebar
