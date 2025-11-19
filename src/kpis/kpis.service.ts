@@ -114,10 +114,6 @@ export class KPIsService {
       throw new NotFoundException('KPI non trouvé');
     }
 
-    if (userId && kpi.userId.toString() !== userId) {
-      throw new ForbiddenException('Accès non autorisé à ce KPI');
-    }
-
     return kpi;
   }
 
