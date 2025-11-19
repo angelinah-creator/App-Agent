@@ -27,6 +27,10 @@ async function createAdmin() {
       telephone: '+1234567890',
       email: 'ct.kevinfal@gmail.com',
       password: await bcrypt.hash('admin123', 10),
+      // NOUVEAUX CHAMPS D'ARCHIVAGE
+      archived: false,
+      archivedAt: null,
+      archiveReason: null,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
@@ -35,11 +39,28 @@ async function createAdmin() {
       const existingAdmin = await usersCollection.findOne({ email: adminData.email });
       if (existingAdmin) {
         console.log('✅ Compte admin existe déjà');
+        
+        // Mettre à jour l'admin existant avec les champs d'archivage si nécessaire
+        if (existingAdmin.archived === undefined) {
+          await usersCollection.updateOne(
+            { email: adminData.email },
+            { 
+              $set: { 
+                archived: false,
+                archivedAt: null,
+                archiveReason: null,
+                updatedAt: new Date()
+              } 
+            }
+          );
+          console.log('✅ Champs d\'archivage ajoutés à l\'admin existant');
+        }
       } else {
         await usersCollection.insertOne(adminData);
         console.log('✅ Compte admin créé avec succès');
         console.log('📧 Email: ct.kevinfal@gmail.com');
         console.log('🔑 Mot de passe: admin123');
+        console.log('📊 Champs d\'archivage inclus');
       }
     } catch (error) {
       console.error('❌ Erreur création admin:', error);
