@@ -1,76 +1,112 @@
 // frontend/components/sections/absences-section-admin.tsx
-"use client"
+"use client";
 
-import { useState, useEffect } from "react"
-import { Calendar, CheckCircle, XCircle, Clock, Search, Filter, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
-import { Card, CardContent } from "@/components/ui/card"
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import { ValidateAbsenceModal } from "@/components/modals/validate-absence-modal"
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query"
-import { absenceService, type Absence } from "@/lib/absence-service"
-import type { UserData } from "@/lib/types"
+import { useState, useEffect } from "react";
+import {
+  Calendar,
+  CheckCircle,
+  XCircle,
+  Clock,
+  Search,
+  Filter,
+  User,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Card, CardContent } from "@/components/ui/card";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { ValidateAbsenceModal } from "@/components/modals/validate-absence-modal";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import { absenceService, type Absence } from "@/lib/absence-service";
+import type { UserData } from "@/lib/types";
 
 export function AbsencesSectionAdmin() {
-  const queryClient = useQueryClient()
-  const [searchTerm, setSearchTerm] = useState("")
-  const [filterStatus, setFilterStatus] = useState<string>("all")
-  const [selectedAbsence, setSelectedAbsence] = useState<Absence | null>(null)
-  const [showValidateModal, setShowValidateModal] = useState(false)
-  const [validateAction, setValidateAction] = useState<"approve" | "reject" | null>(null)
+  const queryClient = useQueryClient();
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filterStatus, setFilterStatus] = useState<string>("all");
+  const [selectedAbsence, setSelectedAbsence] = useState<Absence | null>(null);
+  const [showValidateModal, setShowValidateModal] = useState(false);
+  const [validateAction, setValidateAction] = useState<
+    "approve" | "reject" | null
+  >(null);
 
   // Récupérer toutes les absences
   const { data: absences = [], isLoading } = useQuery({
     queryKey: ["absences-admin"],
     queryFn: absenceService.getAllAbsences,
-  })
+  });
 
   // Mutation pour valider/rejeter une absence
   const validateMutation = useMutation({
     mutationFn: ({ absenceId, data }: { absenceId: string; data: any }) =>
       absenceService.updateAbsenceStatus(absenceId, data),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["absences-admin"] })
+      queryClient.invalidateQueries({ queryKey: ["absences-admin"] });
     },
     onError: (error: any) => {
-      console.error("Erreur validation absence:", error)
-      alert(error.response?.data?.message || "Erreur lors de la validation de l'absence")
+      console.error("Erreur validation absence:", error);
+      alert(
+        error.response?.data?.message ||
+          "Erreur lors de la validation de l'absence"
+      );
     },
-  })
+  });
 
   // Filtrage et tri
   const filteredAbsences = [...absences]
     .filter((absence) => {
-      const agent = typeof absence.agentId === "object" ? absence.agentId : null
+      const agent =
+        typeof absence.agentId === "object" ? absence.agentId : null;
       const matchesSearch =
         searchTerm === "" ||
         (agent && agent.nom.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (agent && agent.prenoms.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        absence.reason.toLowerCase().includes(searchTerm.toLowerCase())
+        (agent &&
+          agent.prenoms.toLowerCase().includes(searchTerm.toLowerCase())) ||
+        absence.reason.toLowerCase().includes(searchTerm.toLowerCase());
 
-      const matchesStatus = filterStatus === "all" || absence.status === filterStatus
+      const matchesStatus =
+        filterStatus === "all" || absence.status === filterStatus;
 
-      return matchesSearch && matchesStatus
+      return matchesSearch && matchesStatus;
     })
-    .sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
   const getAgentName = (absence: Absence) => {
-    if (typeof absence.agentId === "object" && absence.agentId.nom) {
-      return `${absence.agentId.nom} ${absence.agentId.prenoms}`
+    if (
+      typeof absence.agentId === "object" &&
+      absence.agentId &&
+      absence.agentId.nom
+    ) {
+      return `${absence.agentId.nom} ${absence.agentId.prenoms}`;
     }
-    return "Agent inconnu"
-  }
+    return "Agent inconnu";
+  };
 
   const getAgentEmail = (absence: Absence) => {
-    if (typeof absence.agentId === "object" && absence.agentId.email) {
-      return absence.agentId.email
+    if (
+      typeof absence.agentId === "object" &&
+      absence.agentId &&
+      absence.agentId.email
+    ) {
+      return absence.agentId.email;
     }
-    return ""
-  }
+    return "Email non disponible";
+  };
 
   const getStatusBadge = (status: string) => {
-    const statusConfig: Record<string, { bg: string; text: string; icon: any; label: string }> = {
+    const statusConfig: Record<
+      string,
+      { bg: string; text: string; icon: any; label: string }
+    > = {
       pending: {
         bg: "bg-amber-100",
         text: "text-amber-700",
@@ -89,42 +125,44 @@ export function AbsencesSectionAdmin() {
         icon: XCircle,
         label: "Rejetée",
       },
-    }
-    const config = statusConfig[status] || statusConfig.pending
-    const Icon = config.icon
+    };
+    const config = statusConfig[status] || statusConfig.pending;
+    const Icon = config.icon;
     return (
-      <span className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium ${config.bg} ${config.text}`}>
+      <span
+        className={`inline-flex items-center gap-1.5 text-xs px-2 py-1 rounded-full font-medium ${config.bg} ${config.text}`}
+      >
         <Icon className="w-3 h-3" />
         {config.label}
       </span>
-    )
-  }
+    );
+  };
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("fr-FR", {
       day: "numeric",
       month: "long",
       year: "numeric",
-    })
-  }
+    });
+  };
 
   const calculateDuration = (startDate: string, endDate: string) => {
-    const start = new Date(startDate)
-    const end = new Date(endDate)
-    const diffTime = Math.abs(end.getTime() - start.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
-    return `${diffDays} jour${diffDays > 1 ? "s" : ""}`
-  }
+    const start = new Date(startDate);
+    const end = new Date(endDate);
+    const diffTime = Math.abs(end.getTime() - start.getTime());
+    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1;
+    return `${diffDays} jour${diffDays > 1 ? "s" : ""}`;
+  };
 
   const handleValidate = (absence: Absence, action: "approve" | "reject") => {
-    setSelectedAbsence(absence)
-    setValidateAction(action)
-    setShowValidateModal(true)
-  }
+    setSelectedAbsence(absence);
+    setValidateAction(action);
+    setShowValidateModal(true);
+  };
 
-  const pendingCount = absences.filter((a) => a.status === "pending").length
-  const approvedCount = absences.filter((a) => a.status === "approved").length
-  const rejectedCount = absences.filter((a) => a.status === "rejected").length
+  const pendingCount = absences.filter((a) => a.status === "pending").length;
+  const approvedCount = absences.filter((a) => a.status === "approved").length;
+  const rejectedCount = absences.filter((a) => a.status === "rejected").length;
 
   return (
     <div className="space-y-6">
@@ -132,7 +170,9 @@ export function AbsencesSectionAdmin() {
       <div className="flex items-center justify-between">
         <div>
           <p className="text-slate-600 mt-1">
-            {filteredAbsences.length} demande{filteredAbsences.length > 1 ? "s" : ""} trouvée{filteredAbsences.length > 1 ? "s" : ""}
+            {filteredAbsences.length} demande
+            {filteredAbsences.length > 1 ? "s" : ""} trouvée
+            {filteredAbsences.length > 1 ? "s" : ""}
           </p>
         </div>
         <div className="flex gap-6">
@@ -196,26 +236,33 @@ export function AbsencesSectionAdmin() {
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {filteredAbsences.map((absence) => (
-            <Card key={absence._id} className="hover:shadow-lg transition-shadow">
+            <Card
+              key={absence._id}
+              className="hover:shadow-lg transition-shadow"
+            >
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
-                    <div className={`p-3 rounded-xl ${
-                      absence.status === "pending"
-                        ? "bg-gradient-to-br from-amber-100 to-orange-100"
-                        : absence.status === "approved"
-                        ? "bg-gradient-to-br from-green-100 to-emerald-100"
-                        : "bg-gradient-to-br from-red-100 to-rose-100"
-                    }`}>
-                      <Calendar className={`w-6 h-6 ${
+                    <div
+                      className={`p-3 rounded-xl ${
                         absence.status === "pending"
-                          ? "text-amber-600"
+                          ? "bg-gradient-to-br from-amber-100 to-orange-100"
                           : absence.status === "approved"
-                          ? "text-green-600"
-                          : "text-red-600"
-                      }`} />
+                          ? "bg-gradient-to-br from-green-100 to-emerald-100"
+                          : "bg-gradient-to-br from-red-100 to-rose-100"
+                      }`}
+                    >
+                      <Calendar
+                        className={`w-6 h-6 ${
+                          absence.status === "pending"
+                            ? "text-amber-600"
+                            : absence.status === "approved"
+                            ? "text-green-600"
+                            : "text-red-600"
+                        }`}
+                      />
                     </div>
-                    
+
                     <div className="flex-1 space-y-3">
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
@@ -237,7 +284,10 @@ export function AbsencesSectionAdmin() {
                         <div>
                           <span className="text-slate-500">Durée:</span>
                           <span className="ml-2 font-medium text-slate-800">
-                            {calculateDuration(absence.startDate, absence.endDate)}
+                            {calculateDuration(
+                              absence.startDate,
+                              absence.endDate
+                            )}
                           </span>
                         </div>
                         <div>
@@ -254,10 +304,14 @@ export function AbsencesSectionAdmin() {
                         </div>
                         <div className="col-span-2">
                           <span className="text-slate-500">Raison:</span>
-                          <p className="mt-1 font-medium text-slate-800">{absence.reason}</p>
+                          <p className="mt-1 font-medium text-slate-800">
+                            {absence.reason}
+                          </p>
                         </div>
                         <div className="col-span-2">
-                          <span className="text-slate-500">Personne de backup:</span>
+                          <span className="text-slate-500">
+                            Personne de backup:
+                          </span>
                           <span className="ml-2 font-medium text-slate-800">
                             {absence.backupPerson}
                           </span>
@@ -265,11 +319,18 @@ export function AbsencesSectionAdmin() {
                         {absence.adminReason && (
                           <div className="col-span-2">
                             <span className="text-slate-500">
-                              {absence.status === "approved" ? "Message" : "Raison du rejet"}:
+                              {absence.status === "approved"
+                                ? "Message"
+                                : "Raison du rejet"}
+                              :
                             </span>
-                            <p className={`mt-1 font-medium ${
-                              absence.status === "approved" ? "text-green-600" : "text-red-600"
-                            } italic`}>
+                            <p
+                              className={`mt-1 font-medium ${
+                                absence.status === "approved"
+                                  ? "text-green-600"
+                                  : "text-red-600"
+                              } italic`}
+                            >
                               {absence.adminReason}
                             </p>
                           </div>
@@ -322,9 +383,9 @@ export function AbsencesSectionAdmin() {
         <ValidateAbsenceModal
           isOpen={showValidateModal}
           onClose={() => {
-            setShowValidateModal(false)
-            setSelectedAbsence(null)
-            setValidateAction(null)
+            setShowValidateModal(false);
+            setSelectedAbsence(null);
+            setValidateAction(null);
           }}
           absence={selectedAbsence}
           actionType={validateAction}
@@ -333,16 +394,16 @@ export function AbsencesSectionAdmin() {
               { absenceId: selectedAbsence._id, data },
               {
                 onSuccess: () => {
-                  setShowValidateModal(false)
-                  setSelectedAbsence(null)
-                  setValidateAction(null)
+                  setShowValidateModal(false);
+                  setSelectedAbsence(null);
+                  setValidateAction(null);
                 },
               }
-            )
+            );
           }}
           isLoading={validateMutation.isPending}
         />
       )}
     </div>
-  )
+  );
 }
