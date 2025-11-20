@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Key, CheckCircle, XCircle } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -9,7 +9,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { passwordResetService } from "@/lib/password-reset-service";
 
-export default function ResetPasswordPage() {
+// Composant interne pour utiliser useSearchParams
+function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const token = searchParams.get("token");
@@ -243,5 +244,26 @@ export default function ResetPasswordPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+// Loading component pour le Suspense
+function ResetPasswordLoading() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="text-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+        <p className="mt-4 text-slate-600 font-medium">Chargement...</p>
+      </div>
+    </div>
+  );
+}
+
+// Composant principal avec Suspense
+export default function ResetPasswordPage() {
+  return (
+    <Suspense fallback={<ResetPasswordLoading />}>
+      <ResetPasswordForm />
+    </Suspense>
   );
 }
