@@ -6,12 +6,12 @@ import * as bcrypt from 'bcryptjs';
 async function createAdmin() {
   const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/app_agent_code_talent';
   const client = new MongoClient(uri);
-  
+
   try {
     await client.connect();
     const db = client.db();
     const usersCollection = db.collection('users');
-    
+
     const adminData = {
       profile: 'admin',
       nom: 'Admin',
@@ -25,7 +25,7 @@ async function createAdmin() {
       dateFinIndeterminee: true,
       tjm: 0,
       telephone: '+1234567890',
-      email: 'ct.kevinfal@gmail.com',
+      email: 'angelinah@info.code-talent.fr',
       password: await bcrypt.hash('admin123', 10),
       // NOUVEAUX CHAMPS D'ARCHIVAGE
       archived: false,
@@ -39,18 +39,18 @@ async function createAdmin() {
       const existingAdmin = await usersCollection.findOne({ email: adminData.email });
       if (existingAdmin) {
         console.log('✅ Compte admin existe déjà');
-        
+
         // Mettre à jour l'admin existant avec les champs d'archivage si nécessaire
         if (existingAdmin.archived === undefined) {
           await usersCollection.updateOne(
             { email: adminData.email },
-            { 
-              $set: { 
+            {
+              $set: {
                 archived: false,
                 archivedAt: null,
                 archiveReason: null,
                 updatedAt: new Date()
-              } 
+              }
             }
           );
           console.log('✅ Champs d\'archivage ajoutés à l\'admin existant');
@@ -58,7 +58,7 @@ async function createAdmin() {
       } else {
         await usersCollection.insertOne(adminData);
         console.log('✅ Compte admin créé avec succès');
-        console.log('📧 Email: ct.kevinfal@gmail.com');
+        console.log('📧 Email: angelinah@info.code-talent.fr');
         console.log('🔑 Mot de passe: admin123');
         console.log('📊 Champs d\'archivage inclus');
       }
