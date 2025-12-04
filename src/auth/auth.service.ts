@@ -1,11 +1,16 @@
-import { Injectable, ConflictException, UnauthorizedException, Logger } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  Logger,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { RegisterDto, UserProfile } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { ContractsService } from '../contracts/contracts.service';
-import { UserDocument } from '../users/schemas/user.schema'; // AJOUT de l'import
+import { UserDocument } from '../users/schemas/user.schema';
 
 @Injectable()
 export class AuthService {
@@ -40,7 +45,6 @@ export class AuthService {
       dateDebut: new Date(dto.dateDebut),
       dateFin: dto.dateFin ? new Date(dto.dateFin) : undefined,
       dateFinIndeterminee: dto.dateFinIndeterminee,
-      tjm: dto.tjm,
       telephone: dto.telephone,
       email: dto.email,
       password: hashed,
@@ -55,6 +59,9 @@ export class AuthService {
       userData.domainePrestation = dto.domainePrestation;
       userData.tarifJournalier = dto.tarifJournalier;
       userData.dureeJournaliere = dto.dureeJournaliere;
+      userData.tarifHoraire = dto.tarifHoraire;
+      userData.nombreJour = dto.nombreJour;
+      userData.horaire = dto.horaire;
     }
 
     const user = await this.usersService.create(userData);
@@ -62,22 +69,22 @@ export class AuthService {
     // GÉNÉRER LE CONTRAT AUTOMATIQUEMENT
     try {
       this.logger.log(`Génération du contrat pour l'utilisateur: ${user._id}`);
-      // CORRECTION: Conversion explicite en string
-      const contract = await this.contractsService.generateContract((user._id as any).toString());
+      const contract = await this.contractsService.generateContract(
+        (user._id as any).toString(),
+      );
       this.logger.log(`Contrat généré avec succès: ${contract.contractNumber}`);
     } catch (error) {
       this.logger.error('Erreur lors de la génération du contrat:', error);
-      // Ne pas bloquer l'inscription si la génération échoue
     }
 
     const obj = user.toObject();
     delete obj.password;
 
     // CORRECTION: Conversion explicite pour le payload
-    const payload = { 
-      sub: obj._id.toString(), 
-      email: obj.email, 
-      profile: obj.profile 
+    const payload = {
+      sub: obj._id.toString(),
+      email: obj.email,
+      profile: obj.profile,
     };
     const token = this.jwtService.sign(payload);
 
@@ -103,13 +110,14 @@ export class AuthService {
   // --- LOGIN ---
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto.email, dto.password);
-    if (!user) throw new UnauthorizedException('Email ou mot de passe incorrect');
+    if (!user)
+      throw new UnauthorizedException('Email ou mot de passe incorrect');
 
     // CORRECTION: Conversion explicite pour le payload
-    const payload = { 
-      sub: (user as any)._id.toString(), 
-      email: user.email, 
-      profile: (user as any).profile 
+    const payload = {
+      sub: (user as any)._id.toString(),
+      email: user.email,
+      profile: (user as any).profile,
     };
     const token = this.jwtService.sign(payload);
 

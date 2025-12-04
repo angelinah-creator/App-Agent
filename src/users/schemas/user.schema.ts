@@ -14,16 +14,21 @@ export enum Genre {
   FEMININ = 'Femme',
 }
 
-@Schema({ 
-  timestamps: true, 
+export enum Horaire {
+  TEMPS_PLEIN = 'temps plein',
+  TEMPS_PARTIEL = 'temps partiel',
+}
+
+@Schema({
+  timestamps: true,
   discriminatorKey: 'profile',
-  collection: 'users' // Force la collection à 'users'
+  collection: 'users',
 })
 export class User {
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: UserProfile,
-    type: String 
+    type: String,
   })
   profile: UserProfile;
 
@@ -57,9 +62,6 @@ export class User {
 
   @Prop({ default: false })
   dateFinIndeterminee: boolean;
-
-  @Prop({ required: true })
-  tjm: number;
 
   @Prop({ required: true })
   telephone: string;
@@ -96,7 +98,16 @@ export class User {
   tarifJournalier?: number;
 
   @Prop()
+  tarifHoraire?: number;
+
+  @Prop()
   dureeJournaliere?: number;
+
+  @Prop()
+  nombreJour?: number;
+
+  @Prop({ enum: Horaire })
+  horaire?: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
