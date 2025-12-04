@@ -84,7 +84,7 @@ export function Sidebar({
           {/* Header */}
           <div className="p-6 border-b border-slate-700/50 text-center">
             <div className="w-20 mx-auto">
-              <img src="/Logo.png" alt="Logo" />
+              <img src="/logo.webp" alt="Logo" />
             </div>
             <p
               className={`text-lg mt-2 uppercase font-bold ${

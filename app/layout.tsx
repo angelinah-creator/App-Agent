@@ -7,8 +7,13 @@ import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'OPSIDE Code-Talent',
+  title: 'OPSIDE',
   description: 'Plateforme de gestion des agents',
+  icons: {
+    icon: '/logo2.webp',
+    shortcut: '/logo2.webp',
+    apple: '/logo2.webp',
+  },
 }
 
 const montserrat = Montserrat({
