@@ -37,6 +37,10 @@ export interface Agent {
   archived: boolean;
   archivedAt?: string;
   archiveReason?: string;
+
+  tarifHoraire?: number
+  nombreJour?: number
+  horaire?: string
 }
 
 export interface CreateAgentDto {
@@ -61,6 +65,10 @@ export interface CreateAgentDto {
   domainePrestation?: string;
   tarifJournalier?: number;
   dureeJournaliere?: number;
+
+  tarifHoraire?: number
+  nombreJour?: number
+  horaire?: string
 }
 
 export interface UserStats {

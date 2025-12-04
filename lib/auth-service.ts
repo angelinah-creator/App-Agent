@@ -29,7 +29,6 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    // CORRECTION: Ne rediriger que si on a un token ET qu'il est invalide
     // Ne PAS rediriger lors d'une tentative de connexion échouée
     const isLoginAttempt = error.config?.url?.includes('/auth/signin') || 
                            error.config?.url?.includes('/auth/google') ||
@@ -65,7 +64,6 @@ export interface RegisterData {
   dateDebut: string
   dateFin?: string
   dateFinIndeterminee: boolean
-  tjm: number
   telephone: string
   email: string
   password: string
@@ -75,6 +73,9 @@ export interface RegisterData {
   domainePrestation?: string
   tarifJournalier?: number
   dureeJournaliere?: number
+  tarifHoraire?: number
+  nombreJour?: number
+  horaire?: string
 }
 
 export interface GoogleLoginResponse {

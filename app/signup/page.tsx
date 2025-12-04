@@ -55,7 +55,6 @@ export default function SignupPage() {
     dateDebut: "",
     dateFin: "",
     dateFinIndeterminee: false,
-    tjm: 0,
     telephone: "",
     email: "",
     password: "",
@@ -64,6 +63,9 @@ export default function SignupPage() {
     indemniteConnexion: 0,
     tarifJournalier: 0,
     dureeJournaliere: 0,
+    tarifHoraire: 0,
+    nombreJour: 0,
+    horaire: "",
   });
   const [isLoading, setIsLoading] = useState(false);
   const { confirm, dialog } = useConfirmDialog();
@@ -103,7 +105,6 @@ export default function SignupPage() {
         dateDebut: formData.dateDebut,
         dateFin: formData.dateFin || undefined,
         dateFinIndeterminee: formData.dateFinIndeterminee,
-        tjm: formData.tjm,
         telephone: formData.telephone,
         email: formData.email,
         password: formData.password,
@@ -116,6 +117,9 @@ export default function SignupPage() {
           domainePrestation: formData.domainePrestation,
           tarifJournalier: formData.tarifJournalier,
           dureeJournaliere: formData.dureeJournaliere,
+          tarifHoraire: formData.tarifHoraire,
+          nombreJour: formData.nombreJour,
+          horaire: formData.horaire,
         }),
       };
 
@@ -160,8 +164,6 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-purple-50 p-4 relative overflow-hidden">
-      
-
       {/* Content */}
       <div className="w-full max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
         <div className="text-center mb-8">
@@ -387,11 +389,7 @@ export default function SignupPage() {
                   <Input
                     id="poste"
                     type="text"
-                    placeholder={
-                      userType === "stagiaire"
-                        ? "Stagiaire développeur"
-                        : "Consultant IT"
-                    }
+                    placeholder="développeur"
                     value={formData.poste}
                     onChange={(e) => handleInputChange("poste", e.target.value)}
                     required
@@ -433,17 +431,17 @@ export default function SignupPage() {
                 </div>
 
                 <div className="space-y-2">
-                  <Label htmlFor="tjm" className="text-slate-700">
+                  <Label htmlFor="tarifJournalier" className="text-slate-700">
                     TJM (Taux Journalier Moyen) en Ar *
                   </Label>
                   <Input
-                    id="tjm"
+                    id="tarifJournalier"
                     type="number"
                     placeholder="50000"
-                    value={formData.tjm || ""}
+                    value={formData.tarifJournalier || ""}
                     onChange={(e) =>
                       handleInputChange(
-                        "tjm",
+                        "tarifJournalier",
                         e.target.value === "" ? 0 : Number(e.target.value)
                       )
                     }
@@ -532,7 +530,7 @@ export default function SignupPage() {
                       <Input
                         id="domainePrestation"
                         type="text"
-                        placeholder="Développement web, Design, Consulting..."
+                        placeholder="Développement web, Design, ..."
                         value={formData.domainePrestation}
                         onChange={(e) =>
                           handleInputChange("domainePrestation", e.target.value)
@@ -544,20 +542,43 @@ export default function SignupPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label
-                          htmlFor="tarifJournalier"
-                          className="text-slate-700"
+                        <Label htmlFor="horaire" className="text-slate-700">
+                          Type de travail *
+                        </Label>
+                        <Select
+                          value={formData.horaire}
+                          onValueChange={(value: string) =>
+                            handleInputChange("horaire", value)
+                          }
                         >
-                          Tarif journalier (Ar) *
+                          <SelectTrigger className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white">
+                            <SelectValue placeholder="Sélectionner l'horaire" />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="temps plein">
+                              temps plein
+                            </SelectItem>
+                            <SelectItem value="temps partiel">
+                              temps partiel
+                            </SelectItem>
+                          </SelectContent>
+                        </Select>
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="nombreJour" className="text-slate-700">
+                          Nombre de jours par semaine *
                         </Label>
                         <Input
-                          id="tarifJournalier"
+                          id="nombreJour"
                           type="number"
-                          placeholder="100000"
-                          value={formData.tarifJournalier || ""}
+                          placeholder="5"
+                          min="1"
+                          max="7"
+                          value={formData.nombreJour || ""}
                           onChange={(e) =>
                             handleInputChange(
-                              "tarifJournalier",
+                              "nombreJour",
                               e.target.value === "" ? 0 : Number(e.target.value)
                             )
                           }
@@ -565,29 +586,51 @@ export default function SignupPage() {
                           className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                         />
                       </div>
+                    </div>
 
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="dureeJournaliere"
-                          className="text-slate-700"
-                        >
-                          Durée journalière (heures) *
-                        </Label>
-                        <Input
-                          id="dureeJournaliere"
-                          type="number"
-                          placeholder="8"
-                          value={formData.dureeJournaliere || ""}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "dureeJournaliere",
-                              e.target.value === "" ? 0 : Number(e.target.value)
-                            )
-                          }
-                          required
-                          className="transition-all duration-300 focus-scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="tarifHoraire" className="text-slate-700">
+                        Tarif horaire (Ar) *
+                      </Label>
+                      <Input
+                        id="tarifHoraire"
+                        type="number"
+                        placeholder="10000"
+                        value={formData.tarifHoraire || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "tarifHoraire",
+                            e.target.value === "" ? 0 : Number(e.target.value)
+                          )
+                        }
+                        required
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="dureeJournaliere"
+                        className="text-slate-700"
+                      >
+                        Durée journalière (heures) *
+                      </Label>
+                      <Input
+                        id="dureeJournaliere"
+                        type="number"
+                        placeholder="8"
+                        min="1"
+                        max="24"
+                        value={formData.dureeJournaliere || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "dureeJournaliere",
+                            e.target.value === "" ? 0 : Number(e.target.value)
+                          )
+                        }
+                        required
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
                     </div>
                   </>
                 )}
@@ -599,7 +642,7 @@ export default function SignupPage() {
                   <Input
                     id="telephone"
                     type="tel"
-                    placeholder="+261 34 12 345 67"
+                    placeholder="+261 ..."
                     value={formData.telephone}
                     onChange={(e) =>
                       handleInputChange("telephone", e.target.value)

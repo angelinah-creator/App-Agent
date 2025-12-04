@@ -18,6 +18,9 @@ export interface UserData {
   domainePrestation?: string
   tarifJournalier?: number
   dureeJournaliere?: number
+  tarifHoraire?: number
+  nombreJour?: number
+  horaire?: string
 }
 
 export interface CreateDocumentDto {

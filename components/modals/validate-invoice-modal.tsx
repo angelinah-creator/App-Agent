@@ -171,7 +171,7 @@ export function ValidateInvoiceModal({
                 className="transition-all duration-300 focus:scale-[1.01] border-slate-300 focus:border-green-500 focus:ring-green-500 bg-white"
               />
               <p className="text-xs text-slate-500">
-                Montant total de la facture en euros
+                Montant total de la facture en ariary
               </p>
             </div>
 
