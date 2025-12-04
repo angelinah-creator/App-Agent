@@ -2,9 +2,8 @@
 "use client"
 
 import type React from "react"
-
 import { useState, useEffect } from "react"
-import { X } from "lucide-react"
+import { Upload, X } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import {
   Dialog,
@@ -51,62 +50,46 @@ export function AddFactureDialog({ open, onOpenChange, onSubmit, isSubmitting }:
   const [year, setYear] = useState<string>("")
   const [reference, setReference] = useState("")
   const [file, setFile] = useState<File | null>(null)
+  const [dragging, setDragging] = useState(false)
 
-  // Générer les 5 dernières années
   const currentYear = new Date().getFullYear()
   const years = Array.from({ length: 5 }, (_, i) => (currentYear - i).toString())
 
   useEffect(() => {
     if (open) {
-      // Définir l'année courante par défaut
       setYear(currentYear.toString())
-      // Définir le mois courant par défaut
-      const currentMonth = (new Date().getMonth() + 1).toString()
-      setMonth(currentMonth)
+      setMonth((new Date().getMonth() + 1).toString())
     }
   }, [open, currentYear])
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    if (e.target.files && e.target.files[0]) {
-      const selectedFile = e.target.files[0]
-      
-      // Vérifier que c'est un PDF
-      if (selectedFile.type !== 'application/pdf') {
-        alert('Veuillez sélectionner un fichier PDF')
-        return
-      }
-      
-      // Vérifier la taille (10MB max)
-      if (selectedFile.size > 10 * 1024 * 1024) {
-        alert('Le fichier est trop volumineux. Taille maximum: 10MB')
-        return
-      }
-      
-      setFile(selectedFile)
+  const handleFileChange = (file: File) => {
+    if (file.type !== "application/pdf") {
+      alert("Veuillez sélectionner un fichier PDF")
+      return
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      alert("Le fichier est trop volumineux (max 10MB)")
+      return
+    }
+    setFile(file)
+  }
+
+  const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
+    e.preventDefault()
+    setDragging(false)
+    if (e.dataTransfer.files.length > 0) {
+      handleFileChange(e.dataTransfer.files[0])
     }
   }
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    
     if (!month || !year || !reference || !file) {
-      alert('Veuillez remplir tous les champs obligatoires')
+      alert("Veuillez remplir tous les champs")
       return
     }
 
-    // CORRECTION: Passer toutes les données au parent
-    onSubmit({ 
-      month: parseInt(month), 
-      year: parseInt(year), 
-      reference, 
-      file 
-    })
-    
-    // Reset form
-    setMonth("")
-    setYear("")
-    setReference("")
-    setFile(null)
+    onSubmit({ month: parseInt(month), year: parseInt(year), reference, file })
   }
 
   const handleClose = () => {
@@ -117,34 +100,32 @@ export function AddFactureDialog({ open, onOpenChange, onSubmit, isSubmitting }:
     onOpenChange(false)
   }
 
-  const getMonthName = (monthValue: string) => {
-    const month = MONTHS.find(m => m.value === monthValue)
-    return month ? month.label : ''
-  }
-
   return (
     <Dialog open={open} onOpenChange={handleClose}>
-      <DialogContent className="sm:max-w-[500px]">
-        <DialogHeader>
-          <DialogTitle>Ajouter une facture</DialogTitle>
-          <DialogDescription>
-            Remplissez les informations de la facture. Le montant et la date de paiement seront complétés par l'administrateur.
-          </DialogDescription>
-        </DialogHeader>
-        <form onSubmit={handleSubmit}>
-          <div className="space-y-4 py-4">
+      <DialogContent className="sm:max-w-[500px] max-h-[90vh] p-0 rounded-xl overflow-hidden">
+        
+        {/* Contenu scrollable */}
+        <div className="max-h-[90vh] overflow-y-auto px-6 py-5 space-y-6">
+
+          <DialogHeader>
+            <DialogTitle className="text-2xl font-semibold">Ajouter une facture</DialogTitle>
+            <DialogDescription>
+              Envoyez votre facture PDF. Les autres informations seront gérées par l’administrateur.
+            </DialogDescription>
+          </DialogHeader>
+
+          <form onSubmit={handleSubmit} className="space-y-4">
+
             {/* Mois */}
             <div className="space-y-2">
-              <Label htmlFor="month">Mois <span className="text-red-500">*</span></Label>
-              <Select value={month} onValueChange={setMonth} required>
-                <SelectTrigger>
+              <Label>Mois <span className="text-red-500">*</span></Label>
+              <Select value={month} onValueChange={setMonth}>
+                <SelectTrigger className="h-11">
                   <SelectValue placeholder="Sélectionnez un mois" />
                 </SelectTrigger>
                 <SelectContent>
-                  {MONTHS.map((monthOption) => (
-                    <SelectItem key={monthOption.value} value={monthOption.value}>
-                      {monthOption.label}
-                    </SelectItem>
+                  {MONTHS.map((m) => (
+                    <SelectItem key={m.value} value={m.value}>{m.label}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -152,16 +133,14 @@ export function AddFactureDialog({ open, onOpenChange, onSubmit, isSubmitting }:
 
             {/* Année */}
             <div className="space-y-2">
-              <Label htmlFor="year">Année <span className="text-red-500">*</span></Label>
-              <Select value={year} onValueChange={setYear} required>
-                <SelectTrigger>
+              <Label>Année <span className="text-red-500">*</span></Label>
+              <Select value={year} onValueChange={setYear}>
+                <SelectTrigger className="h-11">
                   <SelectValue placeholder="Sélectionnez une année" />
                 </SelectTrigger>
                 <SelectContent>
-                  {years.map((yearOption) => (
-                    <SelectItem key={yearOption} value={yearOption}>
-                      {yearOption}
-                    </SelectItem>
+                  {years.map((y) => (
+                    <SelectItem key={y} value={y}>{y}</SelectItem>
                   ))}
                 </SelectContent>
               </Select>
@@ -169,97 +148,105 @@ export function AddFactureDialog({ open, onOpenChange, onSubmit, isSubmitting }:
 
             {/* Référence */}
             <div className="space-y-2">
-              <Label htmlFor="reference">Référence de la facture <span className="text-red-500">*</span></Label>
+              <Label>Référence de la facture <span className="text-red-500">*</span></Label>
               <Input
-                id="reference"
+                className="h-11"
                 placeholder="Ex: FAC-2024-001"
                 value={reference}
                 onChange={(e) => setReference(e.target.value)}
-                required
               />
             </div>
 
-            {/* Fichier PDF */}
+            {/* Upload amélioré */}
             <div className="space-y-2">
-              <Label htmlFor="facture">Facture (PDF) <span className="text-red-500">*</span></Label>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="facture"
+              <Label>Facture (PDF) <span className="text-red-500">*</span></Label>
+
+              {/* Zone drag-and-drop + clic */}
+              <div
+                onDragOver={(e) => { e.preventDefault(); setDragging(true) }}
+                onDragLeave={() => setDragging(false)}
+                onDrop={handleDrop}
+                onClick={() => document.getElementById("fileUploadInput")?.click()}
+                className={`
+                  border-2 border-dashed rounded-xl p-6 text-center cursor-pointer transition
+                  ${dragging ? "border-purple-600 bg-purple-50" : "border-slate-300 bg-slate-50 hover:bg-slate-100"}
+                `}
+              >
+                <Upload className="mx-auto mb-3 w-8 h-8 text-slate-500" />
+                <p className="text-sm text-slate-600">
+                  Cliquez ou glissez votre fichier PDF ici
+                </p>
+                <p className="text-xs text-slate-500 mt-1">Taille max : 10MB</p>
+
+                <input
+                  id="fileUploadInput"
                   type="file"
-                  accept=".pdf"
-                  onChange={handleFileChange}
-                  className="cursor-pointer"
-                  required
+                  accept="application/pdf"
+                  className="hidden"
+                  onChange={(e) => e.target.files && handleFileChange(e.target.files[0])}
                 />
-                {file && (
+              </div>
+
+              {file && (
+                <div className="flex items-center justify-between p-3 bg-slate-100 border rounded-lg">
+                  <div>
+                    <p className="text-sm font-medium">{file.name}</p>
+                    <p className="text-xs text-slate-500">
+                      {(file.size / 1024 / 1024).toFixed(2)} MB
+                    </p>
+                  </div>
                   <Button
                     type="button"
                     variant="ghost"
                     size="sm"
                     onClick={() => setFile(null)}
-                    className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                    className="text-red-600"
                   >
                     <X className="w-4 h-4" />
                   </Button>
-                )}
-              </div>
-              {file && (
-                <div className="text-sm text-slate-600">
-                  <p>Fichier sélectionné: {file.name}</p>
-                  <p className="text-slate-500">Taille: {(file.size / 1024 / 1024).toFixed(2)} MB</p>
                 </div>
               )}
-              <p className="text-xs text-slate-500">
-                Formats acceptés: PDF uniquement. Taille maximum: 10MB
-              </p>
             </div>
 
-            {/* Informations non modifiables par l'agent */}
-            <div className="space-y-2">
-              <Label>Période de la facture</Label>
-              <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-slate-700 text-sm">
-                {month && year ? `${getMonthName(month)} ${year}` : "---"}
-              </div>
-            </div>
-
+            {/* Champs non modifiables */}
             <div className="space-y-2">
               <Label>Montant</Label>
-              <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-slate-400 text-sm">
+              <div className="px-3 py-2 bg-slate-50 border rounded-md text-slate-400 text-sm">
                 À compléter par l'administrateur
               </div>
             </div>
 
             <div className="space-y-2">
               <Label>Date de paiement</Label>
-              <div className="px-3 py-2 bg-slate-50 border border-slate-200 rounded-md text-slate-400 text-sm">
+              <div className="px-3 py-2 bg-slate-50 border rounded-md text-slate-400 text-sm">
                 À compléter par l'administrateur
               </div>
             </div>
 
-            <div className="space-y-2">
+            <div className="space-y-2 pb-3">
               <Label>Statut</Label>
-              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 border border-slate-200 rounded-md">
-                <span className="inline-flex items-center gap-1.5">
-                  <span className="w-2 h-2 rounded-full bg-amber-500"></span>
-                  <span className="text-sm text-slate-600">En attente de validation</span>
-                </span>
+              <div className="flex items-center gap-2 px-3 py-2 bg-slate-50 border rounded-md">
+                <span className="w-2 h-2 rounded-full bg-amber-500"></span>
+                <span className="text-sm text-slate-700">En attente de validation</span>
               </div>
             </div>
-          </div>
 
-          <DialogFooter>
-            <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
-              Annuler
-            </Button>
-            <Button
-              type="submit"
-              disabled={isSubmitting || !month || !year || !reference || !file}
-              className="bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
-            >
-              {isSubmitting ? "Ajout en cours..." : "Ajouter la facture"}
-            </Button>
-          </DialogFooter>
-        </form>
+            {/* Footer */}
+            <DialogFooter>
+              <Button type="button" variant="outline" onClick={handleClose} disabled={isSubmitting}>
+                Annuler
+              </Button>
+              <Button
+                type="submit"
+                disabled={isSubmitting || !month || !year || !reference || !file}
+                className="h-11 bg-gradient-to-r from-violet-600 to-purple-600 hover:from-violet-700 hover:to-purple-700"
+              >
+                {isSubmitting ? "Ajout en cours..." : "Ajouter la facture"}
+              </Button>
+            </DialogFooter>
+
+          </form>
+        </div>
       </DialogContent>
     </Dialog>
   )

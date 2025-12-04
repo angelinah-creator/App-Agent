@@ -160,22 +160,7 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-purple-50 p-4 relative overflow-hidden">
-      {/* Animated gradient orbs - softer colors for white background */}
-      <div className="absolute top-0 right-0 w-[30rem] h-[30rem] bg-gradient-to-bl from-indigo-200/40 via-purple-200/40 to-pink-200/40 rounded-full blur-3xl animate-pulse" />
-      <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-teal-200/40 via-emerald-200/40 to-green-200/40 rounded-full blur-3xl animate-pulse delay-700" />
-      <div className="absolute top-1/3 right-1/4 w-[35rem] h-[35rem] bg-gradient-to-l from-rose-200/30 via-orange-200/30 to-amber-200/30 rounded-full blur-3xl animate-pulse delay-1000" />
-
-      {/* Luxury grid pattern overlay */}
-      <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080801a_1px,transparent_1px),linear-gradient(to_bottom,#8080801a_1px,transparent_1px)] bg-[size:32px_32px]" />
-
-      {/* Decorative corner elements with gold accent */}
-      <div className="absolute top-0 right-0 w-40 h-40 border-r-2 border-t-2 border-amber-300/40 rounded-tr-[2.5rem]" />
-      <div className="absolute bottom-0 left-0 w-40 h-40 border-l-2 border-b-2 border-amber-300/40 rounded-bl-[2.5rem]" />
-
-      {/* Floating luxury shapes */}
-      <div className="absolute top-20 left-20 w-3 h-3 bg-indigo-400/60 rounded-full animate-ping" />
-      <div className="absolute bottom-32 right-32 w-4 h-4 bg-pink-400/60 rounded-full animate-ping delay-500" />
-      <div className="absolute top-1/2 left-1/4 w-2 h-2 bg-amber-400/60 rounded-full animate-ping delay-1000" />
+      
 
       {/* Content */}
       <div className="w-full max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">

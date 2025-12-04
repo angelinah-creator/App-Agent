@@ -7,7 +7,7 @@ import { Geist, Geist_Mono, Montserrat } from "next/font/google";
 import './globals.css'
 
 export const metadata: Metadata = {
-  title: 'Agent Code Talent',
+  title: 'OPSIDE Code-Talent',
   description: 'Plateforme de gestion des agents',
 }
 
