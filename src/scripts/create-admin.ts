@@ -4,7 +4,7 @@ import { MongoClient } from 'mongodb';
 import * as bcrypt from 'bcryptjs';
 
 async function createAdmin() {
-  const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/app_agent_code_talent';
+  const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/opside_v1';
   const client = new MongoClient(uri);
   
   try {
