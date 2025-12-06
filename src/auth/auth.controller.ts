@@ -1,13 +1,13 @@
-import { 
-  Controller, 
-  Post, 
-  Body, 
-  UseGuards, 
-  Get, 
-  Req, 
-  UseInterceptors, 
-  UploadedFile, 
-  BadRequestException 
+import {
+  Controller,
+  Post,
+  Body,
+  UseGuards,
+  Get,
+  Req,
+  UseInterceptors,
+  UploadedFile,
+  BadRequestException,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import { AuthService } from './auth.service';
@@ -29,12 +29,60 @@ export class AuthController {
   ) {}
 
   @Post('signup')
-  @UseInterceptors(FileInterceptor('signature')) // AJOUT : intercepte le fichier
   async register(
-    @Body() dto: RegisterDto,
-    @UploadedFile() signature: Express.Multer.File, // AJOUT
+    @Body() body: any,
+    @UploadedFile() signature?: Express.Multer.File,
   ) {
-    // VALIDATION DU FICHIER
+    let signatureUrl: string;
+    // Cas 1: Fichier uploadé (form-data)
+    if (signature) {
+      const allowedMimeTypes = ['image/png', 'image/jpeg', 'image/jpg'];
+      if (!allowedMimeTypes.includes(signature.mimetype)) {
+        throw new BadRequestException('Format de signature invalide');
+      }
+
+      const maxSize = 10 * 1024 * 1024;
+      if (signature.size > maxSize) {
+        throw new BadRequestException('La signature est trop volumineuse');
+      }
+
+      const fileName = `signature_${body.cin}_${Date.now()}`;
+      const result = await this.cloudinaryService.uploadImage(
+        signature.buffer,
+        fileName,
+      );
+      signatureUrl = result.url;
+    }
+    // Cas 2: URL fournie (JSON)
+    else if (body.signatureUrl) {
+      signatureUrl = body.signatureUrl;
+      delete body.signatureUrl;
+    }
+    // Cas 3: Aucune signature
+    else {
+      throw new BadRequestException('La signature est obligatoire');
+    }
+    const dto: RegisterDto = body;
+
+    return this.authService.register(dto, signatureUrl);
+  }
+
+  @Post('signin')
+  async login(@Body() dto: LoginDto) {
+    return this.authService.login(dto);
+  }
+
+  @Post('google')
+  async googleAuth(@Body() body: { idToken: string }) {
+    return this.googleAuthService.authenticateWithGoogle(body.idToken);
+  }
+
+  @Post('upload-signature')
+  @UseInterceptors(FileInterceptor('signature'))
+  async uploadSignature(
+    @UploadedFile() signature: Express.Multer.File,
+    @Body('cin') cin?: string,
+  ) {
     if (!signature) {
       throw new BadRequestException('La signature est obligatoire');
     }
@@ -48,32 +96,25 @@ export class AuthController {
     }
 
     // Vérifier la taille (10 Mo max)
-    const maxSize = 10 * 1024 * 1024; // 10 Mo en octets
+    const maxSize = 10 * 1024 * 1024;
     if (signature.size > maxSize) {
       throw new BadRequestException(
         'La signature est trop volumineuse. Taille maximale : 10 Mo',
       );
     }
 
-    // UPLOAD vers Cloudinary
-    const fileName = `signature_${dto.cin}_${Date.now()}`;
-    const { url: signatureUrl } = await this.cloudinaryService.uploadImage(
-      signature.buffer,
-      fileName,
-    );
+    // Générer un nom de fichier unique
+    const fileName = `signature_${cin || 'temp'}_${Date.now()}`;
 
-    // Appeler le service avec l'URL de la signature
-    return this.authService.register(dto, signatureUrl);
-  }
+    // Upload vers Cloudinary
+    const { url: signatureUrl, publicId } =
+      await this.cloudinaryService.uploadImage(signature.buffer, fileName);
 
-  @Post('signin')
-  async login(@Body() dto: LoginDto) {
-    return this.authService.login(dto);
-  }
-
-  @Post('google')
-  async googleAuth(@Body() body: { idToken: string }) {
-    return this.googleAuthService.authenticateWithGoogle(body.idToken);
+    return {
+      signatureUrl,
+      publicId,
+      message: 'Signature uploadée avec succès',
+    };
   }
 
   @UseGuards(JwtAuthGuard)
