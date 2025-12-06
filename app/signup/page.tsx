@@ -2,7 +2,7 @@
 
 import type React from "react";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -26,13 +26,17 @@ import { authService, type RegisterData } from "@/lib/auth-service";
 import {
   GraduationCap,
   Briefcase,
-  User,
   Calendar,
   MapPin,
   FileText,
   Phone,
   Mail,
   Key,
+  Upload,
+  X,
+  PenTool,
+  CheckCircle,
+  AlertCircle,
 } from "lucide-react";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 
@@ -67,12 +71,81 @@ export default function SignupPage() {
     nombreJour: 0,
     horaire: "",
   });
+  
+  // NOUVEAU: État pour la signature
+  const [signatureFile, setSignatureFile] = useState<File | null>(null);
+  const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
+  const [isUploadingSignature, setIsUploadingSignature] = useState(false);
+  const [signatureError, setSignatureError] = useState<string>("");
+  const [uploadedSignatureUrl, setUploadedSignatureUrl] = useState<string>("");
+  const signatureInputRef = useRef<HTMLInputElement>(null);
+
   const [isLoading, setIsLoading] = useState(false);
   const { confirm, dialog } = useConfirmDialog();
+
+  // Gestion de la signature
+  const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validation du fichier
+    const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
+    const maxSize = 10 * 1024 * 1024; // 10 Mo
+
+    if (!allowedTypes.includes(file.type)) {
+      setSignatureError("Format invalide. Utilisez PNG, JPG ou JPEG.");
+      return;
+    }
+
+    if (file.size > maxSize) {
+      setSignatureError("Fichier trop volumineux (max 10 Mo).");
+      return;
+    }
+
+    // Afficher la preview
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      setSignaturePreview(e.target?.result as string);
+    };
+    reader.readAsDataURL(file);
+
+    setSignatureFile(file);
+    setSignatureError("");
+    setUploadedSignatureUrl("");
+  };
+
+  const removeSignature = () => {
+    setSignatureFile(null);
+    setSignaturePreview(null);
+    setUploadedSignatureUrl("");
+    if (signatureInputRef.current) {
+      signatureInputRef.current.value = "";
+    }
+  };
+
+  // Upload de signature séparé
+  const uploadSignature = async () => {
+    if (!signatureFile) {
+      setSignatureError("Veuillez sélectionner une signature.");
+      return;
+    }
+
+    setIsUploadingSignature(true);
+    try {
+      const response = await authService.uploadSignature(signatureFile, formData.cin);
+      setUploadedSignatureUrl(response.signatureUrl);
+      setSignatureError("");
+    } catch (error: any) {
+      setSignatureError(error.response?.data?.message || "Erreur lors de l'upload de la signature.");
+    } finally {
+      setIsUploadingSignature(false);
+    }
+  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
+    // Validation du mot de passe
     if (formData.password !== formData.confirmPassword) {
       confirm({
         title: "Mots de passe différents",
@@ -80,6 +153,12 @@ export default function SignupPage() {
         confirmText: "OK",
         onConfirm: () => {},
       });
+      return;
+    }
+
+    // Validation de la signature
+    if (!signatureFile && !uploadedSignatureUrl) {
+      setSignatureError("La signature est obligatoire.");
       return;
     }
 
@@ -123,7 +202,20 @@ export default function SignupPage() {
         }),
       };
 
-      const response = await authService.register(registerData);
+      let response;
+      
+      if (uploadedSignatureUrl) {
+        // Utiliser l'URL déjà uploadée
+        response = await authService.register({
+          ...registerData,
+          signatureUrl: uploadedSignatureUrl
+        });
+      } else if (signatureFile) {
+        // Uploader et s'inscrire en une étape
+        response = await authService.registerWithSignature(registerData, signatureFile);
+      } else {
+        throw new Error("Signature manquante");
+      }
 
       // Stocker le token et les données utilisateur
       localStorage.setItem("authToken", response.token);
@@ -132,7 +224,8 @@ export default function SignupPage() {
       router.push("/home");
     } catch (error: any) {
       console.error("Erreur inscription:", error);
-      alert(error.response?.data?.message || "Erreur lors de l'inscription");
+      const errorMessage = error.response?.data?.message || error.message || "Erreur lors de l'inscription";
+      alert(errorMessage);
     } finally {
       setIsLoading(false);
     }
@@ -162,10 +255,121 @@ export default function SignupPage() {
     }));
   };
 
+  // Composant pour la section signature
+  const SignatureSection = () => (
+    <div className="space-y-4 p-4 border border-slate-200 rounded-lg bg-slate-50">
+      <div className="flex items-center gap-2">
+        <PenTool className="w-5 h-5 text-purple-600" />
+        <h3 className="font-semibold text-slate-800">Signature Digitale</h3>
+      </div>
+      
+      <p className="text-sm text-slate-600">
+        Téléchargez une image de votre signature (PNG, JPG, JPEG - max 10 Mo)
+      </p>
+      
+      {signatureError && (
+        <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
+          <AlertCircle className="w-4 h-4" />
+          {signatureError}
+        </div>
+      )}
+      
+      {uploadedSignatureUrl && (
+        <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-green-600 text-sm">
+          <CheckCircle className="w-4 h-4" />
+          Signature prête pour l'inscription
+        </div>
+      )}
+
+      <div className="space-y-3">
+        {/* Zone de drop/upload */}
+        <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-purple-400 transition-colors bg-white">
+          {signaturePreview ? (
+            <div className="space-y-3">
+              <div className="relative inline-block">
+                <img 
+                  src={signaturePreview} 
+                  alt="Signature preview" 
+                  className="max-h-32 mx-auto border border-slate-200 rounded"
+                />
+                <button
+                  type="button"
+                  onClick={removeSignature}
+                  className="absolute -top-2 -right-2 bg-red-500 text-white rounded-full p-1 hover:bg-red-600"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+              <p className="text-sm text-slate-600">
+                {signatureFile?.name} ({(signatureFile?.size! / 1024).toFixed(2)} KB)
+              </p>
+              {!uploadedSignatureUrl && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={uploadSignature}
+                  disabled={isUploadingSignature}
+                  className="gap-2"
+                >
+                  {isUploadingSignature ? (
+                    <>
+                      <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
+                      Upload en cours...
+                    </>
+                  ) : (
+                    <>
+                      <Upload className="w-4 h-4" />
+                      Valider la signature
+                    </>
+                  )}
+                </Button>
+              )}
+            </div>
+          ) : (
+            <>
+              <input
+                type="file"
+                ref={signatureInputRef}
+                onChange={handleSignatureChange}
+                accept=".png,.jpg,.jpeg"
+                className="hidden"
+                id="signature-upload"
+              />
+              <label
+                htmlFor="signature-upload"
+                className="cursor-pointer flex flex-col items-center gap-2"
+              >
+                <Upload className="w-8 h-8 text-slate-400" />
+                <span className="text-slate-700 font-medium">
+                  Cliquez pour télécharger votre signature
+                </span>
+                <span className="text-sm text-slate-500">
+                  PNG, JPG, JPEG - Max 10 Mo
+                </span>
+              </label>
+            </>
+          )}
+        </div>
+
+        {/* Instructions */}
+        <div className="text-xs text-slate-500 space-y-1">
+          <p>Conseils pour votre signature :</p>
+          <ul className="list-disc list-inside pl-2">
+            <li>Utilisez un fond blanc ou transparent</li>
+            <li>La signature doit être claire et lisible</li>
+            <li>Format recommandé : PNG avec transparence</li>
+            <li>Taille recommandée : 500x200 pixels</li>
+          </ul>
+        </div>
+      </div>
+    </div>
+  );
+
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-purple-50 p-4 relative overflow-hidden">
       {/* Content */}
-      <div className="w-full max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
+      <div className="w-full max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold mb-3 text-balance bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 bg-clip-text text-transparent">
             Agent Code Talent
@@ -255,111 +459,227 @@ export default function SignupPage() {
                   </Button>
                 </div>
 
-                {/* Common fields */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="nom" className="text-slate-700">
-                      Nom *
-                    </Label>
-                    <Input
-                      id="nom"
-                      type="text"
-                      placeholder="Rakoto"
-                      value={formData.nom}
-                      onChange={(e) => handleInputChange("nom", e.target.value)}
-                      required
-                      className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                    />
+                {/* Informations personnelles */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <PenTool className="w-5 h-5 text-purple-600" />
+                    Informations personnelles
+                  </h3>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="nom" className="text-slate-700">
+                        Nom *
+                      </Label>
+                      <Input
+                        id="nom"
+                        type="text"
+                        placeholder="Rakoto"
+                        value={formData.nom}
+                        onChange={(e) => handleInputChange("nom", e.target.value)}
+                        required
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="prenoms" className="text-slate-700">
+                        Prénom(s) *
+                      </Label>
+                      <Input
+                        id="prenoms"
+                        type="text"
+                        placeholder="Jean"
+                        value={formData.prenoms}
+                        onChange={(e) =>
+                          handleInputChange("prenoms", e.target.value)
+                        }
+                        required
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dateNaissance" className="text-slate-700">
+                        Date de naissance *
+                      </Label>
+                      <Input
+                        id="dateNaissance"
+                        type="date"
+                        value={formData.dateNaissance}
+                        onChange={(e) =>
+                          handleInputChange("dateNaissance", e.target.value)
+                        }
+                        required
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="genre" className="text-slate-700">
+                        Genre *
+                      </Label>
+                      <Select
+                        value={formData.genre}
+                        onValueChange={(value: "Homme" | "Femme") =>
+                          handleInputChange("genre", value)
+                        }
+                      >
+                        <SelectTrigger className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white">
+                          <SelectValue placeholder="Sélectionner" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Homme">Homme</SelectItem>
+                          <SelectItem value="Femme">Femme</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="adresseLot" className="text-slate-700">
+                        Adresse - Lot *
+                      </Label>
+                      <Input
+                        id="adresseLot"
+                        type="text"
+                        placeholder="Lot II M 45"
+                        value={formData.adresseLot}
+                        onChange={(e) =>
+                          handleInputChange("adresseLot", e.target.value)
+                        }
+                        required
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="adresseFokontany"
+                        className="text-slate-700"
+                      >
+                        Adresse - Fokontany *
+                      </Label>
+                      <Input
+                        id="adresseFokontany"
+                        type="text"
+                        placeholder="Ambohipo"
+                        value={formData.adresseFokontany}
+                        onChange={(e) =>
+                          handleInputChange("adresseFokontany", e.target.value)
+                        }
+                        required
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="prenoms" className="text-slate-700">
-                      Prénom(s) *
+                    <Label htmlFor="cin" className="text-slate-700">
+                      CIN *
                     </Label>
                     <Input
-                      id="prenoms"
+                      id="cin"
                       type="text"
-                      placeholder="Jean"
-                      value={formData.prenoms}
-                      onChange={(e) =>
-                        handleInputChange("prenoms", e.target.value)
-                      }
+                      placeholder="101 234 567 890"
+                      value={formData.cin}
+                      onChange={(e) => handleInputChange("cin", e.target.value)}
                       required
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="dateNaissance" className="text-slate-700">
-                      Date de naissance *
-                    </Label>
-                    <Input
-                      id="dateNaissance"
-                      type="date"
-                      value={formData.dateNaissance}
-                      onChange={(e) =>
-                        handleInputChange("dateNaissance", e.target.value)
-                      }
-                      required
-                      className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                    />
-                  </div>
+                {/* Informations professionnelles */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <Briefcase className="w-5 h-5 text-blue-600" />
+                    Informations professionnelles
+                  </h3>
 
                   <div className="space-y-2">
-                    <Label htmlFor="genre" className="text-slate-700">
-                      Genre *
-                    </Label>
-                    <Select
-                      value={formData.genre}
-                      onValueChange={(value: "Homme" | "Femme") =>
-                        handleInputChange("genre", value)
-                      }
-                    >
-                      <SelectTrigger className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white">
-                        <SelectValue placeholder="Sélectionner" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="Homme">Homme</SelectItem>
-                        <SelectItem value="Femme">Femme</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="adresseLot" className="text-slate-700">
-                      Adresse - Lot *
+                    <Label htmlFor="poste" className="text-slate-700">
+                      Poste *
                     </Label>
                     <Input
-                      id="adresseLot"
+                      id="poste"
                       type="text"
-                      placeholder="Lot II M 45"
-                      value={formData.adresseLot}
-                      onChange={(e) =>
-                        handleInputChange("adresseLot", e.target.value)
-                      }
+                      placeholder="développeur"
+                      value={formData.poste}
+                      onChange={(e) => handleInputChange("poste", e.target.value)}
                       required
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
                   </div>
 
-                  <div className="space-y-2">
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="dateDebut" className="text-slate-700">
+                        Date de début *
+                      </Label>
+                      <Input
+                        id="dateDebut"
+                        type="date"
+                        value={formData.dateDebut}
+                        onChange={(e) =>
+                          handleInputChange("dateDebut", e.target.value)
+                        }
+                        required
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="dateFin" className="text-slate-700">
+                        Date de fin {userType === "prestataire" && "(optionnel)"}
+                      </Label>
+                      <Input
+                        id="dateFin"
+                        type="date"
+                        value={formData.dateFin}
+                        onChange={(e) =>
+                          handleInputChange("dateFin", e.target.value)
+                        }
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
+                  </div>
+
+                  <div className="flex items-center space-x-2">
+                    <input
+                      type="checkbox"
+                      id="dateFinIndeterminee"
+                      checked={formData.dateFinIndeterminee}
+                      onChange={(e) =>
+                        handleInputChange("dateFinIndeterminee", e.target.checked)
+                      }
+                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
+                    />
                     <Label
-                      htmlFor="adresseFokontany"
+                      htmlFor="dateFinIndeterminee"
                       className="text-slate-700"
                     >
-                      Adresse - Fokontany *
+                      Date de fin indéterminée
+                    </Label>
+                  </div>
+
+                  <div className="space-y-2">
+                    <Label htmlFor="tarifJournalier" className="text-slate-700">
+                      TJM (Taux Journalier Moyen) en Ar *
                     </Label>
                     <Input
-                      id="adresseFokontany"
-                      type="text"
-                      placeholder="Ambohipo"
-                      value={formData.adresseFokontany}
+                      id="tarifJournalier"
+                      type="number"
+                      placeholder="50000"
+                      value={formData.tarifJournalier || ""}
                       onChange={(e) =>
-                        handleInputChange("adresseFokontany", e.target.value)
+                        handleInputChange(
+                          "tarifJournalier",
+                          e.target.value === "" ? 0 : Number(e.target.value)
+                        )
                       }
                       required
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
@@ -367,92 +687,14 @@ export default function SignupPage() {
                   </div>
                 </div>
 
-                <div className="space-y-2">
-                  <Label htmlFor="cin" className="text-slate-700">
-                    CIN *
-                  </Label>
-                  <Input
-                    id="cin"
-                    type="text"
-                    placeholder="101 234 567 890"
-                    value={formData.cin}
-                    onChange={(e) => handleInputChange("cin", e.target.value)}
-                    required
-                    className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                  />
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="poste" className="text-slate-700">
-                    Poste *
-                  </Label>
-                  <Input
-                    id="poste"
-                    type="text"
-                    placeholder="développeur"
-                    value={formData.poste}
-                    onChange={(e) => handleInputChange("poste", e.target.value)}
-                    required
-                    className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-2">
-                    <Label htmlFor="dateDebut" className="text-slate-700">
-                      Date de début *
-                    </Label>
-                    <Input
-                      id="dateDebut"
-                      type="date"
-                      value={formData.dateDebut}
-                      onChange={(e) =>
-                        handleInputChange("dateDebut", e.target.value)
-                      }
-                      required
-                      className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                    />
-                  </div>
-
-                  <div className="space-y-2">
-                    <Label htmlFor="dateFin" className="text-slate-700">
-                      Date de fin {userType === "prestataire" && "(optionnel)"}
-                    </Label>
-                    <Input
-                      id="dateFin"
-                      type="date"
-                      value={formData.dateFin}
-                      onChange={(e) =>
-                        handleInputChange("dateFin", e.target.value)
-                      }
-                      className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label htmlFor="tarifJournalier" className="text-slate-700">
-                    TJM (Taux Journalier Moyen) en Ar *
-                  </Label>
-                  <Input
-                    id="tarifJournalier"
-                    type="number"
-                    placeholder="50000"
-                    value={formData.tarifJournalier || ""}
-                    onChange={(e) =>
-                      handleInputChange(
-                        "tarifJournalier",
-                        e.target.value === "" ? 0 : Number(e.target.value)
-                      )
-                    }
-                    required
-                    className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                  />
-                </div>
-
-                {/* Stagiaire specific fields */}
+                {/* Champs spécifiques */}
                 {userType === "stagiaire" && (
-                  <>
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                      <GraduationCap className="w-5 h-5 text-blue-600" />
+                      Informations de stage
+                    </h3>
+                    
                     <div className="space-y-2">
                       <Label htmlFor="mission" className="text-slate-700">
                         Mission *
@@ -514,12 +756,16 @@ export default function SignupPage() {
                         />
                       </div>
                     </div>
-                  </>
+                  </div>
                 )}
 
-                {/* Prestataire specific fields */}
                 {userType === "prestataire" && (
-                  <>
+                  <div className="space-y-4">
+                    <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                      <Briefcase className="w-5 h-5 text-purple-600" />
+                      Informations de prestation
+                    </h3>
+                    
                     <div className="space-y-2">
                       <Label
                         htmlFor="domainePrestation"
@@ -588,140 +834,143 @@ export default function SignupPage() {
                       </div>
                     </div>
 
-                    <div className="space-y-2">
-                      <Label htmlFor="tarifHoraire" className="text-slate-700">
-                        Tarif horaire (Ar) *
-                      </Label>
-                      <Input
-                        id="tarifHoraire"
-                        type="number"
-                        placeholder="10000"
-                        value={formData.tarifHoraire || ""}
-                        onChange={(e) =>
-                          handleInputChange(
-                            "tarifHoraire",
-                            e.target.value === "" ? 0 : Number(e.target.value)
-                          )
-                        }
-                        required
-                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                      />
-                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="tarifHoraire" className="text-slate-700">
+                          Tarif horaire (Ar) *
+                        </Label>
+                        <Input
+                          id="tarifHoraire"
+                          type="number"
+                          placeholder="10000"
+                          value={formData.tarifHoraire || ""}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "tarifHoraire",
+                              e.target.value === "" ? 0 : Number(e.target.value)
+                            )
+                          }
+                          required
+                          className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                        />
+                      </div>
 
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="dureeJournaliere"
-                        className="text-slate-700"
-                      >
-                        Durée journalière (heures) *
-                      </Label>
-                      <Input
-                        id="dureeJournaliere"
-                        type="number"
-                        placeholder="8"
-                        min="1"
-                        max="24"
-                        value={formData.dureeJournaliere || ""}
-                        onChange={(e) =>
-                          handleInputChange(
-                            "dureeJournaliere",
-                            e.target.value === "" ? 0 : Number(e.target.value)
-                          )
-                        }
-                        required
-                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                      />
+                      <div className="space-y-2">
+                        <Label
+                          htmlFor="dureeJournaliere"
+                          className="text-slate-700"
+                        >
+                          Durée journalière (heures) *
+                        </Label>
+                        <Input
+                          id="dureeJournaliere"
+                          type="number"
+                          placeholder="8"
+                          min="1"
+                          max="24"
+                          value={formData.dureeJournaliere || ""}
+                          onChange={(e) =>
+                            handleInputChange(
+                              "dureeJournaliere",
+                              e.target.value === "" ? 0 : Number(e.target.value)
+                            )
+                          }
+                          required
+                          className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                        />
+                      </div>
                     </div>
-                  </>
+                  </div>
                 )}
 
-                <div className="space-y-2">
-                  <Label htmlFor="telephone" className="text-slate-700">
-                    Numéro de téléphone *
-                  </Label>
-                  <Input
-                    id="telephone"
-                    type="tel"
-                    placeholder="+261 ..."
-                    value={formData.telephone}
-                    onChange={(e) =>
-                      handleInputChange("telephone", e.target.value)
-                    }
-                    required
-                    className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                  />
-                </div>
+                {/* Coordonnées */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <Phone className="w-5 h-5 text-green-600" />
+                    Coordonnées
+                  </h3>
 
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-slate-700">
-                    Email *
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="votre@email.com"
-                    value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
-                    required
-                    className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                  />
-                </div>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
-                    <Label htmlFor="password" className="text-slate-700">
-                      Mot de passe *
+                    <Label htmlFor="telephone" className="text-slate-700">
+                      Numéro de téléphone *
                     </Label>
                     <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      value={formData.password}
+                      id="telephone"
+                      type="tel"
+                      placeholder="+261 ..."
+                      value={formData.telephone}
                       onChange={(e) =>
-                        handleInputChange("password", e.target.value)
+                        handleInputChange("telephone", e.target.value)
                       }
                       required
-                      minLength={6}
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
                   </div>
 
                   <div className="space-y-2">
-                    <Label htmlFor="confirmPassword" className="text-slate-700">
-                      Confirmer mot de passe *
+                    <Label htmlFor="email" className="text-slate-700">
+                      Email *
                     </Label>
                     <Input
-                      id="confirmPassword"
-                      type="password"
-                      placeholder="••••••••"
-                      value={formData.confirmPassword}
-                      onChange={(e) =>
-                        handleInputChange("confirmPassword", e.target.value)
-                      }
+                      id="email"
+                      type="email"
+                      placeholder="votre@email.com"
+                      value={formData.email}
+                      onChange={(e) => handleInputChange("email", e.target.value)}
                       required
-                      minLength={6}
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
                   </div>
                 </div>
 
-                <div className="flex items-center space-x-2">
-                  <input
-                    type="checkbox"
-                    id="dateFinIndeterminee"
-                    checked={formData.dateFinIndeterminee}
-                    onChange={(e) =>
-                      handleInputChange("dateFinIndeterminee", e.target.checked)
-                    }
-                    className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                  />
-                  <Label
-                    htmlFor="dateFinIndeterminee"
-                    className="text-slate-700"
-                  >
-                    Date de fin indéterminée
-                  </Label>
+                {/* Mot de passe */}
+                <div className="space-y-4">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <Key className="w-5 h-5 text-amber-600" />
+                    Sécurité
+                  </h3>
+
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="password" className="text-slate-700">
+                        Mot de passe *
+                      </Label>
+                      <Input
+                        id="password"
+                        type="password"
+                        placeholder="••••••••"
+                        value={formData.password}
+                        onChange={(e) =>
+                          handleInputChange("password", e.target.value)
+                        }
+                        required
+                        minLength={6}
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
+
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword" className="text-slate-700">
+                        Confirmer mot de passe *
+                      </Label>
+                      <Input
+                        id="confirmPassword"
+                        type="password"
+                        placeholder="••••••••"
+                        value={formData.confirmPassword}
+                        onChange={(e) =>
+                          handleInputChange("confirmPassword", e.target.value)
+                        }
+                        required
+                        minLength={6}
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
+                    </div>
+                  </div>
                 </div>
+
+                {/* Signature */}
+                <SignatureSection />
 
                 <Button
                   type="submit"
@@ -752,6 +1001,7 @@ export default function SignupPage() {
           </CardContent>
         </Card>
       </div>
+      {dialog}
     </div>
   );
 }

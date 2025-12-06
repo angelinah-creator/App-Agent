@@ -76,6 +76,7 @@ export interface RegisterData {
   tarifHoraire?: number
   nombreJour?: number
   horaire?: string
+  signatureBase64?: string // NOUVEAU: signature en base64
 }
 
 export interface GoogleLoginResponse {
@@ -100,7 +101,45 @@ export const authService = {
     return response.data
   },
 
-  async register(registerData: RegisterData) {
+  // NOUVEAU: Upload de signature
+  async uploadSignature(signatureFile: File, cin?: string) {
+    const formData = new FormData()
+    formData.append('signature', signatureFile)
+    if (cin) {
+      formData.append('cin', cin)
+    }
+
+    const response = await api.post("/auth/upload-signature", formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    })
+    return response.data
+  },
+
+  // Inscription avec signature (deux étapes)
+  async registerWithSignature(registerData: RegisterData, signatureFile: File) {
+    try {
+      // 1. Uploader la signature
+      const uploadResponse = await this.uploadSignature(signatureFile, registerData.cin)
+      const signatureUrl = uploadResponse.signatureUrl
+
+      // 2. Inscription avec l'URL de signature
+      const registerPayload = {
+        ...registerData,
+        signatureUrl
+      }
+
+      const response = await api.post("/auth/signup", registerPayload)
+      return response.data
+    } catch (error) {
+      console.error("Erreur lors de l'inscription avec signature:", error)
+      throw error
+    }
+  },
+
+  // Ancienne méthode (conservée pour compatibilité)
+  async register(registerData: RegisterData & { signatureUrl?: string }) {
     const response = await api.post("/auth/signup", registerData)
     return response.data
   },
@@ -113,7 +152,6 @@ export const authService = {
       // 2. Envoyer SEULEMENT le token au backend
       const response = await api.post("/auth/google", {
         idToken: firebaseResult.idToken,
-        // NE PAS envoyer email et displayName
       })
 
       // 3. Stocker le token du backend
