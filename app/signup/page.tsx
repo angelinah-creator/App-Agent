@@ -35,7 +35,6 @@ import {
   Upload,
   X,
   PenTool,
-  CheckCircle,
   AlertCircle,
 } from "lucide-react";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
@@ -58,7 +57,6 @@ export default function SignupPage() {
     domainePrestation: "",
     dateDebut: "",
     dateFin: "",
-    dateFinIndeterminee: false,
     telephone: "",
     email: "",
     password: "",
@@ -71,26 +69,21 @@ export default function SignupPage() {
     nombreJour: 0,
     horaire: "",
   });
-  
-  // NOUVEAU: État pour la signature
+
   const [signatureFile, setSignatureFile] = useState<File | null>(null);
   const [signaturePreview, setSignaturePreview] = useState<string | null>(null);
-  const [isUploadingSignature, setIsUploadingSignature] = useState(false);
   const [signatureError, setSignatureError] = useState<string>("");
-  const [uploadedSignatureUrl, setUploadedSignatureUrl] = useState<string>("");
   const signatureInputRef = useRef<HTMLInputElement>(null);
 
   const [isLoading, setIsLoading] = useState(false);
   const { confirm, dialog } = useConfirmDialog();
 
-  // Gestion de la signature
   const handleSignatureChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // Validation du fichier
     const allowedTypes = ["image/png", "image/jpeg", "image/jpg"];
-    const maxSize = 10 * 1024 * 1024; // 10 Mo
+    const maxSize = 10 * 1024 * 1024;
 
     if (!allowedTypes.includes(file.type)) {
       setSignatureError("Format invalide. Utilisez PNG, JPG ou JPEG.");
@@ -102,7 +95,6 @@ export default function SignupPage() {
       return;
     }
 
-    // Afficher la preview
     const reader = new FileReader();
     reader.onload = (e) => {
       setSignaturePreview(e.target?.result as string);
@@ -111,41 +103,19 @@ export default function SignupPage() {
 
     setSignatureFile(file);
     setSignatureError("");
-    setUploadedSignatureUrl("");
   };
 
   const removeSignature = () => {
     setSignatureFile(null);
     setSignaturePreview(null);
-    setUploadedSignatureUrl("");
     if (signatureInputRef.current) {
       signatureInputRef.current.value = "";
-    }
-  };
-
-  // Upload de signature séparé
-  const uploadSignature = async () => {
-    if (!signatureFile) {
-      setSignatureError("Veuillez sélectionner une signature.");
-      return;
-    }
-
-    setIsUploadingSignature(true);
-    try {
-      const response = await authService.uploadSignature(signatureFile, formData.cin);
-      setUploadedSignatureUrl(response.signatureUrl);
-      setSignatureError("");
-    } catch (error: any) {
-      setSignatureError(error.response?.data?.message || "Erreur lors de l'upload de la signature.");
-    } finally {
-      setIsUploadingSignature(false);
     }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    // Validation du mot de passe
     if (formData.password !== formData.confirmPassword) {
       confirm({
         title: "Mots de passe différents",
@@ -156,8 +126,7 @@ export default function SignupPage() {
       return;
     }
 
-    // Validation de la signature
-    if (!signatureFile && !uploadedSignatureUrl) {
+    if (!signatureFile) {
       setSignatureError("La signature est obligatoire.");
       return;
     }
@@ -172,6 +141,8 @@ export default function SignupPage() {
     try {
       const adresse = `${formData.adresseLot}, ${formData.adresseFokontany}`;
 
+      const dateFinIndeterminee = !formData.dateFin; // Si dateFin est vide => indéterminée
+
       const registerData: RegisterData = {
         profile: userType,
         nom: formData.nom,
@@ -183,7 +154,7 @@ export default function SignupPage() {
         poste: formData.poste,
         dateDebut: formData.dateDebut,
         dateFin: formData.dateFin || undefined,
-        dateFinIndeterminee: formData.dateFinIndeterminee,
+        dateFinIndeterminee: dateFinIndeterminee,
         telephone: formData.telephone,
         email: formData.email,
         password: formData.password,
@@ -202,29 +173,22 @@ export default function SignupPage() {
         }),
       };
 
-      let response;
-      
-      if (uploadedSignatureUrl) {
-        // Utiliser l'URL déjà uploadée
-        response = await authService.register({
-          ...registerData,
-          signatureUrl: uploadedSignatureUrl
-        });
-      } else if (signatureFile) {
-        // Uploader et s'inscrire en une étape
-        response = await authService.registerWithSignature(registerData, signatureFile);
-      } else {
-        throw new Error("Signature manquante");
-      }
+      // Inscription en une seule étape !
+      const response = await authService.registerWithSignature(
+        registerData,
+        signatureFile
+      );
 
-      // Stocker le token et les données utilisateur
       localStorage.setItem("authToken", response.token);
       localStorage.setItem("userData", JSON.stringify(response.user));
 
       router.push("/home");
     } catch (error: any) {
       console.error("Erreur inscription:", error);
-      const errorMessage = error.response?.data?.message || error.message || "Erreur lors de l'inscription";
+      const errorMessage =
+        error.response?.data?.message ||
+        error.message ||
+        "Erreur lors de l'inscription";
       alert(errorMessage);
     } finally {
       setIsLoading(false);
@@ -233,7 +197,6 @@ export default function SignupPage() {
 
   const handleUserTypeChange = (type: "stagiaire" | "prestataire" | null) => {
     setUserType(type);
-    // Réinitialiser les champs spécifiques au profil
     setFormData((prev) => ({
       ...prev,
       mission: "",
@@ -255,41 +218,32 @@ export default function SignupPage() {
     }));
   };
 
-  // Composant pour la section signature
   const SignatureSection = () => (
     <div className="space-y-4 p-4 border border-slate-200 rounded-lg bg-slate-50">
       <div className="flex items-center gap-2">
         <PenTool className="w-5 h-5 text-purple-600" />
-        <h3 className="font-semibold text-slate-800">Signature Digitale</h3>
+        <h3 className="font-semibold text-slate-800">Signature Digitale *</h3>
       </div>
-      
+
       <p className="text-sm text-slate-600">
         Téléchargez une image de votre signature (PNG, JPG, JPEG - max 10 Mo)
       </p>
-      
+
       {signatureError && (
         <div className="flex items-center gap-2 p-3 bg-red-50 border border-red-200 rounded-md text-red-600 text-sm">
           <AlertCircle className="w-4 h-4" />
           {signatureError}
         </div>
       )}
-      
-      {uploadedSignatureUrl && (
-        <div className="flex items-center gap-2 p-3 bg-green-50 border border-green-200 rounded-md text-green-600 text-sm">
-          <CheckCircle className="w-4 h-4" />
-          Signature prête pour l'inscription
-        </div>
-      )}
 
       <div className="space-y-3">
-        {/* Zone de drop/upload */}
         <div className="border-2 border-dashed border-slate-300 rounded-lg p-6 text-center hover:border-purple-400 transition-colors bg-white">
           {signaturePreview ? (
             <div className="space-y-3">
               <div className="relative inline-block">
-                <img 
-                  src={signaturePreview} 
-                  alt="Signature preview" 
+                <img
+                  src={signaturePreview}
+                  alt="Signature preview"
                   className="max-h-32 mx-auto border border-slate-200 rounded"
                 />
                 <button
@@ -301,30 +255,9 @@ export default function SignupPage() {
                 </button>
               </div>
               <p className="text-sm text-slate-600">
-                {signatureFile?.name} ({(signatureFile?.size! / 1024).toFixed(2)} KB)
+                {signatureFile?.name} (
+                {(signatureFile?.size! / 1024).toFixed(2)} KB)
               </p>
-              {!uploadedSignatureUrl && (
-                <Button
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={uploadSignature}
-                  disabled={isUploadingSignature}
-                  className="gap-2"
-                >
-                  {isUploadingSignature ? (
-                    <>
-                      <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Upload en cours...
-                    </>
-                  ) : (
-                    <>
-                      <Upload className="w-4 h-4" />
-                      Valider la signature
-                    </>
-                  )}
-                </Button>
-              )}
             </div>
           ) : (
             <>
@@ -352,7 +285,6 @@ export default function SignupPage() {
           )}
         </div>
 
-        {/* Instructions */}
         <div className="text-xs text-slate-500 space-y-1">
           <p>Conseils pour votre signature :</p>
           <ul className="list-disc list-inside pl-2">
@@ -368,7 +300,6 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-purple-50 p-4 relative overflow-hidden">
-      {/* Content */}
       <div className="w-full max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold mb-3 text-balance bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 bg-clip-text text-transparent">
@@ -465,7 +396,7 @@ export default function SignupPage() {
                     <PenTool className="w-5 h-5 text-purple-600" />
                     Informations personnelles
                   </h3>
-                  
+
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                     <div className="space-y-2">
                       <Label htmlFor="nom" className="text-slate-700">
@@ -476,7 +407,9 @@ export default function SignupPage() {
                         type="text"
                         placeholder="Rakoto"
                         value={formData.nom}
-                        onChange={(e) => handleInputChange("nom", e.target.value)}
+                        onChange={(e) =>
+                          handleInputChange("nom", e.target.value)
+                        }
                         required
                         className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                       />
@@ -609,7 +542,9 @@ export default function SignupPage() {
                       type="text"
                       placeholder="développeur"
                       value={formData.poste}
-                      onChange={(e) => handleInputChange("poste", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("poste", e.target.value)
+                      }
                       required
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
@@ -634,7 +569,7 @@ export default function SignupPage() {
 
                     <div className="space-y-2">
                       <Label htmlFor="dateFin" className="text-slate-700">
-                        Date de fin {userType === "prestataire" && "(optionnel)"}
+                        Date de fin (optionnel)
                       </Label>
                       <Input
                         id="dateFin"
@@ -645,25 +580,10 @@ export default function SignupPage() {
                         }
                         className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                       />
+                      <p className="text-xs text-slate-500">
+                        Laisser vide si la date de fin est indéterminée
+                      </p>
                     </div>
-                  </div>
-
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="checkbox"
-                      id="dateFinIndeterminee"
-                      checked={formData.dateFinIndeterminee}
-                      onChange={(e) =>
-                        handleInputChange("dateFinIndeterminee", e.target.checked)
-                      }
-                      className="rounded border-slate-300 text-blue-600 focus:ring-blue-500"
-                    />
-                    <Label
-                      htmlFor="dateFinIndeterminee"
-                      className="text-slate-700"
-                    >
-                      Date de fin indéterminée
-                    </Label>
                   </div>
 
                   <div className="space-y-2">
@@ -694,7 +614,7 @@ export default function SignupPage() {
                       <GraduationCap className="w-5 h-5 text-blue-600" />
                       Informations de stage
                     </h3>
-                    
+
                     <div className="space-y-2">
                       <Label htmlFor="mission" className="text-slate-700">
                         Mission *
@@ -765,7 +685,7 @@ export default function SignupPage() {
                       <Briefcase className="w-5 h-5 text-purple-600" />
                       Informations de prestation
                     </h3>
-                    
+
                     <div className="space-y-2">
                       <Label
                         htmlFor="domainePrestation"
@@ -836,7 +756,10 @@ export default function SignupPage() {
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="tarifHoraire" className="text-slate-700">
+                        <Label
+                          htmlFor="tarifHoraire"
+                          className="text-slate-700"
+                        >
                           Tarif horaire (Ar) *
                         </Label>
                         <Input
@@ -916,7 +839,9 @@ export default function SignupPage() {
                       type="email"
                       placeholder="votre@email.com"
                       value={formData.email}
-                      onChange={(e) => handleInputChange("email", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("email", e.target.value)
+                      }
                       required
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
@@ -950,7 +875,10 @@ export default function SignupPage() {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="confirmPassword" className="text-slate-700">
+                      <Label
+                        htmlFor="confirmPassword"
+                        className="text-slate-700"
+                      >
                         Confirmer mot de passe *
                       </Label>
                       <Input

@@ -76,7 +76,7 @@ export interface RegisterData {
   tarifHoraire?: number
   nombreJour?: number
   horaire?: string
-  signatureBase64?: string // NOUVEAU: signature en base64
+  signatureUrl?: string
 }
 
 export interface GoogleLoginResponse {
@@ -101,7 +101,7 @@ export const authService = {
     return response.data
   },
 
-  // NOUVEAU: Upload de signature
+  // Upload de signature seul
   async uploadSignature(signatureFile: File, cin?: string) {
     const formData = new FormData()
     formData.append('signature', signatureFile)
@@ -117,28 +117,24 @@ export const authService = {
     return response.data
   },
 
-  // Inscription avec signature (deux étapes)
+  // Inscription complète en une étape (signature + données)
   async registerWithSignature(registerData: RegisterData, signatureFile: File) {
-    try {
-      // 1. Uploader la signature
-      const uploadResponse = await this.uploadSignature(signatureFile, registerData.cin)
-      const signatureUrl = uploadResponse.signatureUrl
+    // 1. Upload de la signature
+    const uploadResponse = await this.uploadSignature(signatureFile, registerData.cin)
+    const signatureUrl = uploadResponse.signatureUrl
 
-      // 2. Inscription avec l'URL de signature
-      const registerPayload = {
-        ...registerData,
-        signatureUrl
-      }
-
-      const response = await api.post("/auth/signup", registerPayload)
-      return response.data
-    } catch (error) {
-      console.error("Erreur lors de l'inscription avec signature:", error)
-      throw error
+    // 2. Préparer les données d'inscription avec l'URL de signature
+    const registerPayload = {
+      ...registerData,
+      signatureUrl
     }
+
+    // 3. Inscription
+    const response = await api.post("/auth/signup", registerPayload)
+    return response.data
   },
 
-  // Ancienne méthode (conservée pour compatibilité)
+  // Inscription simple (pour compatibilité)
   async register(registerData: RegisterData & { signatureUrl?: string }) {
     const response = await api.post("/auth/signup", registerData)
     return response.data
