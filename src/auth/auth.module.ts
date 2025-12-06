@@ -4,13 +4,14 @@ import { UsersModule } from '../users/users.module';
 import { JwtModule } from '@nestjs/jwt';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { PassportModule } from '@nestjs/passport';
-import { JwtStrategy } from './strategies/jwt.strategy'; 
+import { JwtStrategy } from './strategies/jwt.strategy';
 import { AuthController } from './auth.controller';
 import { ContractsModule } from '../contracts/contracts.module';
 import { GoogleAuthService } from './google-auth.service';
-import { PasswordResetService } from './password-reset.service'; // AJOUT
-import { PasswordResetController } from './password-reset.controller'; // AJOUT
-import { MailModule } from '../mail/mail.module'; // AJOUT
+import { PasswordResetService } from './password-reset.service';
+import { PasswordResetController } from './password-reset.controller';
+import { MailModule } from '../mail/mail.module';
+import { CloudinaryModule } from '../cloudinary/cloudinary.module'; // AJOUT
 
 @Module({
   imports: [
@@ -18,7 +19,8 @@ import { MailModule } from '../mail/mail.module'; // AJOUT
     ContractsModule,
     PassportModule,
     ConfigModule,
-    MailModule, // AJOUT
+    MailModule,
+    CloudinaryModule, // AJOUT
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
@@ -28,8 +30,8 @@ import { MailModule } from '../mail/mail.module'; // AJOUT
       }),
     }),
   ],
-  controllers: [AuthController, PasswordResetController], // AJOUT
-  providers: [AuthService, JwtStrategy, GoogleAuthService, PasswordResetService], // AJOUT
+  controllers: [AuthController, PasswordResetController],
+  providers: [AuthService, JwtStrategy, GoogleAuthService, PasswordResetService],
   exports: [AuthService],
 })
 export class AuthModule {}

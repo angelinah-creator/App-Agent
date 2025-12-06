@@ -1,6 +1,10 @@
 import { Injectable } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import { v2 as cloudinary, UploadApiResponse, UploadApiErrorResponse } from 'cloudinary';
+import {
+  v2 as cloudinary,
+  UploadApiResponse,
+  UploadApiErrorResponse,
+} from 'cloudinary';
 import { Readable } from 'stream';
 
 @Injectable()
@@ -18,9 +22,12 @@ export class CloudinaryService {
   }
 
   // Méthode pour uploader des PDF avec resource_type: "raw"
-  async uploadPdf(buffer: Buffer, fileName: string): Promise<{ url: string; publicId: string }> {
+  async uploadPdf(
+    buffer: Buffer,
+    fileName: string,
+  ): Promise<{ url: string; publicId: string }> {
     console.log('Upload PDF brut:', fileName);
-    
+
     return new Promise((resolve, reject) => {
       const uploadStream = cloudinary.uploader.upload_stream(
         {
@@ -30,22 +37,27 @@ export class CloudinaryService {
           access_mode: 'public',
           // Pas de transformation - fichier brut
         },
-        (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
+        (
+          error: UploadApiErrorResponse | undefined,
+          result: UploadApiResponse | undefined,
+        ) => {
           if (error) {
             console.error('Erreur Cloudinary:', error);
             reject(new Error(`Cloudinary upload error: ${error.message}`));
           } else if (result) {
             console.log('Upload PDF Cloudinary réussi:', result.public_id);
             console.log('URL Cloudinary:', result.secure_url);
-            
+
             resolve({
               url: result.secure_url, // URL directe vers le fichier brut
               publicId: result.public_id,
             });
           } else {
-            reject(new Error('Cloudinary upload failed: No result and no error'));
+            reject(
+              new Error('Cloudinary upload failed: No result and no error'),
+            );
           }
-        }
+        },
       );
 
       const readableStream = new Readable();
@@ -56,12 +68,12 @@ export class CloudinaryService {
   }
 
   async uploadFile(
-    buffer: Buffer, 
-    fileName: string, 
-    contentType: string
+    buffer: Buffer,
+    fileName: string,
+    contentType: string,
   ): Promise<{ url: string; publicId: string }> {
     console.log('Upload File:', { fileName, contentType });
-    
+
     const resourceType = this.getResourceType(contentType);
 
     return new Promise((resolve, reject) => {
@@ -72,7 +84,10 @@ export class CloudinaryService {
           public_id: fileName.replace(/\.[^/.]+$/, ''),
           access_mode: 'public',
         },
-        (error: UploadApiErrorResponse | undefined, result: UploadApiResponse | undefined) => {
+        (
+          error: UploadApiErrorResponse | undefined,
+          result: UploadApiResponse | undefined,
+        ) => {
           if (error) {
             console.error('Erreur Cloudinary:', error);
             reject(new Error(`Cloudinary upload error: ${error.message}`));
@@ -83,9 +98,57 @@ export class CloudinaryService {
               publicId: result.public_id,
             });
           } else {
-            reject(new Error('Cloudinary upload failed: No result and no error'));
+            reject(
+              new Error('Cloudinary upload failed: No result and no error'),
+            );
           }
-        }
+        },
+      );
+
+      const readableStream = new Readable();
+      readableStream.push(buffer);
+      readableStream.push(null);
+      readableStream.pipe(uploadStream);
+    });
+  }
+
+  async uploadImage(
+    buffer: Buffer,
+    fileName: string,
+  ): Promise<{ url: string; publicId: string }> {
+    console.log('Upload Image:', fileName);
+
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          folder: 'agent_code_talent/signatures',
+          resource_type: 'image',
+          public_id: fileName.replace(/\.[^/.]+$/, ''),
+          access_mode: 'public',
+          transformation: [
+            { width: 500, height: 200, crop: 'limit' }, // Limite la taille
+            { quality: 'auto' }, // Optimisation automatique
+          ],
+        },
+        (
+          error: UploadApiErrorResponse | undefined,
+          result: UploadApiResponse | undefined,
+        ) => {
+          if (error) {
+            console.error('Erreur Cloudinary:', error);
+            reject(new Error(`Cloudinary upload error: ${error.message}`));
+          } else if (result) {
+            console.log('Upload Image Cloudinary réussi:', result.public_id);
+            resolve({
+              url: result.secure_url,
+              publicId: result.public_id,
+            });
+          } else {
+            reject(
+              new Error('Cloudinary upload failed: No result and no error'),
+            );
+          }
+        },
       );
 
       const readableStream = new Readable();
@@ -98,16 +161,16 @@ export class CloudinaryService {
   async deleteFile(publicId: string): Promise<void> {
     try {
       console.log('Suppression Cloudinary:', publicId);
-      
+
       const result = await cloudinary.uploader.destroy(publicId, {
         resource_type: 'raw',
         invalidate: true,
       });
-      
+
       if (result.result !== 'ok') {
         throw new Error(`Cloudinary delete failed: ${result.result}`);
       }
-      
+
       console.log('Suppression Cloudinary réussie');
     } catch (error) {
       console.error('Erreur suppression Cloudinary:', error);

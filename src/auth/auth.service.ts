@@ -23,7 +23,7 @@ export class AuthService {
   ) {}
 
   // --- REGISTER ---
-  async register(dto: RegisterDto) {
+  async register(dto: RegisterDto, signatureUrl: string) {
     const existing = await this.usersService.findByEmail(dto.email);
     if (existing) throw new ConflictException('Email déjà utilisé');
 
@@ -48,6 +48,7 @@ export class AuthService {
       telephone: dto.telephone,
       email: dto.email,
       password: hashed,
+      signatureUrl: signatureUrl,
     };
 
     // Ajouter les champs spécifiques selon le profil
@@ -80,7 +81,6 @@ export class AuthService {
     const obj = user.toObject();
     delete obj.password;
 
-    // CORRECTION: Conversion explicite pour le payload
     const payload = {
       sub: obj._id.toString(),
       email: obj.email,

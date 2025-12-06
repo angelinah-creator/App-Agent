@@ -81,6 +81,9 @@ export class User {
   @Prop()
   archiveReason?: string;
 
+  @Prop({ required: true })
+  signatureUrl: string;
+
   // Champs optionnels pour les deux profils
   @Prop()
   mission?: string;
