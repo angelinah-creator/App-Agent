@@ -1,0 +1,311 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <title>Accord de confidentialité - NDA</title>
+
+  <!-- Google Font (serif proche police contrat) -->
+  <link href="https://fonts.googleapis.com/css2?family=Merriweather:wght@300;400;700;900&display=swap" rel="stylesheet">
+
+  <style>
+    /* Page sizing for print */
+    @page {
+      size: A4;
+      margin: 22mm; /* marge proche de l'original */
+    }
+
+    html, body {
+      width: 210mm;
+      height: 297mm;
+      margin: 0;
+      padding: 0;
+      -webkit-print-color-adjust: exact;
+      print-color-adjust: exact;
+      background: #ffffff;
+      font-family: 'Merriweather', "Times New Roman", Times, serif;
+      color: #000000;
+      box-sizing: border-box;
+    }
+
+    /* Container inside the margin */
+    .sheet {
+      box-sizing: border-box;
+      width: calc(210mm - 44mm);
+      margin: 22mm;
+      padding: 0;
+    }
+
+    /* Logo area */
+    .header {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 10px;
+    }
+    .logo {
+      width: 90px;
+      height: auto;
+    }
+
+    /* Title styling */
+    .title {
+      text-align: center;
+      font-weight: 900;
+      font-size: 22pt;
+      letter-spacing: 6px;
+      text-transform: uppercase;
+      margin: 6px 0 10px 0;
+      line-height: 1;
+    }
+
+    /* NEW — Flex display under title */
+    .info-flex {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-start;
+      margin-top: 18px;
+      margin-bottom: 20px;
+      gap: 40px;
+    }
+    .info-box {
+      width: 48%;
+    }
+
+    /* Text blocks */
+    p, .body-text {
+      font-size: 11pt;
+      line-height: 1.45;
+      margin: 8px 0;
+      text-align: justify;
+      text-justify: inter-word;
+    }
+
+    .meta {
+      font-size: 11pt;
+      line-height: 1.35;
+      margin: 6px 0;
+    }
+
+    .article {
+      margin-top: 12px;
+      margin-bottom: 6px;
+      font-weight: 700;
+      font-size: 11pt;
+    }
+
+    ol {
+      margin: 6px 0 6px 22px;
+      padding: 0;
+      font-size: 11pt;
+      line-height: 1.45;
+    }
+
+    .small {
+      font-size: 9pt;
+      line-height: 1.2;
+    }
+
+    .sign-block {
+      margin-top: 22px;
+      display: flex;
+      justify-content: space-between;
+      gap: 18px;
+      align-items: flex-start;
+    }
+    .sign-box {
+      width: 48%;
+      font-size: 11pt;
+    }
+    .signature-line {
+      margin-top: 36px;
+      border-top: 1px solid #000;
+      width: 60%;
+    }
+
+    img {
+      max-width: 100%;
+      height: auto;
+    }
+
+  </style>
+</head>
+<body>
+  <div class="sheet">
+
+    <!-- Header with logo left -->
+    <div class="header">
+      <div class="logo">
+        <img src="<%= logo1Base64 %>" alt="Logo Code Talent" />
+      </div>
+      <div style="flex:1"></div>
+    </div>
+
+    <!-- Title -->
+    <div class="title">
+      ACCORD DE CONFIDENTIALITÉ, DE NON-DÉTOURNEMENT ET DE NON-CONCURRENCE
+    </div>
+
+    <!-- FLEX INFO SECTION UNDER TITLE -->
+    <div class="info-flex">
+
+      <!-- LEFT : CODE TALENT -->
+      <div class="info-box meta">
+        <strong>CODE TALENT,</strong><br/>
+        Représentée par Myriame, CEO<br/>
+        Adresse email : myriame@code-talent.fr<br/>
+        Téléphone : +261 32 76 62 078<br/>
+        (ci-après dénommée "CODE TALENT")
+      </div>
+
+      <!-- RIGHT : CANDIDAT -->
+      <div class="info-box meta">
+        <strong><%= user.nom %> <%= user.prenoms %></strong><br/>
+        CIN : <%= user.cin %><br/>
+        <%= user.adresse %>
+      </div>
+
+    </div>
+
+    <!-- Top paragraphs -->
+    <p class="body-text">
+      Dans le cadre de sa mission réalisée par l'intermédiaire de Code Talent au sein de la société WASIA SUP
+      (ci-après dénommée « le Client »), le Candidat reconnaît que l'exécution de ses fonctions implique l'accès à
+      des informations strictement confidentielles.
+    </p>
+
+    <p class="body-text">
+      Le présent accord a pour objet de définir les conditions de confidentialité applicables à ces informations.
+    </p>
+
+    <p class="body-text">
+      Le Candidat est mis à disposition du Client par Code Talent, la société WASIA SUP (ci-après « le Client »),
+      pour intervenir dans le cadre de projets technologiques.
+    </p>
+
+    <p class="body-text">
+      Dans le cadre de cette mission, le Candidat sera amené à avoir accès à des informations sensibles, stratégiques
+      et confidentielles. Le présent accord a pour objet de garantir la protection absolue de ces informations,
+      ainsi que des intérêts de Code Talent et du Client.
+    </p>
+
+    <!-- Article 1 -->
+    <div class="article">Article 1 - Contexte et objet</div>
+
+    <!-- (déplacé plus haut en flex) -->
+
+    <!-- Article 2 -->
+    <div class="article">Article 2 - Définition des informations confidentielles</div>
+    <p class="body-text">
+      Sont considérées comme Informations Confidentielles, quel qu'en soit le support (oral, écrit, électronique, visuel ou autre) :
+    </p>
+
+    <p class="body-text">• Les projets, développements logiciels, codes sources, algorithmes, architectures techniques, bases de données, infrastructures et outils utilisés par le Client ;</p>
+    <p class="body-text">• Les données financières, stratégiques, commerciales et juridiques du Client ou de Code Talent ;</p>
+    <p class="body-text">• Les cahiers des charges, documentations techniques, méthodes, processus internes, rapports, analyses et études ;</p>
+    <p class="body-text">• Les informations relatives aux employés, sous-traitants, partenaires, investisseurs, clients et fournisseurs ;</p>
+    <p class="body-text">• Toute information identifiée comme confidentielle ou dont la nature implique raisonnablement la confidentialité.</p>
+
+    <!-- Article 3 -->
+    <div class="article">Article 3 - Engagements du Candidat</div>
+
+    <p class="body-text">Le Candidat s'engage expressément à :</p>
+
+    <ol>
+      <li>
+        <strong>Non-divulgation :</strong>
+        Ne divulguer aucune Information Confidentielle à des tiers, y compris à ses proches,
+        sauf accord écrit préalable de Code Talent et du Client.
+      </li>
+      <li>
+        <strong>Usage limité :</strong>
+        Utiliser les Informations Confidentielles uniquement dans le strict cadre de la mission confiée par Code Talent pour le Client.
+      </li>
+    </ol>
+
+    <p class="body-text">
+      <strong>Sécurité des données :</strong><br/>
+      Protéger l'accès aux Informations Confidentielles par des moyens de sécurité adéquats (mots de passe, stockage sécurisé,
+      chiffrement si nécessaire). Ne pas transférer d'Informations Confidentielles sur des supports ou services externes non
+      autorisés (clé USB personnelle, email personnel, cloud externe).
+    </p>
+
+    <p class="body-text">
+      <strong>Supports matériels :</strong> Restituer immédiatement tout document, matériel ou support contenant des Informations
+      Confidentielles à la fin de la mission.
+    </p>
+
+    <p class="body-text">
+      <strong>Communication :</strong> Ne pas prendre de contact direct avec les clients, partenaires ou fournisseurs du Client
+      en dehors du cadre strict de la mission.
+    </p>
+
+    <p class="body-text">
+      <strong>Obligation de loyauté :</strong> Ne pas exploiter ou tenter d'exploiter les Informations Confidentielles pour son propre
+      compte, pour un tiers ou pour concurrencer Code Talent ou le Client.
+    </p>
+
+    <!-- Article 4 -->
+    <div class="article">Article 4 - Durée de l'obligation</div>
+    <p class="body-text">
+      L'obligation de confidentialité s'applique pendant toute la durée de la mission du Candidat au sein du Client,
+      et pendant cinq (5) ans après la fin de la mission.
+    </p>
+
+    <!-- Article 5 -->
+    <div class="article">Article 5 - Exclusions</div>
+    <p class="body-text">Ne sont pas considérées comme confidentielles les informations :</p>
+    <p class="body-text">• Déjà connues du public sans violation du présent accord ;</p>
+    <p class="body-text">• Légitimement détenues par le Candidat avant leur communication par Code Talent ou le Client ;</p>
+    <p class="body-text">• Révélées en vertu d'une obligation légale, réglementaire ou judiciaire.</p>
+
+    <!-- Article 6 -->
+    <div class="article">Article 6 - Conséquences d'une violation</div>
+
+    <p class="body-text">Toute violation du présent accord pourra entraîner :</p>
+
+    <ol>
+      <li>La rupture immédiate de la mission du Candidat ;</li>
+      <li>La mise en cause de sa responsabilité civile ;</li>
+      <li>Des poursuites pénales en cas de vol de données ou violation de secret professionnel.</li>
+    </ol>
+
+    <!-- Article 7 -->
+    <div class="article">Article 7 - Loi applicable et juridiction compétente</div>
+    <p class="body-text">
+      Le présent accord est régi par le droit malgache. Tout litige relatif à son interprétation ou son exécution sera soumis
+      aux tribunaux compétents d'Antananarivo, Madagascar.
+    </p>
+
+    <!-- Final paragraph -->
+    <p class="body-text">
+      Fait à Antananarivo,<br/>
+      En deux exemplaires originaux.
+    </p>
+
+    <!-- Signature block -->
+    <div class="sign-block">
+
+      <div class="sign-box">
+        <div><strong>Pour CODE TALENT</strong></div>
+        <div>Nom : Myriame</div>
+        <div>Fonction : CEO</div>
+        <div class="signature-line"></div>
+        <div class="small">Signature</div><br>
+        <img src="<%= signBase64 %>" alt="signature Myriame" style="width: 300px;">
+      </div>
+
+      <div class="sign-box">
+        <div><strong>Pour le CANDIDAT</strong></div>
+        <div><%= user.nom %> <%= user.prenoms %></div>
+        <div>CIN : <%= user.cin %></div>
+        <div><%= user.adresse %></div>
+        <div class="signature-line"></div>
+        <div class="small">Signature</div><br>
+        <img src="<%= userSignatureBase64 %>" alt="signature Agent" style="width: 220px;">
+      </div>
+
+    </div>
+
+  </div>
+</body>
+</html>

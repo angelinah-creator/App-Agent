@@ -13,6 +13,7 @@ import { AbsencesModule } from './absences/absences.module';
 import { NotificationsModule } from './notifications/notifications.module';
 import { FirebaseModule } from './firebase/firebase.module'; // AJOUT
 import { MailModule } from './mail/mail.module';
+import { NdaModule } from './nda/nda.module';
 
 @Module({
   imports: [
@@ -33,6 +34,7 @@ import { MailModule } from './mail/mail.module';
     AbsencesModule,
     NotificationsModule,
     MailModule,
+    NdaModule,
   ],
 })
 export class AppModule {}

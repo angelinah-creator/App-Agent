@@ -12,6 +12,10 @@
       {
         "include": "contracts/templates/**/*",
         "outDir": "dist"
+      },
+      {
+        "include": "nda/templates/**/*",
+        "outDir": "dist"
       }
     ],
     "watchAssets": true

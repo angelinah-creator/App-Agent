@@ -11,16 +11,18 @@ import { GoogleAuthService } from './google-auth.service';
 import { PasswordResetService } from './password-reset.service';
 import { PasswordResetController } from './password-reset.controller';
 import { MailModule } from '../mail/mail.module';
-import { CloudinaryModule } from '../cloudinary/cloudinary.module'; // AJOUT
+import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { NdaModule } from '../nda/nda.module';
 
 @Module({
   imports: [
     UsersModule,
     ContractsModule,
+    NdaModule,
     PassportModule,
     ConfigModule,
     MailModule,
-    CloudinaryModule, // AJOUT
+    CloudinaryModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

@@ -10,6 +10,7 @@ import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { ContractsService } from '../contracts/contracts.service';
+import { NdaService } from 'src/nda/nda.service';
 import { UserDocument } from '../users/schemas/user.schema';
 
 @Injectable()
@@ -18,6 +19,7 @@ export class AuthService {
 
   constructor(
     private usersService: UsersService,
+    private ndaService: NdaService,
     private jwtService: JwtService,
     private contractsService: ContractsService,
   ) {}
@@ -76,6 +78,17 @@ export class AuthService {
       this.logger.log(`Contrat généré avec succès: ${contract.contractNumber}`);
     } catch (error) {
       this.logger.error('Erreur lors de la génération du contrat:', error);
+    }
+
+    // GENERER LE NDA AUTOMATIQUEMENT
+    try {
+      this.logger.log(`Génération du NDA pour l'utilisateur: ${user._id}`);
+      const nda = await this.ndaService.generateNda(
+        (user._id as any).toString(),
+      );
+      this.logger.log(`NDA généré avec succès: ${nda.ndaNumber}`);
+    } catch (error) {
+      this.logger.error('Erreur lors de la génération du NDA:', error);
     }
 
     const obj = user.toObject();
