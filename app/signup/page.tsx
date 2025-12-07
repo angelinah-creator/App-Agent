@@ -219,7 +219,7 @@ export default function SignupPage() {
   };
 
   const SignatureSection = () => (
-    <div className="space-y-4 p-4 border border-slate-200 rounded-lg bg-slate-50">
+    <div className="space-y-4 p-4 mt-10">
       <div className="flex items-center gap-2">
         <PenTool className="w-5 h-5 text-purple-600" />
         <h3 className="font-semibold text-slate-800">Signature Digitale *</h3>
@@ -303,7 +303,7 @@ export default function SignupPage() {
       <div className="w-full max-w-3xl animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold mb-3 text-balance bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 bg-clip-text text-transparent">
-            Agent Code Talent
+            OPSIDE
           </h1>
           <p className="text-slate-600 text-lg">Créez votre compte agent</p>
         </div>
@@ -392,7 +392,7 @@ export default function SignupPage() {
 
                 {/* Informations personnelles */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2 mt-10">
                     <PenTool className="w-5 h-5 text-purple-600" />
                     Informations personnelles
                   </h3>
@@ -528,7 +528,7 @@ export default function SignupPage() {
 
                 {/* Informations professionnelles */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2 mt-10">
                     <Briefcase className="w-5 h-5 text-blue-600" />
                     Informations professionnelles
                   </h3>
@@ -610,7 +610,7 @@ export default function SignupPage() {
                 {/* Champs spécifiques */}
                 {userType === "stagiaire" && (
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <h3 className="font-semibold text-slate-800 flex items-center gap-2 mt-10">
                       <GraduationCap className="w-5 h-5 text-blue-600" />
                       Informations de stage
                     </h3>
@@ -681,7 +681,7 @@ export default function SignupPage() {
 
                 {userType === "prestataire" && (
                   <div className="space-y-4">
-                    <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                    <h3 className="font-semibold text-slate-800 flex items-center gap-2 mt-10">
                       <Briefcase className="w-5 h-5 text-purple-600" />
                       Informations de prestation
                     </h3>
@@ -808,7 +808,7 @@ export default function SignupPage() {
 
                 {/* Coordonnées */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2 mt-10">
                     <Phone className="w-5 h-5 text-green-600" />
                     Coordonnées
                   </h3>
@@ -850,7 +850,7 @@ export default function SignupPage() {
 
                 {/* Mot de passe */}
                 <div className="space-y-4">
-                  <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                  <h3 className="font-semibold text-slate-800 flex items-center gap-2 mt-10">
                     <Key className="w-5 h-5 text-amber-600" />
                     Sécurité
                   </h3>

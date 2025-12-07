@@ -117,8 +117,8 @@ export default function LoginPage() {
       {/* Content */}
       <div className="w-full max-w-md relative z-10">
         <div className="text-center mb-8">
-          <h1 className="text-5xl font-bold mb-3 text-balance bg-gradient-to-r from-violet-600 via-purple-600 to-fuchsia-600 bg-clip-text text-transparent drop-shadow-lg">
-            Agent App
+          <h1 className="text-5xl font-bold mb-3 text-balance bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 bg-clip-text text-transparent">
+            OPSIDE
           </h1>
           <p className="text-gray-700 text-lg">Connectez-vous à votre espace</p>
         </div>
@@ -202,7 +202,7 @@ export default function LoginPage() {
 
               <Button
                 type="submit"
-                className="w-full transition-all duration-300 hover:scale-[1.02] bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-white shadow-lg hover:shadow-xl hover:shadow-violet-500/50"
+                className="w-full transition-all duration-300 hover:scale-[1.02] bg-violet-600 hover:bg-violet-700 text-white shadow-lg hover:shadow-xl hover:shadow-violet-500/50"
                 disabled={isLoading}
               >
                 {isLoading ? (
