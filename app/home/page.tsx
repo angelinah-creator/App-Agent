@@ -36,6 +36,7 @@ import { UploadKPIModal } from "@/components/modals/upload-kpi-modal";
 import { KPIsSectionAdmin } from "@/components/sections/kpis-section-admin";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import { ndaService, type Nda } from "@/lib/nda-service";
+import { NdaSectionAdmin } from "@/components/sections/nda-section-admin";
 import { api } from "@/lib/api-config";
 
 function HomePage() {
@@ -96,6 +97,10 @@ function HomePage() {
         documents: {
           title: "Gestion des Documents",
           subtitle: "Consultez tous les documents des agents",
+        },
+        ndas: {
+          title: "Gestion des NDA",
+          subtitle: "Consultez tous les accords de confidentialité",
         },
       };
       return adminHeaderMap[activeSection] || adminHeaderMap.agents;
@@ -222,6 +227,22 @@ function HomePage() {
     queryKey: ["kpis"],
     queryFn: kpiService.getUserKPIs,
     enabled: !!userData?._id && !isAdmin,
+  });
+
+  // Admin: Récupération de tous les NDA
+  const { data: allNdas = [], isLoading: allNdasLoading } = useQuery({
+    queryKey: ["all-ndas"],
+    queryFn: async () => {
+      const allAgents = await usersService.getAllAgents(true); // Inclure les archivés
+      const ndaPromises = allAgents.map((agent) =>
+        ndaService
+          .getUserNda(agent._id)
+          .then((nda) => (nda && nda._id ? nda : null))
+      );
+      const ndasArray = await Promise.all(ndaPromises);
+      return ndasArray.filter((nda) => nda !== null) as Nda[];
+    },
+    enabled: !!userData && isAdmin,
   });
 
   // Mutations
@@ -697,6 +718,7 @@ function HomePage() {
     mutationFn: ndaService.deleteNda,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["nda"] });
+      queryClient.invalidateQueries({ queryKey: ["all-ndas"] });
     },
     onError: (error: any) => {
       console.error("Erreur suppression NDA:", error);
@@ -739,6 +761,45 @@ function HomePage() {
       console.error("Erreur téléchargement:", error);
       window.open(nda.pdfUrl, "_blank");
     }
+  };
+
+  const handleViewNda = (nda: Nda) => {
+    window.open(nda.pdfUrl, "_blank");
+  };
+
+  const handleDownloadNdaAdmin = async (nda: Nda) => {
+    try {
+      const response = await fetch(nda.pdfUrl);
+      if (!response.ok) throw new Error("Erreur de téléchargement");
+      const blob = await response.blob();
+      const pdfBlob = new Blob([blob], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nda.fileName;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 100);
+    } catch (error) {
+      console.error("Erreur téléchargement:", error);
+      window.open(nda.pdfUrl, "_blank");
+    }
+  };
+
+  const handleDeleteNdaAdmin = (ndaId: string) => {
+    confirm({
+      title: "Supprimer ce NDA",
+      description:
+        "Êtes-vous sûr de vouloir supprimer cet accord de confidentialité ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteNdaMutation.mutate(ndaId);
+      },
+    });
   };
 
   useEffect(() => {
@@ -875,6 +936,18 @@ function HomePage() {
                     onView={(doc) => window.open(doc.fileUrl, "_blank")}
                     onDelete={handleDeleteDocument}
                     deleteDocumentPending={deleteDocumentMutation.isPending}
+                  />
+                )}
+
+                {activeSection === "ndas" && (
+                  <NdaSectionAdmin
+                    ndas={allNdas}
+                    agents={agents}
+                    isLoading={allNdasLoading}
+                    onDownload={handleDownloadNdaAdmin}
+                    onView={handleViewNda}
+                    onDelete={handleDeleteNdaAdmin}
+                    deleteNdaPending={deleteNdaMutation.isPending}
                   />
                 )}
               </>

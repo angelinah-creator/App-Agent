@@ -1,51 +1,50 @@
-// frontend/components/sections/contracts-section-admin.tsx
 "use client"
 
 import { useState } from "react"
-import { FileText, Download, Eye, Trash2, Search, Filter } from "lucide-react"
+import { Shield, Download, Eye, Trash2, Search, Filter } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
-import type { Contract } from "@/lib/contract-service"
+import type { Nda } from "@/lib/nda-service"
 import type { Agent } from "@/lib/users-service"
 
-interface ContractsAdminProps {
-  contracts: Contract[]
+interface NdaSectionAdminProps {
+  ndas: Nda[]
   agents: Agent[]
   isLoading: boolean
-  onDownload: (contract: Contract) => void
-  onView: (contract: Contract) => void
-  onDelete: (contractId: string) => void
-  deleteContractPending: boolean
+  onDownload: (nda: Nda) => void
+  onView: (nda: Nda) => void
+  onDelete: (ndaId: string) => void
+  deleteNdaPending: boolean
 }
 
-export function ContractsSectionAdmin({
-  contracts,
+export function NdaSectionAdmin({
+  ndas,
   agents,
   isLoading,
   onDownload,
   onView,
   onDelete,
-  deleteContractPending,
-}: ContractsAdminProps) {
+  deleteNdaPending,
+}: NdaSectionAdminProps) {
   const [searchTerm, setSearchTerm] = useState("")
-  const [filterType, setFilterType] = useState<string>("all")
   const [filterAgent, setFilterAgent] = useState<string>("all")
+  const [filterStatus, setFilterStatus] = useState<string>("all")
 
   // Filtrage
-  const filteredContracts = contracts.filter((contract) => {
-    const agent = agents.find((a) => a._id === contract.userId)
+  const filteredNdas = ndas.filter((nda) => {
+    const agent = agents.find((a) => a._id === nda.userId)
     const matchesSearch =
       searchTerm === "" ||
-      contract.contractNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      nda.ndaNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
       agent?.nom.toLowerCase().includes(searchTerm.toLowerCase()) ||
       agent?.prenoms.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesType = filterType === "all" || contract.type === filterType
-    const matchesAgent = filterAgent === "all" || contract.userId === filterAgent
+    const matchesAgent = filterAgent === "all" || nda.userId === filterAgent
+    const matchesStatus = filterStatus === "all" || nda.status === filterStatus
 
-    return matchesSearch && matchesType && matchesAgent
+    return matchesSearch && matchesAgent && matchesStatus
   })
 
   const getAgentInfo = (userId: string) => {
@@ -66,13 +65,33 @@ export function ContractsSectionAdmin({
     })
   }
 
+  const getStatusLabel = (status: string) => {
+    const statusLabels: { [key: string]: string } = {
+      generated: "Généré",
+      signed: "Signé",
+      active: "Actif",
+      expired: "Expiré",
+    }
+    return statusLabels[status] || status
+  }
+
+  const getStatusColor = (status: string) => {
+    const colors: { [key: string]: string } = {
+      generated: "bg-blue-100 text-blue-700",
+      signed: "bg-green-100 text-green-700",
+      active: "bg-purple-100 text-purple-700",
+      expired: "bg-gray-100 text-gray-700",
+    }
+    return colors[status] || "bg-gray-100 text-gray-700"
+  }
+
   return (
     <div className="space-y-6">
       {/* En-tête */}
       <div className="flex items-center justify-between">
         <div>
           <p className="text-slate-600 mt-1">
-            {filteredContracts.length} contrat{filteredContracts.length > 1 ? "s" : ""} trouvé{filteredContracts.length > 1 ? "s" : ""}
+            {filteredNdas.length} NDA{filteredNdas.length > 1 ? "s" : ""} trouvé{filteredNdas.length > 1 ? "s" : ""}
           </p>
         </div>
       </div>
@@ -84,24 +103,12 @@ export function ContractsSectionAdmin({
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
               <Input
-                placeholder="Rechercher un contrat..."
+                placeholder="Rechercher un NDA..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
-
-            <Select value={filterType} onValueChange={setFilterType}>
-              <SelectTrigger>
-                <Filter className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Type de contrat" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Tous les types</SelectItem>
-                <SelectItem value="stagiaire">Stagiaires</SelectItem>
-                <SelectItem value="prestataire">Prestataires</SelectItem>
-              </SelectContent>
-            </Select>
 
             <Select value={filterAgent} onValueChange={setFilterAgent}>
               <SelectTrigger>
@@ -120,60 +127,43 @@ export function ContractsSectionAdmin({
         </CardContent>
       </Card>
 
-      {/* Liste des contrats */}
+      {/* Liste des NDA */}
       {isLoading ? (
         <div className="flex items-center justify-center py-12">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-violet-200 border-t-violet-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-200 border-t-purple-600"></div>
         </div>
-      ) : filteredContracts.length === 0 ? (
+      ) : filteredNdas.length === 0 ? (
         <Card>
           <CardContent className="py-12 text-center">
-            <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
-            <p className="text-slate-600">Aucun contrat trouvé</p>
+            <Shield className="w-16 h-16 text-slate-300 mx-auto mb-4" />
+            <p className="text-slate-600">Aucun NDA trouvé</p>
           </CardContent>
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredContracts.map((contract) => (
-            <Card key={contract._id} className="hover:shadow-lg transition-shadow">
+          {filteredNdas.map((nda) => (
+            <Card key={nda._id} className="hover:shadow-lg transition-shadow">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
-                    <div className="p-3 bg-gradient-to-br from-violet-100 to-purple-100 rounded-xl">
-                      <FileText className="w-6 h-6 text-violet-600" />
+                    <div className="p-3 bg-gradient-to-br from-purple-100 to-pink-100 rounded-xl">
+                      <Shield className="w-6 h-6 text-purple-600" />
                     </div>
                     
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-3">
                         <h3 className="font-semibold text-lg text-slate-800">
-                          {getAgentInfo(contract.userId)}
+                          {getAgentInfo(nda.userId)}
                         </h3>
-                        <span
-                          className={`text-xs px-2 py-1 rounded-full font-medium ${
-                            contract.type === "stagiaire"
-                              ? "bg-blue-100 text-blue-700"
-                              : "bg-purple-100 text-purple-700"
-                          }`}
-                        >
-                          {contract.type === "stagiaire" ? "Stagiaire" : "Prestataire"}
-                        </span>
                       </div>
 
                       <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                        <div>
-                          <span className="text-slate-500">Date création:</span>
+                        <div className="col-span-2">
+                          <span className="text-slate-500">Nom du fichier:</span>
                           <span className="ml-2 font-medium text-slate-800">
-                            {formatDate(contract.createdAt)}
+                            {nda.fileName}
                           </span>
                         </div>
-                        {contract.expiresAt && (
-                          <div>
-                            <span className="text-slate-500">Date expiration:</span>
-                            <span className="ml-2 font-medium text-slate-800">
-                              {formatDate(contract.expiresAt)}
-                            </span>
-                          </div>
-                        )}
                       </div>
                     </div>
                   </div>
@@ -182,7 +172,16 @@ export function ContractsSectionAdmin({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onDownload(contract)}
+                      onClick={() => onView(nda)}
+                      className="border-purple-300 hover:bg-purple-600 hover:text-white"
+                    >
+                      <Eye className="w-4 h-4" />
+                      Voir
+                    </Button>
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => onDownload(nda)}
                       className="border-blue-300 hover:bg-blue-600 hover:text-white"
                     >
                       <Download className="w-4 h-4" />
@@ -192,9 +191,9 @@ export function ContractsSectionAdmin({
                       variant="outline"
                       size="sm"
                       onClick={() => {
-                        onDelete(contract._id)
+                        onDelete(nda._id)
                       }}
-                      disabled={deleteContractPending}
+                      disabled={deleteNdaPending}
                       className="border-red-300 hover:bg-red-600 hover:text-white"
                     >
                       <Trash2 className="w-4 h-4" />

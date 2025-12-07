@@ -261,15 +261,6 @@ export function FacturesSection({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100">
-                    {/* <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onViewInvoice(invoice)}
-                      className="flex-1 text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
-                      Voir
-                    </Button> */}
                     <Button
                       size="sm"
                       variant="ghost"

@@ -11,6 +11,7 @@ import {
   File,
   FileCheck,
   LogOut,
+  Shield,
 } from "lucide-react";
 import { authService } from "@/lib/auth-service";
 import { useRouter } from "next/navigation";
@@ -34,6 +35,7 @@ export function Sidebar({
   const adminMenuItems = [
     { id: "agents", label: "Agents", icon: Users },
     { id: "contracts", label: "Contrats", icon: FileCheck },
+    { id: "ndas", label: "NDA", icon: Shield },
     { id: "documents", label: "Documents", icon: FileText },
     { id: "factures", label: "Factures", icon: Receipt },
     { id: "kpis", label: "KPIs", icon: BarChart3 },

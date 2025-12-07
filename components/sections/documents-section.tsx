@@ -67,287 +67,245 @@ export function DocumentsSection({
   }
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      {/* Contrats Section */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200/50 p-6 shadow-lg shadow-slate-200/50">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-slate-800">Mon Contrat</h3>
-          <Button
-            onClick={onGenerateContract}
-            disabled={generateContractPending}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {generateContractPending ? "Génération..." : "Générer un Contrat"}
-          </Button>
-        </div>
-
-        {contractsLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
-            <p className="text-slate-600 mt-3 font-medium">Chargement des contrats...</p>
-          </div>
-        ) : contracts.length === 0 ? (
-          <div className="text-center py-12 bg-gradient-to-br from-slate-50 to-blue-50/30 rounded-xl">
-            <FileText className="mx-auto h-14 w-14 text-slate-400" />
-            <p className="mt-4 text-slate-600 font-medium">Aucun contrat généré</p>
-            <p className="text-sm text-slate-500 mt-1">
-              Cliquez sur "Générer un Contrat" pour créer votre premier contrat
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200/50">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-slate-50 to-blue-50/30">
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">Nom du fichier</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">Type</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">Date de création</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {contracts.map((contract: Contract) => (
-                  <tr
-                    key={contract._id}
-                    className="border-b border-slate-100 hover:bg-blue-50/50 transition-all duration-200"
-                  >
-                    <td className="py-4 px-4 text-slate-800 font-medium">{contract.fileName}</td>
-                    <td className="py-4 px-4 text-slate-600 capitalize">{contract.type}</td>
-                    <td className="py-4 px-4 text-slate-600">
-                      {new Date(contract.createdAt).toLocaleDateString("fr-FR")}
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onDownloadContract(contract)}
-                          disabled={deleteContractPending}
-                          className="text-slate-600 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Télécharger
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onDeleteContract(contract._id)}
-                          disabled={deleteContractPending}
-                          className="text-slate-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* NDA Section */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200/50 p-6 shadow-lg shadow-slate-200/50">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-slate-800">Mon NDA (Accord de Confidentialité)</h3>
-          <Button
-            onClick={onGenerateNda}
-            disabled={generateNdaPending}
-            className="bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700 text-white shadow-lg shadow-purple-500/30 hover:shadow-xl hover:shadow-purple-500/40 transition-all duration-300 hover:scale-105"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            {generateNdaPending ? "Génération..." : "Générer un NDA"}
-          </Button>
-        </div>
-
-        {ndasLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-purple-200 border-t-purple-600 mx-auto"></div>
-            <p className="text-slate-600 mt-3 font-medium">Chargement du NDA...</p>
-          </div>
-        ) : ndas.length === 0 ? (
-          <div className="text-center py-12 bg-gradient-to-br from-slate-50 to-purple-50/30 rounded-xl">
-            <Shield className="mx-auto h-14 w-14 text-slate-400" />
-            <p className="mt-4 text-slate-600 font-medium">Aucun NDA généré</p>
-            <p className="text-sm text-slate-500 mt-1">
-              Cliquez sur "Générer un NDA" pour créer votre accord de confidentialité
-            </p>
-          </div>
-        ) : (
-          <div className="overflow-x-auto rounded-xl border border-slate-200/50">
-            <table className="w-full">
-              <thead className="bg-gradient-to-r from-slate-50 to-purple-50/30">
-                <tr className="border-b border-slate-200">
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">Nom du fichier</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">Numéro NDA</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">Date de création</th>
-                  <th className="text-left py-4 px-4 text-sm font-semibold text-slate-700">Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {ndas.map((nda: Nda) => (
-                  <tr
-                    key={nda._id}
-                    className="border-b border-slate-100 hover:bg-purple-50/50 transition-all duration-200"
-                  >
-                    <td className="py-4 px-4 text-slate-800 font-medium">{nda.fileName}</td>
-                    <td className="py-4 px-4 text-slate-600">{nda.ndaNumber}</td>
-                    <td className="py-4 px-4 text-slate-600">
-                      {new Date(nda.createdAt).toLocaleDateString("fr-FR")}
-                    </td>
-                    <td className="py-4 px-4">
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onDownloadNda(nda)}
-                          disabled={deleteNdaPending}
-                          className="text-slate-600 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200"
-                        >
-                          <Download className="w-4 h-4 mr-1" />
-                          Télécharger
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => onDeleteNda(nda._id)}
-                          disabled={deleteNdaPending}
-                          className="text-slate-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
-                        >
-                          <Trash2 className="w-4 h-4" />
-                        </Button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-      </div>
-
-      {/* Documents Section */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl border border-slate-200/50 p-6 shadow-lg shadow-slate-200/50">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-slate-800">Mes Documents</h3>
-          <Button
-            onClick={onAddDocument}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white shadow-lg shadow-blue-500/30 hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105"
-          >
-            <Plus className="w-4 h-4 mr-2" />
-            Ajouter un document
-          </Button>
-        </div>
-
-        {documentsLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
-            <p className="text-slate-600 mt-3 font-medium">Chargement des documents...</p>
-          </div>
-        ) : documents.length === 0 ? (
-          <div className="text-center py-12 bg-gradient-to-br from-slate-50 to-blue-50/30 rounded-xl">
-            <Upload className="mx-auto h-14 w-14 text-slate-400" />
-            <p className="mt-4 text-slate-600 font-medium">Aucun document uploadé</p>
-            <p className="text-sm text-slate-500 mt-1">
-              Cliquez sur "Ajouter un document" pour uploader vos premiers documents
-            </p>
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {documents.map((doc: Document) => (
-              <Card
-                key={doc._id}
-                className="border-slate-200/50 hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 hover:scale-105 bg-white/80 backdrop-blur-sm"
+    <div className="space-y-4 animate-in fade-in slide-in-from-bottom-4 duration-500">
+      {/* Contrats et NDA - En mode compact */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+        {/* Contrats Section */}
+        <Card className="border-slate-200/50 hover:shadow-md hover:shadow-slate-200/30 transition-all duration-300 bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                  <FileText className="w-4 h-4 text-blue-600" />
+                </div>
+                <h3 className="text-sm font-semibold text-slate-800">Contrats</h3>
+              </div>
+              <Button
+                onClick={onGenerateContract}
+                disabled={generateContractPending}
+                size="sm"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200"
               >
-                <CardContent className="p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center flex-shrink-0 shadow-sm">
-                      <FileText className="w-6 h-6 text-blue-600" />
-                    </div>
+                <Plus className="w-3 h-3 mr-1" />
+                {generateContractPending ? "..." : "Générer"}
+              </Button>
+            </div>
+
+            {contractsLoading ? (
+              <div className="text-center py-6">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-200 border-t-blue-600 mx-auto"></div>
+                <p className="text-xs text-slate-600 mt-2 font-medium">Chargement...</p>
+              </div>
+            ) : contracts.length === 0 ? (
+              <div className="text-center py-6 bg-gradient-to-br from-slate-50 to-blue-50/20 rounded-lg">
+                <FileText className="mx-auto h-8 w-8 text-slate-400" />
+                <p className="mt-2 text-xs text-slate-600 font-medium">Aucun contrat</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {contracts.map((contract: Contract) => (
+                  <div
+                    key={contract._id}
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-blue-50/50 transition-all duration-200 group"
+                  >
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-slate-800 truncate">{doc.originalName}</h4>
-                      <p className="text-sm text-slate-500">
-                        {getDocumentTypeLabel(doc.type)} • {(doc.fileSize / (1024 * 1024)).toFixed(2)} MB
+                      <p className="text-xs font-medium text-slate-800 truncate">{contract.fileName}</p>
+                      <p className="text-xs text-slate-500 truncate">
+                        {new Date(contract.createdAt).toLocaleDateString("fr-FR")}
                       </p>
-                      <p className="text-xs text-slate-400 mt-1">
-                        {new Date(doc.createdAt).toLocaleDateString("fr-FR")}
-                      </p>
-                      {doc.description && <p className="text-xs text-slate-500 mt-1 truncate">{doc.description}</p>}
+                    </div>
+                    <div className="flex items-center gap-1 ml-2">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onDownloadContract(contract)}
+                        disabled={deleteContractPending}
+                        className="h-7 w-7 text-slate-400 hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                      >
+                        <Download className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onDeleteContract(contract._id)}
+                        disabled={deleteContractPending}
+                        className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100">
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onDownloadDocument(doc)}
-                      disabled={deleteDocumentPending}
-                      className="flex-1 text-slate-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200"
-                    >
-                      <Download className="w-4 h-4 mr-1" />
-                      Télécharger
-                    </Button>
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onDeleteDocument(doc._id)}
-                      disabled={deleteDocumentPending}
-                      className="text-slate-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* NDA Section */}
+        <Card className="border-slate-200/50 hover:shadow-md hover:shadow-slate-200/30 transition-all duration-300 bg-white/80 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center gap-2">
+                <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-100 to-blue-200 flex items-center justify-center">
+                  <Shield className="w-4 h-4 text-blue-600" />
+                </div>
+                <h3 className="text-sm font-semibold text-slate-800">NDA</h3>
+              </div>
+              <Button
+                onClick={onGenerateNda}
+                disabled={generateNdaPending}
+                size="sm"
+                className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200"
+              >
+                <Plus className="w-3 h-3 mr-1" />
+                {generateNdaPending ? "..." : "Générer"}
+              </Button>
+            </div>
+
+            {ndasLoading ? (
+              <div className="text-center py-6">
+                <div className="animate-spin rounded-full h-6 w-6 border-2 border-purple-200 border-t-purple-600 mx-auto"></div>
+                <p className="text-xs text-slate-600 mt-2 font-medium">Chargement...</p>
+              </div>
+            ) : ndas.length === 0 ? (
+              <div className="text-center py-6 bg-gradient-to-br from-slate-50 to-purple-50/20 rounded-lg">
+                <Shield className="mx-auto h-8 w-8 text-slate-400" />
+                <p className="mt-2 text-xs text-slate-600 font-medium">Aucun NDA</p>
+              </div>
+            ) : (
+              <div className="space-y-2 max-h-60 overflow-y-auto pr-1">
+                {ndas.map((nda: Nda) => (
+                  <div
+                    key={nda._id}
+                    className="flex items-center justify-between p-2 rounded-lg hover:bg-purple-50/50 transition-all duration-200 group"
+                  >
+                    <div className="flex-1 min-w-0">
+                      <p className="text-xs font-medium text-slate-800 truncate">{nda.fileName}</p>
+                      <p className="text-xs text-slate-500 truncate">
+                        {new Date(nda.createdAt).toLocaleDateString("fr-FR")}
+                      </p>
+                    </div>
+                    <div className="flex items-center gap-1 ml-2">
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onDownloadNda(nda)}
+                        disabled={deleteNdaPending}
+                        className="h-7 w-7 text-slate-400 hover:text-purple-600 hover:bg-purple-50 transition-all duration-200"
+                      >
+                        <Download className="w-3 h-3" />
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onDeleteNda(nda._id)}
+                        disabled={deleteNdaPending}
+                        className="h-7 w-7 text-slate-400 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
                   </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        )}
+                ))}
+              </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
 
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-        <Card className="border-slate-200/50 hover:shadow-xl hover:shadow-blue-200/50 transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white to-blue-50/30 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-blue-500 to-blue-600 flex items-center justify-center shadow-lg shadow-blue-500/30">
-                <FileText className="w-7 h-7 text-white" />
+      {/* Documents Section - Plus compacte */}
+      <Card className="border-slate-200/50 hover:shadow-md hover:shadow-slate-200/30 transition-all duration-300 bg-white/80 backdrop-blur-sm">
+        <CardContent className="p-4">
+          <div className="flex items-center justify-between mb-4">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-indigo-100 to-indigo-200 flex items-center justify-center">
+                <FileText className="w-4 h-4 text-indigo-600" />
               </div>
-              <div>
-                <p className="text-sm text-slate-600 font-medium">Contrats générés</p>
-                <p className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-                  {contracts.length}
-                </p>
-              </div>
+              <h3 className="text-sm font-semibold text-slate-800">Documents</h3>
             </div>
-          </CardContent>
-        </Card>
+            <Button
+              onClick={onAddDocument}
+              size="sm"
+              className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white text-xs shadow-md shadow-blue-500/20 hover:shadow-lg hover:shadow-blue-500/30 transition-all duration-200"
+            >
+              <Plus className="w-3 h-3 mr-1" />
+              Ajouter
+            </Button>
+          </div>
 
-        <Card className="border-slate-200/50 hover:shadow-xl hover:shadow-purple-200/50 transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white to-purple-50/30 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-purple-500 to-purple-600 flex items-center justify-center shadow-lg shadow-purple-500/30">
-                <Shield className="w-7 h-7 text-white" />
-              </div>
-              <div>
-                <p className="text-sm text-slate-600 font-medium">NDA générés</p>
-                <p className="text-3xl font-bold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
-                  {ndas.length}
-                </p>
-              </div>
+          {documentsLoading ? (
+            <div className="text-center py-6">
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-blue-200 border-t-blue-600 mx-auto"></div>
+              <p className="text-xs text-slate-600 mt-2 font-medium">Chargement...</p>
             </div>
-          </CardContent>
-        </Card>
+          ) : documents.length === 0 ? (
+            <div className="text-center py-6 bg-gradient-to-br from-slate-50 to-blue-50/20 rounded-lg">
+              <Upload className="mx-auto h-8 w-8 text-slate-400" />
+              <p className="mt-2 text-xs text-slate-600 font-medium">Aucun document</p>
+              <p className="text-xs text-slate-500 mt-1">Ajoutez vos premiers documents</p>
+            </div>
+          ) : (
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 max-h-96 overflow-y-auto pr-1">
+              {documents.map((doc: Document) => (
+                <Card
+                  key={doc._id}
+                  className="border-slate-100 hover:shadow-md hover:shadow-slate-200/30 transition-all duration-200 bg-white/60 backdrop-blur-sm"
+                >
+                  <CardContent className="p-3">
+                    <div className="flex items-start gap-2">
+                      <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-blue-50 to-indigo-50 flex items-center justify-center flex-shrink-0">
+                        <FileText className="w-3 h-3 text-blue-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-xs font-semibold text-slate-800 truncate">{doc.originalName}</h4>
+                        <p className="text-xs text-slate-500 truncate">
+                          {getDocumentTypeLabel(doc.type)} • {(doc.fileSize / (1024 * 1024)).toFixed(1)} MB
+                        </p>
+                        <p className="text-xs text-slate-400 mt-0.5">
+                          {new Date(doc.createdAt).toLocaleDateString("fr-FR")}
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 mt-3 pt-2 border-t border-slate-100">
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => onDownloadDocument(doc)}
+                        disabled={deleteDocumentPending}
+                        className="flex-1 text-xs h-7 text-slate-600 hover:text-green-600 hover:bg-green-50 transition-all duration-200"
+                      >
+                        <Download className="w-3 h-3 mr-1" />
+                        Télécharger
+                      </Button>
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        onClick={() => onDeleteDocument(doc._id)}
+                        disabled={deleteDocumentPending}
+                        className="h-7 w-7 text-slate-600 hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
-        <Card className="border-slate-200/50 hover:shadow-xl hover:shadow-indigo-200/50 transition-all duration-300 hover:scale-105 bg-gradient-to-br from-white to-indigo-50/30 backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-lg shadow-indigo-500/30">
-                <Upload className="w-7 h-7 text-white" />
+      {/* KPI Cards - Plus compactes */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
+        <Card className="border-slate-200/50 hover:shadow-md hover:shadow-indigo-200/30 transition-all duration-300 hover:scale-[1.02] bg-gradient-to-br from-white to-indigo-50/30 backdrop-blur-sm">
+          <CardContent className="p-4">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-lg bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center shadow-md shadow-indigo-500/20">
+                <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-slate-600 font-medium">Documents uploadés</p>
-                <p className="text-3xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                <p className="text-xs text-slate-600 font-medium">Documents</p>
+                <p className="text-xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                   {documents.length}
                 </p>
               </div>
