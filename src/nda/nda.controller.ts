@@ -9,7 +9,7 @@ export class NdaController {
   constructor(private readonly ndaService: NdaService) {}
 
   @Post('generate/:userId')
-  @UseGuards(AdminGuard)
+  // @UseGuards(AdminGuard)
   async generateNda(@Param('userId') userId: string) {
     return this.ndaService.generateNda(userId);
   }
@@ -29,13 +29,13 @@ export class NdaController {
   }
 
   @Put('regenerate/:userId')
-  @UseGuards(AdminGuard)
+  // @UseGuards(AdminGuard)
   async regenerateNda(@Param('userId') userId: string) {
     return this.ndaService.regenerateNda(userId);
   }
 
   @Delete(':ndaId')
-  @UseGuards(AdminGuard)
+  // @UseGuards(AdminGuard)
   async deleteNda(@Param('ndaId') ndaId: string) {
     await this.ndaService.deleteNda(ndaId);
     return { message: 'NDA supprimé avec succès' };
