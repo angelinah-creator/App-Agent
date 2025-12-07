@@ -35,6 +35,7 @@ import { UploadDocumentModal } from "@/components/modals/upload-document-modal";
 import { UploadKPIModal } from "@/components/modals/upload-kpi-modal";
 import { KPIsSectionAdmin } from "@/components/sections/kpis-section-admin";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
+import { ndaService, type Nda } from "@/lib/nda-service";
 import { api } from "@/lib/api-config";
 
 function HomePage() {
@@ -226,8 +227,13 @@ function HomePage() {
   // Mutations
   // Supprimez la mutation deleteAgent existante et remplacez par :
   const archiveAgentMutation = useMutation({
-    mutationFn: ({ agentId, archiveReason }: { agentId: string; archiveReason?: string }) => 
-      usersService.archiveAgent(agentId, archiveReason),
+    mutationFn: ({
+      agentId,
+      archiveReason,
+    }: {
+      agentId: string;
+      archiveReason?: string;
+    }) => usersService.archiveAgent(agentId, archiveReason),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["agents"] });
       queryClient.invalidateQueries({ queryKey: ["stats"] });
@@ -235,8 +241,7 @@ function HomePage() {
     onError: (error: any) => {
       console.error("Erreur archivage agent:", error);
       alert(
-        error.response?.data?.message ||
-          "Erreur lors de l'archivage de l'agent"
+        error.response?.data?.message || "Erreur lors de l'archivage de l'agent"
       );
     },
   });
@@ -453,16 +458,18 @@ function HomePage() {
 
   // Handlers
   // Ajoutez ces handlers après les handlers existants :
-  const handleArchiveAgent = async (agentId: string, archiveReason?: string) => {
-
+  const handleArchiveAgent = async (
+    agentId: string,
+    archiveReason?: string
+  ) => {
     archiveAgentMutation.mutate({ agentId, archiveReason });
   };
-
 
   const handleRestoreAgent = async (agentId: string) => {
     confirm({
       title: "Restaurer cet agent",
-      description: "Êtes-vous sûr de vouloir restaurer cet agent ? L'agent redeviendra visible dans la liste des agents actifs.",
+      description:
+        "Êtes-vous sûr de vouloir restaurer cet agent ? L'agent redeviendra visible dans la liste des agents actifs.",
       confirmText: "Restaurer",
       cancelText: "Annuler",
       onConfirm: () => {
@@ -661,6 +668,79 @@ function HomePage() {
     window.open(documentUrl, "_blank");
   };
 
+  // Agent: Récupération du NDA personnel
+  const { data: nda, isLoading: ndaLoading } = useQuery({
+    queryKey: ["nda"],
+    queryFn: () => ndaService.getUserNda(userData?._id || ""),
+    enabled: !!userData?._id && !isAdmin,
+  });
+
+  // Transformez le NDA en tableau pour le composant
+  const ndas = nda && nda._id ? [nda] : [];
+
+  // Ajoutez ces mutations:
+
+  const generateNdaMutation = useMutation({
+    mutationFn: () => ndaService.generateNda(userData!._id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["nda"] });
+    },
+    onError: (error: any) => {
+      console.error("Erreur génération NDA:", error);
+      alert(
+        error.response?.data?.message || "Erreur lors de la génération du NDA"
+      );
+    },
+  });
+
+  const deleteNdaMutation = useMutation({
+    mutationFn: ndaService.deleteNda,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["nda"] });
+    },
+    onError: (error: any) => {
+      console.error("Erreur suppression NDA:", error);
+      alert(
+        error.response?.data?.message || "Erreur lors de la suppression du NDA"
+      );
+    },
+  });
+
+  const handleDeleteNda = (ndaId: string) => {
+    confirm({
+      title: "Supprimer ce NDA",
+      description:
+        "Êtes-vous sûr de vouloir supprimer cet accord de confidentialité ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteNdaMutation.mutate(ndaId);
+      },
+    });
+  };
+
+  const handleDownloadNda = async (nda: Nda) => {
+    try {
+      const response = await fetch(nda.pdfUrl);
+      if (!response.ok) throw new Error("Erreur de téléchargement");
+      const blob = await response.blob();
+      const pdfBlob = new Blob([blob], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nda.fileName;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 100);
+    } catch (error) {
+      console.error("Erreur téléchargement:", error);
+      window.open(nda.pdfUrl, "_blank");
+    }
+  };
+
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== "undefined") {
@@ -735,7 +815,10 @@ function HomePage() {
                     stats={stats}
                     onArchiveAgent={handleArchiveAgent}
                     onRestoreAgent={handleRestoreAgent}
-                    archiveAgentPending={archiveAgentMutation.isPending || restoreAgentMutation.isPending}
+                    archiveAgentPending={
+                      archiveAgentMutation.isPending ||
+                      restoreAgentMutation.isPending
+                    }
                     onAgentCreated={() => {
                       queryClient.invalidateQueries({ queryKey: ["agents"] });
                       queryClient.invalidateQueries({ queryKey: ["stats"] });
@@ -802,19 +885,26 @@ function HomePage() {
                 {activeSection === "documents" && (
                   <DocumentsSection
                     contracts={contracts}
+                    ndas={ndas}
                     documents={documents}
                     contractsLoading={contractsLoading}
+                    ndasLoading={ndaLoading}
                     documentsLoading={documentsLoading}
                     onGenerateContract={() => generateContractMutation.mutate()}
+                    onGenerateNda={() => generateNdaMutation.mutate()}
                     onAddDocument={() => setShowUploadModal(true)}
                     onViewDocument={handleViewDocument}
                     onDownloadDocument={handleDownloadDocument}
                     onDownloadContract={handleDownloadContract}
+                    onDownloadNda={handleDownloadNda}
                     onDeleteDocument={handleDeleteDocument}
                     onDeleteContract={handleDeleteContract}
+                    onDeleteNda={handleDeleteNda}
                     generateContractPending={generateContractMutation.isPending}
+                    generateNdaPending={generateNdaMutation.isPending}
                     deleteDocumentPending={deleteDocumentMutation.isPending}
                     deleteContractPending={deleteContractMutation.isPending}
+                    deleteNdaPending={deleteNdaMutation.isPending}
                   />
                 )}
 
