@@ -9,6 +9,7 @@ import { Model, Types } from 'mongoose';
 import { User, UserDocument, UserProfile } from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import bcrypt from 'bcryptjs';
 
 @Injectable()
 export class UsersService {
@@ -386,6 +387,40 @@ export class UsersService {
     }
 
     return updated;
+  }
+
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<{ message: string }> {
+    const user = await this.userModel
+      .findById(userId)
+      .select('+password')
+      .exec();
+
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    // Vérifier le mot de passe actuel
+    const isPasswordValid = await bcrypt.compare(
+      currentPassword,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new BadRequestException('Mot de passe actuel incorrect');
+    }
+
+    // Hasher le nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Mettre à jour le mot de passe
+    await this.userModel.findByIdAndUpdate(userId, {
+      password: hashedPassword,
+    });
+
+    return { message: 'Mot de passe modifié avec succès' };
   }
 
   /**

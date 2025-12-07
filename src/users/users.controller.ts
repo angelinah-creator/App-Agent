@@ -10,6 +10,7 @@ import {
   UseGuards,
   Req,
   Query,
+  ForbiddenException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -38,11 +39,33 @@ export class UsersController {
     return this.usersService.create(createUserDto);
   }
 
-  // @Get()
-  // @UseGuards(AdminGuard)
-  // findAll() {
-  //   return this.usersService.findAll();
-  // }
+  // LES ROUTES SPÉCIFIQUES DOIVENT ÊTRE AVANT LES ROUTES PARAMÉTRÉES
+
+  @Get('me')
+  async getMe(@Req() req: AuthenticatedRequest) {
+    return this.usersService.findOne(req.user.userId);
+  }
+
+  @Patch('me')
+  async updateMe(
+    @Body() updateUserDto: UpdateUserDto,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.usersService.update(req.user.userId, updateUserDto, req.user.profile);
+  }
+
+  // NOUVELLE ROUTE : Changer son propre mot de passe
+  @Patch('me/change-password')
+  async changeMyPassword(
+    @Body() body: { currentPassword: string; newPassword: string },
+    @Req() req: AuthenticatedRequest,
+  ) {
+    return this.usersService.changePassword(
+      req.user.userId, 
+      body.currentPassword, 
+      body.newPassword
+    );
+  }
 
   @Get('stats')
   @UseGuards(AdminGuard)
@@ -74,6 +97,8 @@ export class UsersController {
     return this.usersService.findPrestataires();
   }
 
+  // ROUTES PARAMÉTRÉES - DOIVENT ÊTRE APRÈS LES ROUTES SPÉCIFIQUES
+
   @Get(':id')
   async findOne(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     const user = await this.usersService.findOne(id);
@@ -101,7 +126,7 @@ export class UsersController {
 
   /**
    * NOUVELLE ROUTE : Changer le profil d'un utilisateur
-   * Cette route ge¨re tous les changements de profil
+   * Cette route gère tous les changements de profil
    */
   @Patch(':id/change-profile')
   @UseGuards(AdminGuard)
@@ -123,8 +148,8 @@ export class UsersController {
   }
 
   /**
-   * Route pour changer le profil d'un admin (obsole¨te, utilisez change-profile)
-   * @deprecated Utilisez plute´t la route /change-profile
+   * Route pour changer le profil d'un admin (obsoète, utilisez change-profile)
+   * @deprecated Utilisez plutôt la route /change-profile
    */
   @Patch(':id/change-admin-profile')
   @UseGuards(AdminGuard)
@@ -192,5 +217,21 @@ export class UsersController {
   @UseGuards(AdminGuard)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  // Garder l'ancienne route pour la compatibilité
+  @Patch(':id/change-password')
+  async changePassword(
+    @Param('id') id: string,
+    @Body('currentPassword') currentPassword: string,
+    @Body('newPassword') newPassword: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    // Vérifier que l'utilisateur change son propre mot de passe
+    if (id !== req.user.userId && req.user.profile !== 'admin') {
+      throw new ForbiddenException('Non autorisé');
+    }
+
+    return this.usersService.changePassword(id, currentPassword, newPassword);
   }
 }
