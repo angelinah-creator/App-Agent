@@ -1042,6 +1042,20 @@ function HomePage() {
                     deleteNdaPending={deleteNdaMutation.isPending}
                   />
                 )}
+
+                {activeSection === "profil" && (
+                  <ProfilSection
+                    userData={userData}
+                    onLogout={handleLogout}
+                    onUpdateProfile={handleUpdateProfile} // Changé ici
+                    onUpdatePassword={(current, newPass) =>
+                      updatePasswordMutation.mutateAsync({
+                        currentPassword: current,
+                        newPassword: newPass,
+                      })
+                    }
+                  />
+                )}
               </>
             )}
 

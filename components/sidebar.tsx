@@ -40,6 +40,7 @@ export function Sidebar({
     { id: "factures", label: "Factures", icon: Receipt },
     { id: "kpis", label: "KPIs", icon: BarChart3 },
     { id: "absences", label: "Absences", icon: Calendar },
+    { id: "profil", label: "Profil", icon: User },
   ];
 
   const agentMenuItems = [
