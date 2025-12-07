@@ -38,9 +38,9 @@ export interface Agent {
   archivedAt?: string;
   archiveReason?: string;
 
-  tarifHoraire?: number
-  nombreJour?: number
-  horaire?: string
+  tarifHoraire?: number;
+  nombreJour?: number;
+  horaire?: string;
 }
 
 export interface CreateAgentDto {
@@ -66,9 +66,9 @@ export interface CreateAgentDto {
   tarifJournalier?: number;
   dureeJournaliere?: number;
 
-  tarifHoraire?: number
-  nombreJour?: number
-  horaire?: string
+  tarifHoraire?: number;
+  nombreJour?: number;
+  horaire?: string;
 }
 
 export interface UserStats {
@@ -130,21 +130,9 @@ export const usersService = {
     }
 
     const result = await response.json();
-    console.log("SUCCeˆS:", result);
+    console.log("SUCCÈS:", result);
     return result;
   },
-
-  // async getAllAgents(): Promise<Agent[]> {
-  //   const response = await fetch(`${API_BASE_URL}/users`, {
-  //     headers: getAuthHeaders(),
-  //   });
-
-  //   if (!response.ok) {
-  //     throw new Error("Erreur lors de la récupération des agents");
-  //   }
-
-  //   return response.json();
-  // },
 
   async createAgent(data: CreateAgentDto): Promise<Agent> {
     const response = await fetch(`${API_BASE_URL}/users`, {
@@ -226,7 +214,7 @@ export const usersService = {
    */
   async archiveAgent(agentId: string, archiveReason?: string): Promise<Agent> {
     const response = await fetch(`${API_BASE_URL}/users/${agentId}/archive`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: getAuthHeaders(),
       body: JSON.stringify({ archiveReason }),
     });
@@ -234,14 +222,14 @@ export const usersService = {
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
-      
+
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.message || errorData.error || errorText;
       } catch (e) {
         // Ignore parsing errors
       }
-      
+
       throw new Error(errorMessage);
     }
 
@@ -253,21 +241,21 @@ export const usersService = {
    */
   async restoreAgent(agentId: string): Promise<Agent> {
     const response = await fetch(`${API_BASE_URL}/users/${agentId}/restore`, {
-      method: 'PATCH',
+      method: "PATCH",
       headers: getAuthHeaders(),
     });
 
     if (!response.ok) {
       const errorText = await response.text();
       let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
-      
+
       try {
         const errorData = JSON.parse(errorText);
         errorMessage = errorData.message || errorData.error || errorText;
       } catch (e) {
         // Ignore parsing errors
       }
-      
+
       throw new Error(errorMessage);
     }
 
@@ -283,7 +271,7 @@ export const usersService = {
     });
 
     if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des agents archivés');
+      throw new Error("Erreur lors de la récupération des agents archivés");
     }
 
     return response.json();
@@ -293,7 +281,7 @@ export const usersService = {
    * Récupérer tous les agents (avec option d'inclure les archivés)
    */
   async getAllAgents(includeArchived: boolean = false): Promise<Agent[]> {
-    const url = includeArchived 
+    const url = includeArchived
       ? `${API_BASE_URL}/users?includeArchived=true`
       : `${API_BASE_URL}/users`;
 
@@ -302,9 +290,92 @@ export const usersService = {
     });
 
     if (!response.ok) {
-      throw new Error('Erreur lors de la récupération des agents');
+      throw new Error("Erreur lors de la récupération des agents");
     }
 
     return response.json();
+  },
+
+  /**
+   * Mettre à jour le profil de l'utilisateur connecté - NOUVELLE ROUTE /me
+   */
+  async updateMyProfile(updateData: Partial<Agent>): Promise<Agent> {
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
+      method: "PATCH",
+      headers: getAuthHeaders(),
+      body: JSON.stringify(updateData),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorText;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Récupérer le profil de l'utilisateur connecté - NOUVELLE ROUTE /me
+   */
+  async getMyProfile(): Promise<Agent> {
+    const response = await fetch(`${API_BASE_URL}/users/me`, {
+      headers: getAuthHeaders(),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorText;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Changer le mot de passe de l'utilisateur connecté - NOUVELLE ROUTE /me/change-password
+   */
+  async updateMyPassword(
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    const response = await fetch(
+      `${API_BASE_URL}/users/me/change-password`,
+      {
+        method: "PATCH",
+        headers: getAuthHeaders(),
+        body: JSON.stringify({ currentPassword, newPassword }),
+      }
+    );
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorText;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+
+      throw new Error(errorMessage);
+    }
   },
 };

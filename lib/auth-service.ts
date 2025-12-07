@@ -93,12 +93,24 @@ export interface GoogleLoginResponse {
 export const authService = {
   async login(loginData: LoginData) {
     const response = await api.post("/auth/signin", loginData)
-    return response.data
+    const { token, user } = response.data;
+    
+    // Stocker le token
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("userData", JSON.stringify(user));
+    
+    return response.data;
   },
 
   async loginAdmin(loginData: LoginData) {
     const response = await api.post("/auth/admin/signin", loginData)
-    return response.data
+    const { token, user } = response.data;
+    
+    // Stocker le token
+    localStorage.setItem("authToken", token);
+    localStorage.setItem("userData", JSON.stringify(user));
+    
+    return response.data;
   },
 
   // Upload de signature seul
@@ -173,8 +185,15 @@ export const authService = {
   },
 
   async getProfile() {
-    const response = await api.get("/auth/me")
-    return response.data
+    // Utiliser la nouvelle route /users/me
+    try {
+      const response = await api.get("/users/me");
+      return response.data;
+    } catch (error) {
+      console.log("Route /users/me non disponible, tentative avec /auth/me");
+      const response = await api.get("/auth/me");
+      return response.data;
+    }
   },
 
   async logout() {
@@ -190,4 +209,10 @@ export const authService = {
   onAuthStateChanged(callback: (user: any) => void) {
     return firebaseAuth.onAuthStateChanged(callback)
   },
-}
+
+  // Vérifier si l'utilisateur est authentifié (simple vérification)
+  isAuthenticated(): boolean {
+    const token = localStorage.getItem("authToken");
+    return !!token;
+  }
+};

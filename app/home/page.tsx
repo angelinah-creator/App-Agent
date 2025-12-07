@@ -1,4 +1,4 @@
-// frontend/app/home/page.tsx
+// frontend/app/home/page.tsx (extrait des parties modifiées)
 "use client";
 
 import type React from "react";
@@ -17,7 +17,7 @@ import { documentService, type Document } from "@/lib/document-service";
 import { invoiceService, type Invoice } from "@/lib/invoice-service";
 import { kpiService, type KPI } from "@/lib/kpi-service";
 import { usersService } from "@/lib/users-service";
-import type { UserData } from "@/lib/types";
+// import type { UserData } from "@/lib/types";
 import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { NotificationBell } from "@/components/notifications/notification-bell";
@@ -37,16 +37,31 @@ import { KPIsSectionAdmin } from "@/components/sections/kpis-section-admin";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import { ndaService, type Nda } from "@/lib/nda-service";
 import { NdaSectionAdmin } from "@/components/sections/nda-section-admin";
+import type { Agent } from "@/lib/users-service";
 import { api } from "@/lib/api-config";
+import { NotificationModal } from "@/components/modals/notification-modal";
 
 function HomePage() {
   const router = useRouter();
   const queryClient = useQueryClient();
-  const [userData, setUserData] = useState<UserData | null>(null);
+  const [userData, setUserData] = useState<Agent | null>(null);
   const [activeSection, setActiveSection] = useState("documents");
   const [isMounted, setIsMounted] = useState(false);
   const [showArchivedAgents, setShowArchivedAgents] = useState(false);
   const { confirm, dialog } = useConfirmDialog();
+
+  // Notification state
+  const [notification, setNotification] = useState<{
+    isOpen: boolean;
+    title: string;
+    message: string;
+    type: "success" | "error" | "warning" | "info";
+  }>({
+    isOpen: false,
+    title: "",
+    message: "",
+    type: "success",
+  });
 
   // Document upload state
   const [showUploadModal, setShowUploadModal] = useState(false);
@@ -72,6 +87,25 @@ function HomePage() {
       setActiveSection(isAdmin ? "agents" : "documents");
     }
   }, [userData, isAdmin]);
+
+  // Fonction pour afficher une notification
+  const showNotification = (
+    title: string,
+    message: string,
+    type: "success" | "error" | "warning" | "info" = "success"
+  ) => {
+    setNotification({
+      isOpen: true,
+      title,
+      message,
+      type,
+    });
+  };
+
+  // Fonction pour fermer la notification
+  const closeNotification = () => {
+    setNotification((prev) => ({ ...prev, isOpen: false }));
+  };
 
   const getHeaderContent = () => {
     if (isAdmin) {
@@ -802,6 +836,65 @@ function HomePage() {
     });
   };
 
+  const updateProfileMutation = useMutation({
+    mutationFn: (data: Partial<Agent>) => usersService.updateMyProfile(data),
+    onSuccess: async (updatedUser: Agent) => {
+      setUserData(updatedUser);
+      await queryClient.invalidateQueries({ queryKey: ["profile"] });
+
+      // Utiliser la notification au lieu d'alert
+      showNotification(
+        "Profil mis à jour",
+        "Vos informations ont été mises à jour avec succès.",
+        "success"
+      );
+    },
+    onError: (error: any) => {
+      console.error("Erreur mise à jour profil:", error);
+
+      // Utiliser la notification au lieu d'alert
+      showNotification(
+        "Erreur de mise à jour",
+        error.message || "Erreur lors de la mise à jour du profil",
+        "error"
+      );
+    },
+  });
+
+  const updatePasswordMutation = useMutation({
+    mutationFn: ({
+      currentPassword,
+      newPassword,
+    }: {
+      currentPassword: string;
+      newPassword: string;
+    }) => usersService.updateMyPassword(currentPassword, newPassword),
+    onSuccess: () => {
+      // Utiliser la notification au lieu d'alert
+      showNotification(
+        "Mot de passe modifié",
+        "Votre mot de passe a été modifié avec succès.",
+        "success"
+      );
+    },
+    onError: (error: any) => {
+      console.error("Erreur changement mot de passe:", error);
+
+      // On laisse l'erreur se propager pour que ProfilSection puisse la gérer
+      throw error;
+    },
+  });
+
+  const handleUpdateProfile = async (data: Partial<Agent>) => {
+    try {
+      await updateProfileMutation.mutateAsync(data);
+      // La notification est gérée dans la mutation
+    } catch (error) {
+      // L'erreur est déjà gérée dans la mutation
+      console.error("Error in handleUpdateProfile:", error);
+    }
+  };
+
   useEffect(() => {
     setIsMounted(true);
     if (typeof window !== "undefined") {
@@ -849,7 +942,6 @@ function HomePage() {
           userProfile={userData.profile!}
         />
       </div>
-
       {/* Contenu principal */}
       <div className="flex-1 flex flex-col ml-64 min-h-screen">
         {/* Header - fixed */}
@@ -1007,7 +1099,17 @@ function HomePage() {
                 )}
 
                 {activeSection === "profil" && (
-                  <ProfilSection userData={userData} onLogout={handleLogout} />
+                  <ProfilSection
+                    userData={userData}
+                    onLogout={handleLogout}
+                    onUpdateProfile={handleUpdateProfile} // Changé ici
+                    onUpdatePassword={(current, newPass) =>
+                      updatePasswordMutation.mutateAsync({
+                        currentPassword: current,
+                        newPassword: newPass,
+                      })
+                    }
+                  />
                 )}
 
                 {activeSection === "absences" && <AbsencesSection />}
@@ -1016,7 +1118,6 @@ function HomePage() {
           </div>
         </div>
       </div>
-
       <UploadDocumentModal
         isOpen={showUploadModal}
         onClose={() => setShowUploadModal(false)}
@@ -1027,7 +1128,6 @@ function HomePage() {
         onUpload={handleUpload}
         isLoading={uploadDocumentMutation.isPending}
       />
-
       <UploadKPIModal
         isOpen={showKPIModal}
         onClose={() => setShowKPIModal(false)}
@@ -1037,6 +1137,14 @@ function HomePage() {
         onFileSelect={handleKPIFileSelect}
         onUpload={handleKPIUpload}
         isLoading={uploadKPIMutation.isPending}
+      />
+
+      <NotificationModal
+        isOpen={notification.isOpen}
+        onClose={closeNotification}
+        title={notification.title}
+        message={notification.message}
+        type={notification.type}
       />
     </div>
   );
