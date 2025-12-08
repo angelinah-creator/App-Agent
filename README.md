@@ -1,4 +1,5 @@
 <<<<<<< HEAD
+<<<<<<< HEAD
 # App-Agent
 
 Application fullstack pour CODE-TALENT avec backend NestJS et frontend Next.js.
@@ -39,4 +40,9 @@ Instructions de déploiement pour le serveur CODE-TALENT sur Infomaniak.
 
 ### create admin
  - npx ts-node src/scripts/create-admin.ts
+>>>>>>> upstream/main
+=======
+## run frontend
+- pnpm i
+- pnpm dev
 >>>>>>> upstream/main
