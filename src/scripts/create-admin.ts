@@ -4,14 +4,15 @@ import { MongoClient } from 'mongodb';
 import * as bcrypt from 'bcryptjs';
 
 async function createAdmin() {
-  const uri = process.env.MONGO_URI || 'mongodb://localhost:27017/opside_v1';
+  const uri =
+    process.env.MONGO_URI || 'mongodb://localhost:27017/app_agent_code_talent';
   const client = new MongoClient(uri);
-  
+
   try {
     await client.connect();
     const db = client.db();
     const usersCollection = db.collection('users');
-    
+
     const adminData = {
       profile: 'admin',
       nom: 'Admin',
@@ -36,31 +37,33 @@ async function createAdmin() {
     };
 
     try {
-      const existingAdmin = await usersCollection.findOne({ email: adminData.email });
+      const existingAdmin = await usersCollection.findOne({
+        email: adminData.email,
+      });
       if (existingAdmin) {
         console.log('✅ Compte admin existe déjà');
-        
+
         // Mettre à jour l'admin existant avec les champs d'archivage si nécessaire
         if (existingAdmin.archived === undefined) {
           await usersCollection.updateOne(
             { email: adminData.email },
-            { 
-              $set: { 
+            {
+              $set: {
                 archived: false,
                 archivedAt: null,
                 archiveReason: null,
-                updatedAt: new Date()
-              } 
-            }
+                updatedAt: new Date(),
+              },
+            },
           );
-          console.log('✅ Champs d\'archivage ajoutés à l\'admin existant');
+          console.log("✅ Champs d'archivage ajoutés à l'admin existant");
         }
       } else {
         await usersCollection.insertOne(adminData);
         console.log('✅ Compte admin créé avec succès');
         console.log('📧 Email: ct.kevinfal@gmail.com');
         console.log('🔑 Mot de passe: admin123');
-        console.log('📊 Champs d\'archivage inclus');
+        console.log("📊 Champs d'archivage inclus");
       }
     } catch (error) {
       console.error('❌ Erreur création admin:', error);

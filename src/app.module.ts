@@ -23,12 +23,15 @@ import { NdaModule } from './nda/nda.module';
       envFilePath: '.env',
     }),
     FirebaseModule, // AJOUT - après ConfigModule
-    MongooseModule.forRoot(process.env.MONGO_URI || 'mongodb://localhost:27017/opside_v1'),
+    MongooseModule.forRoot(
+      process.env.MONGO_URI ||
+        'mongodb://localhost:27017/app_agent_code_talent',
+    ),
     UsersModule,
     AuthModule,
     ContractsModule,
     CloudinaryModule,
-    DocumentsModule, 
+    DocumentsModule,
     KPIsModule,
     InvoicesModule,
     AbsencesModule,
