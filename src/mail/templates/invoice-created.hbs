@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        body { font-family: Arial, sans-serif; line-height: 1.6; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; padding: 20px; }
+        .header { background: #8B5CF6; color: white; padding: 20px; text-align: center; }
+        .content { background: #f9f9f9; padding: 20px; }
+        .footer { text-align: center; padding: 20px; color: #666; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>OPSIDE Code-Talent</h1>
+            <h2>Nouvelle Facture Reçue</h2>
+        </div>
+        <div class="content">
+            <p>Bonjour {{adminName}},</p>
+            <p>L'agent <strong>{{agentName}}</strong> a soumis une nouvelle facture.</p>
+            
+            <h3>Détails de la facture :</h3>
+            <ul>
+                <li><strong>Référence :</strong> {{reference}}</li>
+                <li><strong>Période :</strong> {{month}}/{{year}}</li>
+            </ul>
+            
+            <p>Veuillez vous connecter à l'application pour traiter cette facture.</p>
+        </div>
+        <div class="footer">
+            <p>Code Talent</p>
+        </div>
+    </div>
+</body>
+</html>
