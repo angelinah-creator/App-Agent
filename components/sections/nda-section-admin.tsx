@@ -172,15 +172,6 @@ export function NdaSectionAdmin({
                     <Button
                       variant="outline"
                       size="sm"
-                      onClick={() => onView(nda)}
-                      className="border-purple-300 hover:bg-purple-600 hover:text-white"
-                    >
-                      <Eye className="w-4 h-4" />
-                      Voir
-                    </Button>
-                    <Button
-                      variant="outline"
-                      size="sm"
                       onClick={() => onDownload(nda)}
                       className="border-blue-300 hover:bg-blue-600 hover:text-white"
                     >
