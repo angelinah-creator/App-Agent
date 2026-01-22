@@ -2,7 +2,7 @@
 "use client";
 
 import type React from "react";
-import { useEffect, useState } from "react";
+import { act, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
   useQuery,
@@ -28,6 +28,7 @@ import { KPIsSection } from "@/components/sections/kpis-section";
 import { ProfilSection } from "@/components/sections/profil-section";
 import { AbsencesSection } from "@/components/sections/absences-section";
 import { VideoSection } from "@/components/sections/video-section";
+import { VideoSectionAdmin } from "@/components/sections/video-section-admin";
 import { DashboardSection } from "@/components/sections/dashboard-section";
 
 import { TachesSection } from "@/components/sections/taches-section";
@@ -857,6 +858,8 @@ function HomePage() {
                 {activeSection === "rapports" && <RapportSection />}
 
                 {activeSection === "rapports_collabo" && <RapportCollaboSection />}
+
+                {activeSection === "video_admin" && <VideoSectionAdmin />}
               </>
             )}
 

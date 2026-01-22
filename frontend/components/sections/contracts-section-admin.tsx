@@ -79,7 +79,7 @@ export function ContractsSectionAdmin({
       </div>
 
       {/* Filtres */}
-      <Card>
+      <Card className="bg-[#1F2128] text-white border border-[#313442]">
         <CardContent className="pt-6">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
@@ -136,17 +136,17 @@ export function ContractsSectionAdmin({
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {filteredContracts.map((contract) => (
-            <Card key={contract._id} className="hover:shadow-lg transition-shadow">
+            <Card key={contract._id} className="hover:shadow-lg transition-shadow bg-[#1F2128] border border-[#313442]">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
-                    <div className="p-3 bg-gradient-to-br from-violet-100 to-purple-100 rounded-xl">
+                    <div className="p-3 bg-gradient-to-br bg-[#1F2128] rounded-xl">
                       <FileText className="w-6 h-6 text-violet-600" />
                     </div>
                     
                     <div className="flex-1 space-y-2">
                       <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-lg text-slate-800">
+                        <h3 className="font-semibold text-lg text-white">
                           {getAgentInfo(contract.userId)}
                         </h3>
                         <span
@@ -163,14 +163,14 @@ export function ContractsSectionAdmin({
                       <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                         <div>
                           <span className="text-slate-500">Date création:</span>
-                          <span className="ml-2 font-medium text-slate-800">
+                          <span className="ml-2 font-medium text-white">
                             {formatDate(contract.createdAt)}
                           </span>
                         </div>
                         {contract.expiresAt && (
                           <div>
                             <span className="text-slate-500">Date expiration:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="ml-2 font-medium text-white">
                               {formatDate(contract.expiresAt)}
                             </span>
                           </div>

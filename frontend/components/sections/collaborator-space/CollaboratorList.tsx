@@ -134,24 +134,6 @@ export default function CollaboratorList({
           </div>
         )}
       </div>
-
-      {/* Statistiques */}
-      <div className="p-4 border-t border-gray-800">
-        <div className="text-sm text-gray-400 space-y-1">
-          <div className="flex justify-between">
-            <span>Total collaborateurs</span>
-            <span className="text-white">{stats.total}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Actifs</span>
-            <span className="text-green-400">{stats.actifs}</span>
-          </div>
-          <div className="flex justify-between">
-            <span>Archivés</span>
-            <span className="text-yellow-400">{stats.archivés}</span>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

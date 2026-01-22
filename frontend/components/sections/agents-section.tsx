@@ -280,9 +280,9 @@ export function AgentsSection({
     <>
       {/* Stats Cards mises à jour */}
       <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="border-violet-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-white">
               Total Agents
             </CardTitle>
             <Users className="w-5 h-5 text-violet-600" />
@@ -291,15 +291,15 @@ export function AgentsSection({
             <div className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
               {agents.length}
             </div>
-            <p className="text-xs text-gray-600 mt-1">
+            <p className="text-xs text-white mt-1">
               {activeAgents.length} actifs, {archivedAgents.length} archivés
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-blue-100 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-white">
               Stagiaires
             </CardTitle>
             <div className="w-3 h-3 bg-blue-600 rounded-full" />
@@ -313,9 +313,9 @@ export function AgentsSection({
           </CardContent>
         </Card>
 
-        <Card className="border-green-100 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-white">
               Prestataires
             </CardTitle>
             <div className="w-3 h-3 bg-green-600 rounded-full" />
@@ -329,15 +329,15 @@ export function AgentsSection({
           </CardContent>
         </Card>
 
-        <Card className="border-violet-200 bg-white/80 backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
           <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-gray-600">
+            <CardTitle className="text-sm font-medium text-white">
               Agents actifs et archivés
             </CardTitle>
             <Users className="w-5 h-5 text-violet-600" />
           </CardHeader>
           <CardContent>
-            <div className="text-sm text-gray-600">
+            <div className="text-sm text-white">
               <p>
                 Actifs: {activeAgents.length}
               </p>
@@ -350,7 +350,7 @@ export function AgentsSection({
       </div>
 
       {/* Contrôles de filtrage */}
-      <Card className="border-violet-200 bg-white/80 backdrop-blur-sm mb-6">
+      <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm mb-6">
         <CardContent className="p-4">
           <div className="flex items-center justify-between">
             <div className="flex gap-2">
@@ -360,8 +360,8 @@ export function AgentsSection({
                 onClick={() => onToggleArchived(false)}
                 className={
                   !showArchived
-                    ? "bg-gradient-to-r from-violet-600 to-fuchsia-600"
-                    : "border-violet-300 hover:bg-violet-50"
+                    ? "bg-[#6C4EA8] text-white shadow-md"
+                    : "border-violet-300 hover:bg-gray-600"
                 }
               >
                 <Users size={16} className="mr-2" />
@@ -373,8 +373,8 @@ export function AgentsSection({
                 onClick={() => onToggleArchived(true)}
                 className={
                   showArchived
-                    ? "bg-gray-600 hover:bg-gray-700"
-                    : "border-gray-300 hover:bg-gray-50"
+                    ? "bg-[#6C4EA8] text-white shadow-md"
+                    : "border-violet-300 hover:bg-gray-600"
                 }
               >
                 <Archive size={16} className="mr-2" />
@@ -389,8 +389,8 @@ export function AgentsSection({
                 onClick={() => setFilterProfile("all")}
                 className={
                   filterProfile === "all"
-                    ? "bg-gradient-to-r from-violet-600 to-fuchsia-600"
-                    : "border-violet-300 hover:bg-violet-50"
+                    ? "bg-[#6C4EA8] text-white shadow-md"
+                    : "border-violet-300 hover:bg-gray-600"
                 }
               >
                 Tous
@@ -401,8 +401,8 @@ export function AgentsSection({
                 onClick={() => setFilterProfile("stagiaire")}
                 className={
                   filterProfile === "stagiaire"
-                    ? "bg-blue-600 hover:bg-blue-700"
-                    : "border-blue-300 hover:bg-blue-50"
+                    ? "bg-[#6C4EA8] text-white shadow-md"
+                    : "border-violet-300 hover:bg-gray-600"
                 }
               >
                 Stagiaires
@@ -415,8 +415,8 @@ export function AgentsSection({
                 onClick={() => setFilterProfile("prestataire")}
                 className={
                   filterProfile === "prestataire"
-                    ? "bg-emerald-600 hover:bg-emerald-700"
-                    : "border-emerald-300 hover:bg-emerald-50"
+                    ? "bg-[#6C4EA8] text-white shadow-md"
+                    : "border-violet-300 hover:bg-gray-600"
                 }
               >
                 Prestataires
@@ -427,11 +427,11 @@ export function AgentsSection({
       </Card>
 
       {/* Liste des agents */}
-      <Card className="border-violet-200 bg-white/80 backdrop-blur-sm">
+      <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
         <CardHeader>
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl">
+              <CardTitle className="text-xl text-white">
                 {showArchived ? "Agents Archivés" : "Agents Actifs"}
               </CardTitle>
               <CardDescription>
@@ -443,7 +443,7 @@ export function AgentsSection({
             {!showArchived && (
               <Button
                 onClick={() => setShowAddModal(true)}
-                className="bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
+                className="bg-[#6C4EA8] hover:from-violet-500 hover:to-fuchsia-500"
               >
                 <Plus size={16} className="mr-2" />
                 Ajouter agent
@@ -465,26 +465,26 @@ export function AgentsSection({
           ) : (
             <div className="overflow-x-auto">
               <table className="w-full">
-                <thead className="bg-gradient-to-r from-violet-50 to-purple-50">
-                  <tr className="border-b border-violet-200">
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-violet-700">
+                <thead className="">
+                  <tr className="border-b border-[#313442]">
+                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
                       Agent
                     </th>
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-violet-700">
+                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
                       Profil
                     </th>
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-violet-700">
+                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
                       Contact
                     </th>
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-violet-700">
+                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
                       Poste
                     </th>
                     {showArchived && (
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-violet-700">
+                      <th className="text-left py-4 px-4 text-sm font-semibold text-white">
                         Archivé le
                       </th>
                     )}
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-violet-700">
+                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
                       Actions
                     </th>
                   </tr>
@@ -495,8 +495,8 @@ export function AgentsSection({
                       key={agent._id}
                       className={`border-b transition-colors ${
                         agent.archived
-                          ? "bg-gray-50 hover:bg-gray-100 text-gray-500 border-gray-200"
-                          : "hover:bg-violet-50/50 border-violet-100"
+                          ? "bg-gray-50 hover:bg-gray-100 text-gray-500 border-[#313442]"
+                          : "hover:bg-violet-50/10"
                       }`}
                     >
                       <td className="py-4 px-4">
@@ -521,8 +521,8 @@ export function AgentsSection({
                             <p
                               className={`font-semibold ${
                                 agent.archived
-                                  ? "text-gray-600"
-                                  : "text-gray-900"
+                                  ? "text-white"
+                                  : "text-white"
                               }`}
                             >
                               {agent.prenoms} {agent.nom}
@@ -531,7 +531,7 @@ export function AgentsSection({
                               className={`text-sm ${
                                 agent.archived
                                   ? "text-gray-500"
-                                  : "text-gray-600"
+                                  : "text-white"
                               }`}
                             >
                               {agent.email}
@@ -543,7 +543,7 @@ export function AgentsSection({
                         <span
                           className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
                             agent.archived
-                              ? "bg-gray-100 text-gray-800"
+                              ? "bg-gray-100 text-white"
                               : agent.profile === "stagiaire"
                               ? "bg-blue-100 text-blue-800"
                               : "bg-emerald-100 text-emerald-800"
@@ -556,7 +556,7 @@ export function AgentsSection({
                       <td className="py-4 px-4">
                         <div
                           className={`text-sm ${
-                            agent.archived ? "text-gray-500" : "text-gray-600"
+                            agent.archived ? "text-gray-500" : "text-white"
                           }`}
                         >
                           <p className="flex items-center gap-1">
@@ -568,7 +568,7 @@ export function AgentsSection({
                       <td className="py-4 px-4">
                         <p
                           className={`text-sm ${
-                            agent.archived ? "text-gray-600" : "text-gray-800"
+                            agent.archived ? "text-white" : "text-white"
                           }`}
                         >
                           {agent.poste}
@@ -576,7 +576,7 @@ export function AgentsSection({
                       </td>
                       {showArchived && (
                         <td className="py-4 px-4">
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-white">
                             {agent.archivedAt
                               ? new Date(agent.archivedAt).toLocaleDateString(
                                   "fr-FR"
@@ -760,7 +760,7 @@ export function AgentsSection({
             <form onSubmit={handleSubmit} className="p-6 space-y-6">
               {/* Informations de base */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-white mb-3">
                   Informations de base
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -855,7 +855,7 @@ export function AgentsSection({
 
               {/* Contact */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-white mb-3">
                   Contact
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -910,7 +910,7 @@ export function AgentsSection({
 
               {/* Informations professionnelles */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-white mb-3">
                   Informations professionnelles
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -982,7 +982,7 @@ export function AgentsSection({
 
               {/* Informations financières */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-white mb-3">
                   Informations financières
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1134,7 +1134,7 @@ export function AgentsSection({
             <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
               {/* Informations de base */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-white mb-3">
                   Informations de base
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1171,7 +1171,7 @@ export function AgentsSection({
 
               {/* Contact */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-white mb-3">
                   Contact
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1223,7 +1223,7 @@ export function AgentsSection({
 
               {/* Informations professionnelles */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-white mb-3">
                   Informations professionnelles
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1311,7 +1311,7 @@ export function AgentsSection({
 
               {/* Informations financières */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3">
+                <h3 className="text-lg font-semibold text-white mb-3">
                   Informations financières
                 </h3>
                 <div className="grid grid-cols-2 gap-4">
@@ -1490,7 +1490,7 @@ export function AgentsSection({
                 <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
                   <div className="flex items-start gap-3">
                     <div className="w-5 h-5 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center mt-0.5">
-                      <span className="text-gray-600 text-xs">!</span>
+                      <span className="text-white text-xs">!</span>
                     </div>
                     <div className="text-gray-700 text-sm">
                       <p className="font-medium">Agent archivé</p>
@@ -1511,46 +1511,46 @@ export function AgentsSection({
 
               {/* Informations personnelles */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                   <Users size={20} className="text-violet-600" />
                   Informations Personnelles
                 </h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-600">Email</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-white">Email</p>
+                    <p className="font-medium text-white">
                       {selectedAgent.email}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Téléphone</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-white">Téléphone</p>
+                    <p className="font-medium text-white">
                       {selectedAgent.telephone}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600">CIN</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-white">CIN</p>
+                    <p className="font-medium text-white">
                       {selectedAgent.cin}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Date de naissance</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-white">Date de naissance</p>
+                    <p className="font-medium text-white">
                       {new Date(
                         selectedAgent.dateNaissance
                       ).toLocaleDateString("fr-FR")}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Genre</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-white">Genre</p>
+                    <p className="font-medium text-white">
                       {selectedAgent.genre}
                     </p>
                   </div>
                   <div>
-                    <p className="text-gray-600">Adresse</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-white">Adresse</p>
+                    <p className="font-medium text-white">
                       {selectedAgent.adresse}
                     </p>
                   </div>
@@ -1559,28 +1559,28 @@ export function AgentsSection({
 
               {/* Informations professionnelles */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                   <Briefcase size={20} className="text-violet-600" />
                   Informations Professionnelles
                 </h3>
                 <div className="grid grid-cols-2 gap-4 text-sm">
                   <div>
-                    <p className="text-gray-600">Poste</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-white">Poste</p>
+                    <p className="font-medium text-white">
                       {selectedAgent.poste}
                     </p>
                   </div>
                   {selectedAgent.mission && (
                     <div>
-                      <p className="text-gray-600">Mission</p>
-                      <p className="font-medium text-gray-900">
+                      <p className="text-white">Mission</p>
+                      <p className="font-medium text-white">
                         {selectedAgent.mission}
                       </p>
                     </div>
                   )}
                   <div>
-                    <p className="text-gray-600">Date de début</p>
-                    <p className="font-medium text-gray-900">
+                    <p className="text-white">Date de début</p>
+                    <p className="font-medium text-white">
                       {new Date(selectedAgent.dateDebut).toLocaleDateString(
                         "fr-FR"
                       )}
@@ -1589,8 +1589,8 @@ export function AgentsSection({
                   {selectedAgent.dateFin &&
                     !selectedAgent.dateFinIndeterminee && (
                       <div>
-                        <p className="text-gray-600">Date de fin</p>
-                        <p className="font-medium text-gray-900">
+                        <p className="text-white">Date de fin</p>
+                        <p className="font-medium text-white">
                           {new Date(selectedAgent.dateFin).toLocaleDateString(
                             "fr-FR"
                           )}
@@ -1602,7 +1602,7 @@ export function AgentsSection({
 
               {/* Informations financières */}
               <div>
-                <h3 className="text-lg font-semibold text-gray-900 mb-3 flex items-center gap-2">
+                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
                   <FileText size={20} className="text-violet-600" />
                   Informations Financières
                 </h3>
@@ -1610,14 +1610,14 @@ export function AgentsSection({
                   {selectedAgent.profile === "stagiaire" ? (
                     <>
                       <div>
-                        <p className="text-gray-600">Indemnité mensuelle</p>
-                        <p className="font-medium text-gray-900">
+                        <p className="text-white">Indemnité mensuelle</p>
+                        <p className="font-medium text-white">
                           {selectedAgent.indemnite || 0} Ar
                         </p>
                       </div>
                       <div>
-                        <p className="text-gray-600">Indemnité de connexion</p>
-                        <p className="font-medium text-gray-900">
+                        <p className="text-white">Indemnité de connexion</p>
+                        <p className="font-medium text-white">
                           {selectedAgent.indemniteConnexion || 0} Ar
                         </p>
                       </div>
@@ -1625,33 +1625,33 @@ export function AgentsSection({
                   ) : (
                     <>
                       <div>
-                        <p className="text-gray-600">
+                        <p className="text-white">
                           TJM (Taux Journalier Moyen)
                         </p>
-                        <p className="font-medium text-gray-900">
+                        <p className="font-medium text-white">
                           {selectedAgent.tjm} Ar
                         </p>
                       </div>
                       {selectedAgent.tarifJournalier && (
                         <div>
-                          <p className="text-gray-600">Tarif journalier</p>
-                          <p className="font-medium text-gray-900">
+                          <p className="text-white">Tarif journalier</p>
+                          <p className="font-medium text-white">
                             {selectedAgent.tarifJournalier} Ar
                           </p>
                         </div>
                       )}
                       {selectedAgent.dureeJournaliere && (
                         <div>
-                          <p className="text-gray-600">Durée journalière</p>
-                          <p className="font-medium text-gray-900">
+                          <p className="text-white">Durée journalière</p>
+                          <p className="font-medium text-white">
                             {selectedAgent.dureeJournaliere}h
                           </p>
                         </div>
                       )}
                       {selectedAgent.domainePrestation && (
                         <div className="col-span-2">
-                          <p className="text-gray-600">Domaine de prestation</p>
-                          <p className="font-medium text-gray-900">
+                          <p className="text-white">Domaine de prestation</p>
+                          <p className="font-medium text-white">
                             {selectedAgent.domainePrestation}
                           </p>
                         </div>

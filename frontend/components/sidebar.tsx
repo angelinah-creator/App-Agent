@@ -47,14 +47,10 @@ export function Sidebar({
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
       { id: "absences", label: "Absences", icon: Calendar },
-      { id: "videos", label: "Onboarding", icon: Video },
-      { id: "taches", label: "Espace Personnel", icon: Calendar },
       {id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users},
       { id: "espaces_partages", label: "Espace Partagé", icon: Calendar},
-
-      { id: "timer", label: "Timer", icon: Clock},
-      { id: "rapports", label: "Rapports", icon: FileText },
       { id: "rapports_collabo", label: "Rapports Collaborateur", icon: FileText },
+       { id: "video_admin", label: "Onboarding", icon: Video },
     ];
 
     const managerItems = [
@@ -70,8 +66,8 @@ export function Sidebar({
       { id: "timer", label: "Timer", icon: Clock},
       { id: "rapports", label: "Rapports", icon: FileText },
       { id: "rapports_collabo", label: "Rapports Collaborateur", icon: FileText },  
-      // { id: "certifications", label: "Certifications", icon: FileText },
       { id: "video", label: "Onboarding", icon: Video },
+      // { id: "certifications", label: "Certifications", icon: FileText },
       // { id: "suivi_des_agents", label: "Suivi des Agents", icon: Calendar },
       // { id: "taches_en_retard", label: "Taches en Retard", icon: Calendar },
       // { id: "formations", label: "Formations", icon: Calendar },
@@ -88,7 +84,7 @@ export function Sidebar({
       { id: "espaces_partages", label: "Espace Partagé", icon: Calendar},
       { id: "timer", label: "Timer", icon: Clock},
       { id: "rapports", label: "Rapports", icon: FileText },
-      { id: "certifications", label: "Certifications", icon: FileText },
+      // { id: "certifications", label: "Certifications", icon: FileText },
       { id: "video", label: "Onboarding", icon: Video },
     ];
 

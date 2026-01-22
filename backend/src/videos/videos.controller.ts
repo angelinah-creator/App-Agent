@@ -6,11 +6,9 @@ import {
   Delete,
   Body,
   Param,
-  Query,
   UseInterceptors,
   UploadedFile,
   UseGuards,
-  ParseIntPipe,
   BadRequestException,
   Req,
   NotFoundException,
@@ -62,52 +60,15 @@ export class VideosController {
     return this.videosService.create(createVideoDto, file, userId);
   }
 
-  // Récupérer la vidéo active
-  @Get('active/video')
-  @UseGuards(JwtAuthGuard)
-  async getActiveVideo(): Promise<Video> {
-    const video = await this.videosService.getActiveVideo();
-    if (!video) {
-      throw new NotFoundException('Aucune vidéo active trouvée');
-    }
-    return video;
-  }
-
-  // Consultation - Public (tous les utilisateurs connectés)
+  // Récupérer la vidéo (tout le monde peut lire)
   @Get()
   @UseGuards(JwtAuthGuard)
-  async findAll(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
-    @Query('active') active?: string,
-  ) {
-    const isActive =
-      active === 'true' ? true : active === 'false' ? false : undefined;
-    return this.videosService.findAll(page, limit, isActive);
-  }
-
-  @Get('active')
-  @UseGuards(JwtAuthGuard)
-  async findActiveVideos(
-    @Query('page', new ParseIntPipe({ optional: true })) page: number = 1,
-    @Query('limit', new ParseIntPipe({ optional: true })) limit: number = 10,
-  ) {
-    return this.videosService.findAll(page, limit, true);
-  }
-
-  @Get(':id')
-  @UseGuards(JwtAuthGuard)
-  async findOne(@Param('id') id: string): Promise<Video> {
-    return this.videosService.findOne(id);
-  }
-
-  @Get(':id/thumbnail')
-  @UseGuards(JwtAuthGuard)
-  async getThumbnail(
-    @Param('id') id: string,
-  ): Promise<{ thumbnailUrl: string }> {
-    const thumbnailUrl = await this.videosService.getVideoThumbnail(id);
-    return { thumbnailUrl };
+  async getVideo(): Promise<Video | { message: string }> {
+    const video = await this.videosService.getVideo();
+    if (!video) {
+      return { message: 'Aucune vidéo disponible' };
+    }
+    return video;
   }
 
   // Modification - Admin et Manager seulement

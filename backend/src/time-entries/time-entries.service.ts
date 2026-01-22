@@ -18,7 +18,16 @@ import {
   SyncOfflineEntriesDto,
   GetReportDto,
 } from './dto/time-entry.dtos';
-import { startOfDay, endOfDay, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear } from 'date-fns';
+import {
+  startOfDay,
+  endOfDay,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+} from 'date-fns';
 
 @Injectable()
 export class TimeEntriesService {
@@ -28,7 +37,10 @@ export class TimeEntriesService {
   ) {}
 
   // Démarrer le timer
-  async startTimer(userId: string, startTimerDto: StartTimerDto): Promise<TimeEntryDocument> {
+  async startTimer(
+    userId: string,
+    startTimerDto: StartTimerDto,
+  ): Promise<TimeEntryDocument> {
     // Vérifier qu'il n'y a pas déjà un timer actif
     const activeTimer = await this.timeEntryModel.findOne({
       userId: new Types.ObjectId(userId),
@@ -36,14 +48,22 @@ export class TimeEntriesService {
     });
 
     if (activeTimer) {
-      throw new ConflictException('Un timer est déjà actif. Arrêtez-le d\'abord.');
+      throw new ConflictException(
+        "Un timer est déjà actif. Arrêtez-le d'abord.",
+      );
     }
 
     const timeEntry = new this.timeEntryModel({
       userId: new Types.ObjectId(userId),
-      projectId: startTimerDto.projectId ? new Types.ObjectId(startTimerDto.projectId) : undefined,
-      personalTaskId: startTimerDto.personalTaskId ? new Types.ObjectId(startTimerDto.personalTaskId) : undefined,
-      sharedTaskId: startTimerDto.sharedTaskId ? new Types.ObjectId(startTimerDto.sharedTaskId) : undefined,
+      projectId: startTimerDto.projectId
+        ? new Types.ObjectId(startTimerDto.projectId)
+        : undefined,
+      personalTaskId: startTimerDto.personalTaskId
+        ? new Types.ObjectId(startTimerDto.personalTaskId)
+        : undefined,
+      sharedTaskId: startTimerDto.sharedTaskId
+        ? new Types.ObjectId(startTimerDto.sharedTaskId)
+        : undefined,
       description: startTimerDto.description,
       startTime: new Date(),
       date: startOfDay(new Date()),
@@ -59,11 +79,13 @@ export class TimeEntriesService {
     const activeTimer = await this.getActiveTimer(userId);
 
     if (activeTimer.status !== TimerStatus.RUNNING) {
-      throw new BadRequestException('Le timer n\'est pas en cours d\'exécution');
+      throw new BadRequestException("Le timer n'est pas en cours d'exécution");
     }
 
     const now = new Date();
-    const duration = activeTimer.duration + Math.floor((now.getTime() - activeTimer.startTime.getTime()) / 1000);
+    const duration =
+      activeTimer.duration +
+      Math.floor((now.getTime() - activeTimer.startTime.getTime()) / 1000);
 
     activeTimer.status = TimerStatus.PAUSED;
     activeTimer.duration = duration;
@@ -77,7 +99,7 @@ export class TimeEntriesService {
     const activeTimer = await this.getActiveTimer(userId);
 
     if (activeTimer.status !== TimerStatus.PAUSED) {
-      throw new BadRequestException('Le timer n\'est pas en pause');
+      throw new BadRequestException("Le timer n'est pas en pause");
     }
 
     const now = new Date();
@@ -96,7 +118,9 @@ export class TimeEntriesService {
     let duration = activeTimer.duration;
 
     if (activeTimer.status === TimerStatus.RUNNING) {
-      duration += Math.floor((now.getTime() - activeTimer.startTime.getTime()) / 1000);
+      duration += Math.floor(
+        (now.getTime() - activeTimer.startTime.getTime()) / 1000,
+      );
     }
 
     activeTimer.status = TimerStatus.STOPPED;
@@ -125,12 +149,21 @@ export class TimeEntriesService {
   }
 
   // Créer une entrée manuelle
-  async createEntry(userId: string, createDto: CreateTimeEntryDto): Promise<TimeEntryDocument> {
+  async createEntry(
+    userId: string,
+    createDto: CreateTimeEntryDto,
+  ): Promise<TimeEntryDocument> {
     const timeEntry = new this.timeEntryModel({
       userId: new Types.ObjectId(userId),
-      projectId: createDto.projectId ? new Types.ObjectId(createDto.projectId) : undefined,
-      personalTaskId: createDto.personalTaskId ? new Types.ObjectId(createDto.personalTaskId) : undefined,
-      sharedTaskId: createDto.sharedTaskId ? new Types.ObjectId(createDto.sharedTaskId) : undefined,
+      projectId: createDto.projectId
+        ? new Types.ObjectId(createDto.projectId)
+        : undefined,
+      personalTaskId: createDto.personalTaskId
+        ? new Types.ObjectId(createDto.personalTaskId)
+        : undefined,
+      sharedTaskId: createDto.sharedTaskId
+        ? new Types.ObjectId(createDto.sharedTaskId)
+        : undefined,
       description: createDto.description,
       startTime: new Date(createDto.startTime),
       endTime: createDto.endTime ? new Date(createDto.endTime) : undefined,
@@ -145,7 +178,38 @@ export class TimeEntriesService {
   }
 
   // Mettre à jour une entrée
-  async updateEntry(userId: string, entryId: string, updateDto: UpdateTimeEntryDto): Promise<TimeEntryDocument> {
+  // async updateEntry(userId: string, entryId: string, updateDto: UpdateTimeEntryDto): Promise<TimeEntryDocument> {
+  //   const entry = await this.timeEntryModel.findOne({
+  //     _id: entryId,
+  //     userId: new Types.ObjectId(userId),
+  //   });
+
+  //   if (!entry) {
+  //     throw new NotFoundException('Entrée non trouvée');
+  //   }
+
+  //   Object.assign(entry, updateDto);
+
+  //   if (updateDto.startTime) {
+  //     entry.startTime = new Date(updateDto.startTime);
+  //     entry.date = startOfDay(new Date(updateDto.startTime));
+  //   }
+
+  //   if (updateDto.endTime) {
+  //     entry.endTime = new Date(updateDto.endTime);
+  //   }
+
+  //   return entry.save();
+  // }
+
+  // backend/src/time-entries/time-entries.service.ts
+  // Remplacez la méthode updateEntry par celle-ci :
+
+  async updateEntry(
+    userId: string,
+    entryId: string,
+    updateDto: UpdateTimeEntryDto,
+  ): Promise<TimeEntryDocument> {
     const entry = await this.timeEntryModel.findOne({
       _id: entryId,
       userId: new Types.ObjectId(userId),
@@ -155,8 +219,32 @@ export class TimeEntriesService {
       throw new NotFoundException('Entrée non trouvée');
     }
 
-    Object.assign(entry, updateDto);
+    // Log pour debug
+    console.log('📝 Update Entry - Données reçues:', updateDto);
 
+    // Mettre à jour les champs simples
+    if (updateDto.description !== undefined)
+      entry.description = updateDto.description;
+    if (updateDto.status !== undefined) entry.status = updateDto.status;
+
+    // Mettre à jour les IDs (accepter undefined pour les supprimer)
+    if (updateDto.projectId !== undefined) {
+      entry.projectId = updateDto.projectId
+        ? new Types.ObjectId(updateDto.projectId)
+        : undefined;
+    }
+    if (updateDto.personalTaskId !== undefined) {
+      entry.personalTaskId = updateDto.personalTaskId
+        ? new Types.ObjectId(updateDto.personalTaskId)
+        : undefined;
+    }
+    if (updateDto.sharedTaskId !== undefined) {
+      entry.sharedTaskId = updateDto.sharedTaskId
+        ? new Types.ObjectId(updateDto.sharedTaskId)
+        : undefined;
+    }
+
+    // Mettre à jour les dates et durée
     if (updateDto.startTime) {
       entry.startTime = new Date(updateDto.startTime);
       entry.date = startOfDay(new Date(updateDto.startTime));
@@ -166,7 +254,21 @@ export class TimeEntriesService {
       entry.endTime = new Date(updateDto.endTime);
     }
 
-    return entry.save();
+    if (updateDto.duration !== undefined) {
+      entry.duration = updateDto.duration;
+    }
+
+    const saved = await entry.save();
+
+    console.log('✅ Entry saved:', saved._id);
+
+    // Populate avant de retourner
+    return this.timeEntryModel
+      .findById(saved._id)
+      .populate('projectId', 'name description')
+      .populate('personalTaskId', 'title')
+      .populate('sharedTaskId', 'title')
+      .exec() as Promise<TimeEntryDocument>;
   }
 
   // Supprimer une entrée
@@ -182,7 +284,11 @@ export class TimeEntriesService {
   }
 
   // Récupérer les entrées d'une période
-  async getEntries(userId: string, startDate?: Date, endDate?: Date): Promise<TimeEntryDocument[]> {
+  async getEntries(
+    userId: string,
+    startDate?: Date,
+    endDate?: Date,
+  ): Promise<TimeEntryDocument[]> {
     const query: any = { userId: new Types.ObjectId(userId) };
 
     if (startDate && endDate) {
@@ -202,7 +308,10 @@ export class TimeEntriesService {
   }
 
   // Synchroniser les entrées hors ligne
-  async syncOfflineEntries(userId: string, syncDto: SyncOfflineEntriesDto): Promise<TimeEntryDocument[]> {
+  async syncOfflineEntries(
+    userId: string,
+    syncDto: SyncOfflineEntriesDto,
+  ): Promise<TimeEntryDocument[]> {
     const syncedEntries: TimeEntryDocument[] = [];
 
     for (const entryDto of syncDto.entries) {
@@ -230,18 +339,28 @@ export class TimeEntriesService {
   }
 
   // Générer un rapport
-  async getReport(reportDto: GetReportDto, requesterId: string, requesterRole: string) {
+  async getReport(
+    reportDto: GetReportDto,
+    requesterId: string,
+    requesterRole: string,
+  ) {
     const userId = reportDto.userId || requesterId;
 
     // Vérifier les permissions
     if (reportDto.userId && reportDto.userId !== requesterId) {
       if (requesterRole !== 'admin' && requesterRole !== 'manager') {
-        throw new BadRequestException('Accès non autorisé aux rapports d\'autres utilisateurs');
+        throw new BadRequestException(
+          "Accès non autorisé aux rapports d'autres utilisateurs",
+        );
       }
     }
 
-    const startDate = reportDto.startDate ? new Date(reportDto.startDate) : startOfWeek(new Date(), { weekStartsOn: 1 });
-    const endDate = reportDto.endDate ? new Date(reportDto.endDate) : endOfWeek(new Date(), { weekStartsOn: 1 });
+    const startDate = reportDto.startDate
+      ? new Date(reportDto.startDate)
+      : startOfWeek(new Date(), { weekStartsOn: 1 });
+    const endDate = reportDto.endDate
+      ? new Date(reportDto.endDate)
+      : endOfWeek(new Date(), { weekStartsOn: 1 });
 
     const query: any = {
       userId: new Types.ObjectId(userId),
@@ -265,17 +384,31 @@ export class TimeEntriesService {
       .exec();
 
     // Calculer les statistiques
-    const totalDuration = entries.reduce((sum, entry) => sum + entry.duration, 0);
+    const totalDuration = entries.reduce(
+      (sum, entry) => sum + entry.duration,
+      0,
+    );
 
     // Grouper par projet
-    const byProject = new Map<string, { name: string; duration: number; entries: any[] }>();
-    
-    entries.forEach(entry => {
-      const projectKey = entry.projectId ? (entry.projectId as any)._id.toString() : 'no-project';
-      const projectName = entry.projectId ? (entry.projectId as any).name : 'Sans projet';
+    const byProject = new Map<
+      string,
+      { name: string; duration: number; entries: any[] }
+    >();
+
+    entries.forEach((entry) => {
+      const projectKey = entry.projectId
+        ? (entry.projectId as any)._id.toString()
+        : 'no-project';
+      const projectName = entry.projectId
+        ? (entry.projectId as any).name
+        : 'Sans projet';
 
       if (!byProject.has(projectKey)) {
-        byProject.set(projectKey, { name: projectName, duration: 0, entries: [] });
+        byProject.set(projectKey, {
+          name: projectName,
+          duration: 0,
+          entries: [],
+        });
       }
 
       const project = byProject.get(projectKey)!;
@@ -285,16 +418,16 @@ export class TimeEntriesService {
 
     // Grouper par description
     const byDescription = new Map<string, number>();
-    
-    entries.forEach(entry => {
+
+    entries.forEach((entry) => {
       const desc = entry.description || 'Sans description';
       byDescription.set(desc, (byDescription.get(desc) || 0) + entry.duration);
     });
 
     // Grouper par jour
     const byDay = new Map<string, number>();
-    
-    entries.forEach(entry => {
+
+    entries.forEach((entry) => {
       const day = entry.date.toISOString().split('T')[0];
       byDay.set(day, (byDay.get(day) || 0) + entry.duration);
     });
@@ -315,23 +448,29 @@ export class TimeEntriesService {
         percentage: (data.duration / totalDuration) * 100,
         entriesCount: data.entries.length,
       })),
-      byDescription: Array.from(byDescription.entries()).map(([description, duration]) => ({
-        description,
-        duration,
-        hours: duration / 3600,
-        percentage: (duration / totalDuration) * 100,
-      })),
+      byDescription: Array.from(byDescription.entries()).map(
+        ([description, duration]) => ({
+          description,
+          duration,
+          hours: duration / 3600,
+          percentage: (duration / totalDuration) * 100,
+        }),
+      ),
       byDay: Array.from(byDay.entries()).map(([day, duration]) => ({
         day,
         duration,
         hours: duration / 3600,
       })),
-      entries: entries.map(entry => ({
+      entries: entries.map((entry) => ({
         _id: entry._id,
         projectId: entry.projectId ? (entry.projectId as any)._id : null,
         projectName: entry.projectId ? (entry.projectId as any).name : null,
         taskId: entry.personalTaskId || entry.sharedTaskId,
-        taskTitle: entry.personalTaskId ? (entry.personalTaskId as any).title : entry.sharedTaskId ? (entry.sharedTaskId as any).title : null,
+        taskTitle: entry.personalTaskId
+          ? (entry.personalTaskId as any).title
+          : entry.sharedTaskId
+            ? (entry.sharedTaskId as any).title
+            : null,
         description: entry.description,
         startTime: entry.startTime,
         endTime: entry.endTime,

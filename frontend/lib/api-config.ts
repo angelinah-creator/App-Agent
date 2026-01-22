@@ -25,7 +25,12 @@ api.interceptors.request.use(
 api.interceptors.response.use(
   (response) => response,
   (error) => {
-    const { status, data } = error.response || {};
+    const { status, data, config } = error.response || {};
+    
+    // Ignorer silencieusement les 404 pour le timer actif
+    if (status === 404 && config?.url?.includes('/time-entries/timer/active')) {
+      return Promise.reject(error);
+    }
     
     switch (status) {
       case 401:

@@ -20,7 +20,10 @@ export class VideosService {
     // Vérifier s'il existe déjà une vidéo
     const existingVideo = await this.videoModel.findOne().exec();
     if (existingVideo) {
-      throw new BadRequestException('Une vidéo existe déjà. Veuillez la supprimer avant d\'en uploader une nouvelle.');
+      // Supprimer l'ancienne vidéo de Cloudinary
+      await this.cloudinaryService.deleteVideo(existingVideo.publicId);
+      // Supprimer l'ancienne vidéo de la base
+      await this.videoModel.findByIdAndDelete(existingVideo._id);
     }
 
     // Upload vers Cloudinary
@@ -46,55 +49,9 @@ export class VideosService {
     return video.save();
   }
 
-  async findAll(
-    page: number = 1,
-    limit: number = 10,
-    isActive?: boolean,
-  ): Promise<{ videos: Video[]; total: number; pages: number }> {
-    const query: any = {};
-    if (isActive !== undefined) {
-      query.isActive = isActive;
-    }
-
-    const skip = (page - 1) * limit;
-
-    const [videos, total] = await Promise.all([
-      this.videoModel
-        .find(query)
-        .populate('uploadedBy', 'username email')
-        .sort({ createdAt: -1 })
-        .skip(skip)
-        .limit(limit)
-        .exec(),
-      this.videoModel.countDocuments(query),
-    ]);
-
-    return {
-      videos,
-      total,
-      pages: Math.ceil(total / limit),
-    };
-  }
-
-  async findOne(id: string): Promise<Video> {
-    const video = await this.videoModel
-      .findById(id)
-      .populate('uploadedBy', 'username email')
-      .exec();
-
-    if (!video) {
-      throw new NotFoundException(`Video with ID ${id} not found`);
-    }
-
-    // Incrémenter le compteur de vues
-    await this.videoModel.findByIdAndUpdate(id, { $inc: { views: 1 } });
-
-    return video;
-  }
-
-  async getActiveVideo(): Promise<Video | null> {
+  async getVideo(): Promise<Video | null> {
     return this.videoModel
-      .findOne({ isActive: true })
+      .findOne()
       .populate('uploadedBy', 'username email')
       .exec();
   }
@@ -123,15 +80,5 @@ export class VideosService {
 
     // Supprimer de la base de données
     await this.videoModel.findByIdAndDelete(id);
-  }
-
-  async getVideoThumbnail(id: string): Promise<string> {
-    const video = await this.videoModel.findById(id).exec();
-
-    if (!video) {
-      throw new NotFoundException(`Video with ID ${id} not found`);
-    }
-
-    return this.cloudinaryService.getVideoThumbnail(video.publicId);
   }
 }

@@ -1,5 +1,6 @@
 // lib/task-service.ts
 import { api } from "./api-config";
+import { spaceService } from "./space-service";
 
 export enum TaskPriority {
   URGENTE = "urgente",
@@ -228,4 +229,21 @@ export const sharedTaskService = {
     const response = await api.get(`/shared/spaces/${spaceId}/tasks/stats`);
     return response.data;
   },
+
+  async getMySharedTasks(filters?: {
+    status?: TaskStatus;
+    spaceId?: string;
+  }): Promise<Task[]> {
+    const mySpaces = await spaceService.getMySpaces();
+    const allTasks: Task[] = [];
+    
+    for (const space of mySpaces) {
+      const tasks = await sharedTaskService.getSpaceTasks(space._id, {
+        status: filters?.status || TaskStatus.EN_COURS,
+      });
+      allTasks.push(...tasks);
+    }
+    
+    return allTasks;
+  }
 };

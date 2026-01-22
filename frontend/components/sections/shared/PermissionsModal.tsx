@@ -116,7 +116,7 @@ export default function SpacePermissionsModal({
               >
                 <option value="viewer">Visionneur</option>
                 <option value="editor">Éditeur</option>
-                <option value="super_editor">Super Éditeur</option>
+                {/* <option value="super_editor">Super Éditeur</option> */}
               </select>
               <button
                 onClick={handleInvite}
@@ -214,7 +214,7 @@ export default function SpacePermissionsModal({
                   Peut créer, modifier et supprimer des tâches
                 </p>
               </div>
-              <div className="bg-purple-800/20 p-3 rounded-lg">
+              {/* <div className="bg-purple-800/20 p-3 rounded-lg">
                 <div className="flex items-center gap-2 mb-2">
                   <Crown size={16} className="text-purple-400" />
                   <span className="font-medium">Super Éditeur</span>
@@ -222,7 +222,7 @@ export default function SpacePermissionsModal({
                 <p className="text-sm text-gray-400">
                   Peut gérer les permissions et les paramètres de l'espace
                 </p>
-              </div>
+              </div> */}
             </div>
           </div>
         </div>

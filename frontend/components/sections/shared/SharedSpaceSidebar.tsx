@@ -306,7 +306,7 @@ export default function EspacesPartageSection() {
                   >
                     {/* Photo ou initiales */}
                     <div className={`w-10 h-10 rounded flex items-center justify-center overflow-hidden flex-shrink-0 ${
-                      space.photo ? 'bg-transparent' : space.isActive ? "bg-green-500/20" : "bg-gray-500/20"
+                      space.photo ? 'bg-transparent' : space.isActive ? "bg-purple-900" : "bg-gray-500/20"
                     }`}>
                       {space.photo ? (
                         <img 
@@ -316,7 +316,7 @@ export default function EspacesPartageSection() {
                         />
                       ) : (
                         <span className={`font-semibold text-sm ${
-                          space.isActive ? "text-green-400" : "text-gray-400"
+                          space.isActive ? "text-white" : "text-gray-400"
                         }`}>
                           {getSpaceInitials(space.name)}
                         </span>
@@ -325,7 +325,7 @@ export default function EspacesPartageSection() {
                     <div className="overflow-hidden">
                       <div className="font-medium truncate">{space.name}</div>
                       <div className="text-xs text-gray-400 truncate">
-                        Par {space.createdBy.prenoms} {space.createdBy.nom}
+                        {/* Par {space.createdBy.prenoms} {space.createdBy.nom} */}
                       </div>
                     </div>
                   </button>
@@ -370,7 +370,7 @@ export default function EspacesPartageSection() {
           )}
         </div>
 
-        <div className="p-4 border-t border-gray-800">
+        {/* <div className="p-4 border-t border-gray-800">
           <div className="flex items-center gap-3">
             <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
               <span className="font-semibold">
@@ -389,7 +389,7 @@ export default function EspacesPartageSection() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
 
       {/* Contenu principal */}
