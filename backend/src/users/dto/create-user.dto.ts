@@ -9,7 +9,8 @@ import {
   IsEnum, 
   IsBoolean,
   ValidateIf,
-  IsOptional
+  IsOptional,
+  IsObject
 } from 'class-validator';
 import { UserRole, UserProfile, Genre } from '../schemas/user.schema';
 
@@ -43,6 +44,20 @@ export class CreateUserDto {
   @IsString()
   @IsNotEmpty()
   telephone: string;
+
+  @IsOptional()
+  @IsObject()
+  profilePhoto?: {
+    url: string;
+    publicId: string;
+  };
+
+  @IsOptional()
+  @IsObject()
+  signature?: {
+    url: string;
+    publicId: string;
+  };
 
   // Champs spécifiques aux collaborateurs et managers
   @ValidateIf(o => o.role === UserRole.COLLABORATEUR || o.role === UserRole.MANAGER)

@@ -8,7 +8,9 @@ import {
   IsNumber, 
   IsEnum, 
   IsBoolean,
-  ValidateIf
+  ValidateIf,
+  IsObject,
+  IsOptional
 } from 'class-validator';
 import { UserRole, UserProfile, Genre } from 'src/users/schemas/user.schema';
 
@@ -44,6 +46,13 @@ export class RegisterDto {
   @IsNotEmpty()
   telephone: string;
 
+  @IsOptional()
+  @IsObject()
+  signature?: {
+    url: string;
+    publicId: string;
+  };
+
   // Champs spécifiques aux collaborateurs et managers
   @ValidateIf(o => o.role === UserRole.COLLABORATEUR || o.role === UserRole.MANAGER)
   @IsDateString()
@@ -75,6 +84,7 @@ export class RegisterDto {
   @IsNotEmpty()
   dateDebut: Date;
 
+  @IsOptional()
   @ValidateIf(o => o.role === UserRole.COLLABORATEUR || o.role === UserRole.MANAGER)
   @IsDateString()
   dateFin?: Date;

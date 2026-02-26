@@ -21,6 +21,64 @@ export class CloudinaryService {
     });
   }
 
+  
+  // Méthode spécifique pour uploader des signatures
+  async uploadSignature(
+    buffer: Buffer,
+    fileName: string,
+    folder: string = 'agent_code_talent/signatures',
+  ): Promise<{ url: string; publicId: string }> {
+    console.log('Upload Signature:', { fileName, folder });
+
+    return new Promise((resolve, reject) => {
+      const uploadStream = cloudinary.uploader.upload_stream(
+        {
+          resource_type: 'image',
+          folder: folder,
+          public_id: fileName.replace(/\.[^/.]+$/, ''),
+          access_mode: 'public',
+          transformation: [
+            { width: 800, height: 300, crop: 'fit' },
+            { quality: 'auto:good' },
+            { background: 'transparent' },
+            { format: 'png' },
+          ],
+        },
+        (
+          error: UploadApiErrorResponse | undefined,
+          result: UploadApiResponse | undefined,
+        ) => {
+          if (error) {
+            console.error('Erreur Cloudinary signature upload:', error);
+            reject(
+              new Error(`Cloudinary signature upload error: ${error.message}`),
+            );
+          } else if (result) {
+            console.log(
+              'Upload Signature Cloudinary réussi:',
+              result.public_id,
+            );
+            resolve({
+              url: result.secure_url,
+              publicId: result.public_id,
+            });
+          } else {
+            reject(
+              new Error(
+                'Cloudinary signature upload failed: No result and no error',
+              ),
+            );
+          }
+        },
+      );
+
+      const readableStream = new Readable();
+      readableStream.push(buffer);
+      readableStream.push(null);
+      readableStream.pipe(uploadStream);
+    });
+  }
+
   // Nouvelle méthode pour uploader des images (photos d'espaces)
   async uploadImage(
     buffer: Buffer,
@@ -39,7 +97,7 @@ export class CloudinaryService {
           transformation: [
             { width: 400, height: 400, crop: 'fill', gravity: 'auto' },
             { quality: 'auto:good' },
-            { format: 'webp' }
+            { format: 'webp' },
           ],
         },
         (
@@ -48,7 +106,9 @@ export class CloudinaryService {
         ) => {
           if (error) {
             console.error('Erreur Cloudinary image upload:', error);
-            reject(new Error(`Cloudinary image upload error: ${error.message}`));
+            reject(
+              new Error(`Cloudinary image upload error: ${error.message}`),
+            );
           } else if (result) {
             console.log('Upload Image Cloudinary réussi:', result.public_id);
             resolve({
@@ -57,7 +117,9 @@ export class CloudinaryService {
             });
           } else {
             reject(
-              new Error('Cloudinary image upload failed: No result and no error'),
+              new Error(
+                'Cloudinary image upload failed: No result and no error',
+              ),
             );
           }
         },
@@ -239,9 +301,7 @@ export class CloudinaryService {
           public_id: fileName.replace(/\.[^/.]+$/, ''),
           access_mode: 'public',
           chunk_size: 6000000,
-          eager: [
-            { width: 640, height: 360, crop: 'limit' },
-          ],
+          eager: [{ width: 640, height: 360, crop: 'limit' }],
         },
         (
           error: UploadApiErrorResponse | undefined,
@@ -331,7 +391,9 @@ export class CloudinaryService {
     }
   }
 
-  private getResourceType(contentType: string): 'image' | 'raw' | 'video' | 'auto' {
+  private getResourceType(
+    contentType: string,
+  ): 'image' | 'raw' | 'video' | 'auto' {
     if (contentType.startsWith('image/')) {
       return 'image';
     } else if (contentType.startsWith('video/')) {

@@ -1,6 +1,6 @@
 import { PartialType } from '@nestjs/mapped-types';
 import { CreateUserDto } from './create-user.dto';
-import { IsEnum, IsOptional, IsBoolean, IsDate, IsString } from 'class-validator';
+import { IsEnum, IsOptional, IsBoolean, IsDate, IsString, IsObject } from 'class-validator';
 import { UserProfile } from '../schemas/user.schema'; 
 
 export class UpdateUserDto extends PartialType(CreateUserDto) {
@@ -23,4 +23,14 @@ export class UpdateUserDto extends PartialType(CreateUserDto) {
   @IsString()
   @IsOptional()
   archiveReason?: string;
+
+  @IsOptional()
+  @IsObject()
+  profilePhoto?: {
+    url: string;
+    publicId: string;
+  };
+
+  @IsOptional()
+  profilePhotoFile?: any; // Pour l'upload via FormData
 }

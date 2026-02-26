@@ -4,13 +4,15 @@
   <meta charset="UTF-8" />
   <title>Contrat de prestation</title>
   <style>
+    @import url('https://fonts.googleapis.com/css2?family=Montserrat:ital,wght@0,100..900;1,100..900&display=swap');
+
     @page {
       size: A4;
       margin: 0;
     }
 
     body {
-      font-family: "Poppins", "Montserrat", Arial, sans-serif;
+      font-family: "Montserrat", sans-serif;
       font-size: 12pt;
       line-height: 1.6;
       color: #1E1E1E;
@@ -31,7 +33,7 @@
 
     .header-bar {
       height: 12mm;
-      background-color: #3F217C;
+      background-color: #42175a;
       width: 100%;
     }
 
@@ -86,7 +88,7 @@
       margin-top: 40px;
       margin-bottom: 8px;
       page-break-after: avoid;
-      font-weight: bold;
+      font-weight: bolder;
     }
 
     p {
@@ -100,7 +102,7 @@
     .type {
       text-align: center;
       font-weight: 700;
-      color: #3F217C;
+      color: #300A46;
       text-transform: uppercase;
       font-size: 13pt;
       margin-bottom: 15px;
@@ -194,13 +196,13 @@
 
     <h1>Article 3. Nombre de jours de prestation</h1>
     <p class="keep-together">Le nombre de jours de prestation fournis par le Prestataire est convenu à 
-      5 jours par semaine à temps partiel.</p>
+      <span class="bold"><%= user.nombreJour %> jours</span> par semaine à <span class="bold"><%= user.horaire %></span> .</p>
     <p class="keep-together">Selon les besoins du Client et la disponibilité du Prestataire, ce nombre 
        pourra être ajusté de mois en mois 
        avec l'accord des Parties.</p>
 
     <h1>Article 4. Tarifs et conditions de paiement</h1>
-    <p class="keep-together">Les prestations définies à l'article 1 ci-dessus seront facturées au Client <span class="bold"><%= user.tarifJournalier %> euro</span> par jour de <span class="bold"><%= user.dureeJournaliere %>H</span> de travail en net.</p>
+    <p class="keep-together">Les prestations définies à l'article 1 ci-dessus seront facturées au Client <span class="bold"><%= user.tarifJournalier %> ariary</span> par jour de <span class="bold"><%= user.dureeJournaliere %>H</span> de travail en net.</p>
     <p class="keep-together"> Conformément à la politique de voyage et sous réserve de validation préalable, le Client couvrira les dépenses exceptionnelles du Prestataire lorsqu'il lui sera demandé de se déplacer dans l'exercice de sa mission.</p>
     <p class="keep-together">Le Prestataire émettra une facture mensuelle accompagnée du détail de ses jours d'intervention et de ses dépenses exceptionnelles. Cette facture est payable dans les 15 jours à compter de sa réception.</p>
 
@@ -350,6 +352,7 @@
         <div>
           <p>Prestataire</p>
           <br><br><br>
+          <img src="<%= userSignatureBase64 %>" alt="signature Agent" style="width: 220px;">
         </div>
       </div>
     </div>

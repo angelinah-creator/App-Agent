@@ -11,6 +11,10 @@ import {
   UseGuards,
   Req,
   Query,
+  ForbiddenException,
+  UploadedFile,
+  UseInterceptors,
+  BadRequestException,
 } from '@nestjs/common';
 import { UsersService } from './users.service';
 import { CreateUserDto } from './dto/create-user.dto';
@@ -19,6 +23,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { AdminGuard } from '../auth/guards/admin.guard';
 import { Request } from 'express';
 import { UserRole, UserProfile } from './schemas/user.schema';
+import { FileInterceptor } from '@nestjs/platform-express';
 
 interface AuthenticatedRequest extends Request {
   user: {
@@ -106,7 +111,7 @@ export class UsersController {
     @Query('archived') archived?: string,
   ) {
     const filters: any = {};
-    
+
     if (role) filters.role = role;
     if (profile) filters.profile = profile;
     if (searchTerm) filters.searchTerm = searchTerm;
@@ -138,19 +143,6 @@ export class UsersController {
     @Req() req: AuthenticatedRequest,
   ) {
     return this.usersService.update(id, updateUserDto, req.user.role);
-  }
-
-  /**
-   * NOUVELLE ROUTE : Changer le rôle d'un utilisateur
-   */
-  @Patch(':id/change-role')
-  @UseGuards(AdminGuard)
-  async changeRole(
-    @Param('id') id: string,
-    @Body('role') role: UserRole,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    return this.usersService.changeUserRole(id, role, req.user.userId);
   }
 
   /**
@@ -234,5 +226,143 @@ export class UsersController {
   @UseGuards(AdminGuard)
   remove(@Param('id') id: string) {
     return this.usersService.remove(id);
+  }
+
+  /**
+   * Uploader une photo de profil
+   */
+  @Post(':id/profile-photo')
+  @UseInterceptors(FileInterceptor('photo'))
+  async uploadProfilePhoto(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    // Vérifier que l'utilisateur peut modifier ce profil
+    const isAdmin = req.user.role === UserRole.ADMIN;
+    const isOwner = id === req.user.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('Accès non autorisé');
+    }
+
+    if (!file) {
+      throw new BadRequestException('Aucun fichier fourni');
+    }
+
+    // Vérifier le type de fichier
+    if (!file.mimetype.startsWith('image/')) {
+      throw new BadRequestException('Le fichier doit être une image');
+    }
+
+    // Vérifier la taille (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      throw new BadRequestException("L'image ne doit pas dépasser 5MB");
+    }
+
+    return this.usersService.uploadProfilePhoto(id, file);
+  }
+
+  /**
+   * Supprimer la photo de profil
+   */
+  @Delete(':id/profile-photo')
+  async deleteProfilePhoto(
+    @Param('id') id: string,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    // Vérifier que l'utilisateur peut modifier ce profil
+    const isAdmin = req.user.role === UserRole.ADMIN;
+    const isOwner = id === req.user.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('Accès non autorisé');
+    }
+
+    return this.usersService.deleteProfilePhoto(id);
+  }
+
+  /**
+   * Uploader une signature
+   */
+  @Post(':id/signature')
+  @UseInterceptors(FileInterceptor('signature'))
+  async uploadSignature(
+    @Param('id') id: string,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    const isAdmin = req.user.role === UserRole.ADMIN;
+    const isOwner = id === req.user.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('Accès non autorisé');
+    }
+
+    if (!file) {
+      throw new BadRequestException('Aucun fichier fourni');
+    }
+
+    if (!file.mimetype.startsWith('image/')) {
+      throw new BadRequestException('Le fichier doit être une image');
+    }
+
+    if (file.size > 2 * 1024 * 1024) {
+      throw new BadRequestException("L'image ne doit pas dépasser 2MB");
+    }
+
+    return this.usersService.uploadSignature(id, file);
+  }
+
+  /**
+   * Mettre à jour les informations personnelles
+   */
+  @Patch(':id/personal-info')
+  @UseInterceptors(FileInterceptor('profilePhoto'))
+  async updatePersonalInfo(
+    @Param('id') id: string,
+    @Body() updateData: any,
+    @UploadedFile() file: Express.Multer.File,
+    @Req() req: AuthenticatedRequest,
+  ) {
+    // Vérifier que l'utilisateur peut modifier ce profil
+    const isAdmin = req.user.role === UserRole.ADMIN;
+    const isOwner = id === req.user.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('Accès non autorisé');
+    }
+
+    // Si un fichier est uploadé, l'ajouter aux données
+    const dataWithFile = {
+      ...updateData,
+      profilePhoto: file,
+    };
+
+    return this.usersService.updatePersonalInfo(id, dataWithFile);
+  }
+
+  /**
+   * Changer le mot de passe
+   */
+  @Patch(':id/change-password')
+  async changePassword(
+    @Param('id') id: string,
+    @Body() body: { currentPassword: string; newPassword: string },
+    @Req() req: AuthenticatedRequest,
+  ) {
+    // Vérifier que l'utilisateur peut modifier ce profil
+    const isAdmin = req.user.role === UserRole.ADMIN;
+    const isOwner = id === req.user.userId;
+
+    if (!isAdmin && !isOwner) {
+      throw new ForbiddenException('Accès non autorisé');
+    }
+
+    return this.usersService.changePassword(
+      id,
+      body.currentPassword,
+      body.newPassword,
+    );
   }
 }

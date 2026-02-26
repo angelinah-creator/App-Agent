@@ -11,6 +11,7 @@ import { GoogleAuthService } from './google-auth.service';
 import { PasswordResetService } from './password-reset.service'; // AJOUT
 import { PasswordResetController } from './password-reset.controller'; // AJOUT
 import { MailModule } from '../mail/mail.module'; // AJOUT
+import { NdasModule } from 'src/nda/nda.module';
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { MailModule } from '../mail/mail.module'; // AJOUT
     PassportModule,
     ConfigModule,
     MailModule,
+    NdasModule,
     JwtModule.registerAsync({
       imports: [ConfigModule],
       inject: [ConfigService],

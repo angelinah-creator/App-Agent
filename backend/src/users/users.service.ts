@@ -7,13 +7,23 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { User, UserDocument, UserRole, UserProfile } from './schemas/user.schema';
+import {
+  User,
+  UserDocument,
+  UserRole,
+  UserProfile,
+} from './schemas/user.schema';
 import { CreateUserDto } from './dto/create-user.dto';
 import { UpdateUserDto } from './dto/update-user.dto';
+import { CloudinaryService } from '../cloudinary/cloudinary.service';
+import bcrypt from 'node_modules/bcryptjs';
 
 @Injectable()
 export class UsersService {
-  constructor(@InjectModel(User.name) private userModel: Model<UserDocument>) {}
+  constructor(
+    @InjectModel(User.name) private userModel: Model<UserDocument>,
+    private cloudinaryService: CloudinaryService,
+  ) {}
 
   async create(createUserDto: CreateUserDto): Promise<UserDocument> {
     const created = new this.userModel(createUserDto);
@@ -104,92 +114,25 @@ export class UsersService {
 
   // Méthodes pour trouver par profil (uniquement collaborateurs et managers)
   async findStagiaires(): Promise<UserDocument[]> {
-    return this.userModel.find({ 
-      profile: UserProfile.STAGIAIRE,
-      role: { $in: [UserRole.COLLABORATEUR, UserRole.MANAGER] }
-    }).exec();
+    return this.userModel
+      .find({
+        profile: UserProfile.STAGIAIRE,
+        role: { $in: [UserRole.COLLABORATEUR, UserRole.MANAGER] },
+      })
+      .exec();
   }
 
   async findPrestataires(): Promise<UserDocument[]> {
-    return this.userModel.find({ 
-      profile: UserProfile.PRESTATAIRE,
-      role: { $in: [UserRole.COLLABORATEUR, UserRole.MANAGER] }
-    }).exec();
+    return this.userModel
+      .find({
+        profile: UserProfile.PRESTATAIRE,
+        role: { $in: [UserRole.COLLABORATEUR, UserRole.MANAGER] },
+      })
+      .exec();
   }
 
   async findNonAdmins(): Promise<UserDocument[]> {
-    return this.userModel
-      .find({ role: { $ne: UserRole.ADMIN } })
-      .exec();
-  }
-
-  /**
-   * Changer le rôle d'un utilisateur
-   */
-  async changeUserRole(
-    userId: string,
-    newRole: UserRole,
-    adminId: string,
-  ): Promise<UserDocument> {
-    if (!Types.ObjectId.isValid(userId)) {
-      throw new BadRequestException('ID utilisateur invalide');
-    }
-
-    // Vérifier que l'utilisateur existe
-    const user = await this.userModel.findById(userId);
-    if (!user) {
-      throw new NotFoundException('Utilisateur non trouvé');
-    }
-
-    const currentRole = user.role;
-
-    // Vérifier que le rôle change réellement
-    if (currentRole === newRole) {
-      throw new BadRequestException('Le rôle est déjà celui-ci');
-    }
-
-    // Vérifier que le nouveau rôle est valide
-    if (!Object.values(UserRole).includes(newRole)) {
-      throw new BadRequestException('Rôle non valide');
-    }
-
-    // Règle : Interdire les changements vers admin via cette méthode
-    if (newRole === UserRole.ADMIN) {
-      throw new BadRequestException('Utilisez la route dédiée pour promouvoir en admin');
-    }
-
-    // Règle : Si on rétrograde le dernier admin, interdire
-    if (currentRole === UserRole.ADMIN) {
-      const adminCount = await this.userModel.countDocuments({
-        role: UserRole.ADMIN,
-      });
-
-      if (adminCount <= 1) {
-        throw new BadRequestException(
-          'Impossible de modifier le rôle du dernier administrateur',
-        );
-      }
-    }
-
-    // Préparer les données de mise à jour
-    const updateData: any = { role: newRole };
-
-    // Si changement vers client, supprimer le profil
-    if (newRole === UserRole.CLIENT) {
-      updateData.profile = undefined;
-      updateData.completedProfile = true;
-    }
-
-    // Effectuer le changement
-    const updated = await this.userModel
-      .findByIdAndUpdate(userId, updateData, { new: true })
-      .exec();
-
-    if (!updated) {
-      throw new NotFoundException('Utilisateur non trouvé après mise à jour');
-    }
-
-    return updated;
+    return this.userModel.find({ role: { $ne: UserRole.ADMIN } }).exec();
   }
 
   /**
@@ -209,8 +152,13 @@ export class UsersService {
     }
 
     // Vérifier que l'utilisateur est un collaborateur ou manager
-    if (user.role !== UserRole.COLLABORATEUR && user.role !== UserRole.MANAGER) {
-      throw new BadRequestException('Seuls les collaborateurs et managers peuvent avoir un profil');
+    if (
+      user.role !== UserRole.COLLABORATEUR &&
+      user.role !== UserRole.MANAGER
+    ) {
+      throw new BadRequestException(
+        'Seuls les collaborateurs et managers peuvent avoir un profil',
+      );
     }
 
     const currentProfile = user.profile;
@@ -255,13 +203,13 @@ export class UsersService {
 
     const updated = await this.userModel
       .findByIdAndUpdate(
-        userId, 
-        { 
+        userId,
+        {
           role: UserRole.ADMIN,
           profile: undefined, // Les admins n'ont pas de profil
-          completedProfile: true
-        }, 
-        { new: true }
+          completedProfile: true,
+        },
+        { new: true },
       )
       .exec();
 
@@ -347,8 +295,8 @@ export class UsersService {
       {
         $match: {
           role: { $in: [UserRole.COLLABORATEUR, UserRole.MANAGER] },
-          profile: { $exists: true }
-        }
+          profile: { $exists: true },
+        },
       },
       {
         $group: {
@@ -371,7 +319,10 @@ export class UsersService {
   /**
    * Mettre à jour le profil client
    */
-  async updateClientProfile(userId: string, profileData: any): Promise<UserDocument> {
+  async updateClientProfile(
+    userId: string,
+    profileData: any,
+  ): Promise<UserDocument> {
     if (!Types.ObjectId.isValid(userId)) {
       throw new BadRequestException('ID utilisateur invalide');
     }
@@ -382,12 +333,14 @@ export class UsersService {
     }
 
     if (user.role !== UserRole.CLIENT) {
-      throw new BadRequestException('Seuls les clients peuvent mettre à jour leur profil');
+      throw new BadRequestException(
+        'Seuls les clients peuvent mettre à jour leur profil',
+      );
     }
 
     const updateData = {
       ...profileData,
-      completedProfile: true
+      completedProfile: true,
     };
 
     const updated = await this.userModel
@@ -399,6 +352,207 @@ export class UsersService {
     }
 
     return updated;
+  }
+
+  /**
+   * Uploader une photo de profil
+   */
+  async uploadProfilePhoto(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<UserDocument> {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID utilisateur invalide');
+    }
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    // Supprimer l'ancienne photo si elle existe
+    if (user.profilePhoto?.publicId) {
+      try {
+        await this.cloudinaryService.deleteImage(user.profilePhoto.publicId);
+      } catch (error) {
+        console.error('Erreur suppression ancienne photo:', error);
+      }
+    }
+
+    // Uploader la nouvelle photo
+    const uploadResult = await this.cloudinaryService.uploadImage(
+      file.buffer,
+      `profile_${userId}_${Date.now()}`,
+      'agent_code_talent/profile_photos',
+    );
+
+    // Mettre à jour l'utilisateur
+    user.profilePhoto = {
+      url: uploadResult.url,
+      publicId: uploadResult.publicId,
+    };
+
+    return user.save();
+  }
+
+  /**
+   * Supprimer la photo de profil
+   */
+  async deleteProfilePhoto(userId: string): Promise<UserDocument> {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID utilisateur invalide');
+    }
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    if (!user.profilePhoto?.publicId) {
+      throw new BadRequestException('Aucune photo de profil trouvée');
+    }
+
+    // Supprimer de Cloudinary
+    await this.cloudinaryService.deleteImage(user.profilePhoto.publicId);
+
+    // Supprimer la référence dans l'utilisateur
+    user.profilePhoto = undefined;
+
+    return user.save();
+  }
+
+  /**
+   * Uploader une signature
+   */
+  async uploadSignature(
+    userId: string,
+    file: Express.Multer.File,
+  ): Promise<UserDocument> {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID utilisateur invalide');
+    }
+
+    const user = await this.userModel.findById(userId);
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    // Supprimer l'ancienne signature si elle existe
+    if (user.signature?.publicId) {
+      try {
+        await this.cloudinaryService.deleteImage(user.signature.publicId);
+      } catch (error) {
+        console.error('Erreur suppression ancienne signature:', error);
+      }
+    }
+
+    // Uploader la nouvelle signature
+    const uploadResult = await this.cloudinaryService.uploadSignature(
+      file.buffer,
+      `signature_${userId}_${Date.now()}`,
+      'agent_code_talent/signatures',
+    );
+
+    // Mettre à jour l'utilisateur
+    user.signature = {
+      url: uploadResult.url,
+      publicId: uploadResult.publicId,
+    };
+
+    return user.save();
+  }
+
+  /**
+   * Mettre à jour les informations personnelles
+   */
+  async updatePersonalInfo(
+    userId: string,
+    updateData: {
+      nom?: string;
+      prenoms?: string;
+      email?: string;
+      telephone?: string;
+      profilePhoto?: any;
+    },
+  ): Promise<UserDocument> {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID utilisateur invalide');
+    }
+
+    const updateFields: any = {};
+
+    // Gérer les champs textuels
+    if (updateData.nom) updateFields.nom = updateData.nom;
+    if (updateData.prenoms) updateFields.prenoms = updateData.prenoms;
+    if (updateData.email) updateFields.email = updateData.email;
+    if (updateData.telephone) updateFields.telephone = updateData.telephone;
+
+    // Si un fichier photo est fourni, l'uploader
+    if (updateData.profilePhoto) {
+      const user = await this.userModel.findById(userId);
+
+      // Supprimer l'ancienne photo si elle existe
+      if (user?.profilePhoto?.publicId) {
+        try {
+          await this.cloudinaryService.deleteImage(user.profilePhoto.publicId);
+        } catch (error) {
+          console.error('Erreur suppression ancienne photo:', error);
+        }
+      }
+
+      // Uploader la nouvelle photo
+      const uploadResult = await this.cloudinaryService.uploadImage(
+        updateData.profilePhoto.buffer,
+        `profile_${userId}_${Date.now()}`,
+        'agent_code_talent/profile_photos',
+      );
+
+      updateFields.profilePhoto = {
+        url: uploadResult.url,
+        publicId: uploadResult.publicId,
+      };
+    }
+
+    const updated = await this.userModel
+      .findByIdAndUpdate(userId, updateFields, { new: true })
+      .exec();
+
+    if (!updated) {
+      throw new NotFoundException('Utilisateur non trouvé après mise à jour');
+    }
+
+    return updated;
+  }
+
+  /**
+   * Changer le mot de passe
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string,
+  ): Promise<void> {
+    if (!Types.ObjectId.isValid(userId)) {
+      throw new BadRequestException('ID utilisateur invalide');
+    }
+
+    const user = await this.userModel.findById(userId).select('+password');
+    if (!user) {
+      throw new NotFoundException('Utilisateur non trouvé');
+    }
+
+    // Vérifier l'ancien mot de passe
+    const isMatch = await bcrypt.compare(currentPassword, user.password);
+    if (!isMatch) {
+      throw new BadRequestException('Mot de passe actuel incorrect');
+    }
+
+    // Hasher le nouveau mot de passe
+    const hashedPassword = await bcrypt.hash(newPassword, 10);
+
+    // Mettre à jour
+    user.password = hashedPassword;
+    await user.save();
   }
 
   /**

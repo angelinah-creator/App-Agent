@@ -21,22 +21,22 @@ export enum Genre {
   FEMININ = 'Femme',
 }
 
-@Schema({ 
-  timestamps: true, 
-  collection: 'users'
+@Schema({
+  timestamps: true,
+  collection: 'users',
 })
 export class User {
-  @Prop({ 
-    required: true, 
+  @Prop({
+    required: true,
     enum: UserRole,
     type: String,
-    default: UserRole.CLIENT
+    default: UserRole.CLIENT,
   })
   role: UserRole;
 
-  @Prop({ 
+  @Prop({
     enum: UserProfile,
-    type: String 
+    type: String,
   })
   profile?: UserProfile; // Optionnel maintenant
 
@@ -64,6 +64,28 @@ export class User {
 
   @Prop()
   archiveReason?: string;
+
+  @Prop({
+    type: {
+      url: String,
+      publicId: String,
+    },
+  })
+  profilePhoto?: {
+    url: string;
+    publicId: string;
+  };
+
+  @Prop({
+    type: {
+      url: String,
+      publicId: String,
+    },
+  })
+  signature?: {
+    url: string;
+    publicId: string;
+  };
 
   // Champs spécifiques aux collaborateurs et managers (stagiaire/prestataire)
   @Prop()

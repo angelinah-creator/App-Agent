@@ -1,13 +1,24 @@
 // backend/src/auth/auth.service.ts
-import { Injectable, ConflictException, UnauthorizedException, Logger, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+  Logger,
+  BadRequestException,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { RegisterDto } from './dto/register.dto';
 import * as bcrypt from 'bcryptjs';
 import { JwtService } from '@nestjs/jwt';
 import { LoginDto } from './dto/login.dto';
 import { ContractsService } from '../contracts/contracts.service';
-import { UserDocument, UserRole, UserProfile } from '../users/schemas/user.schema';
+import {
+  UserDocument,
+  UserRole,
+  UserProfile,
+} from '../users/schemas/user.schema';
 import { CreateClientDto } from '../users/dto/create-client.dto';
+import { NdasService } from 'src/nda/nda.service';
 
 @Injectable()
 export class AuthService {
@@ -17,6 +28,7 @@ export class AuthService {
     private usersService: UsersService,
     private jwtService: JwtService,
     private contractsService: ContractsService,
+    private ndaService: NdasService,
   ) {}
 
   // --- REGISTER ---
@@ -81,23 +93,40 @@ export class AuthService {
     // GÉNÉRER LE CONTRAT pour les collaborateurs et managers
     if (dto.role === UserRole.COLLABORATEUR || dto.role === UserRole.MANAGER) {
       try {
-        this.logger.log(`Génération du contrat pour l'utilisateur: ${user._id}`);
-        const contract = await this.contractsService.generateContract((user._id as any).toString());
-        this.logger.log(`Contrat généré avec succès: ${contract.contractNumber}`);
+        this.logger.log(
+          `Génération du contrat pour l'utilisateur: ${user._id}`,
+        );
+        const contract = await this.contractsService.generateContract(
+          (user._id as any).toString(),
+        );
+        this.logger.log(
+          `Contrat généré avec succès: ${contract.contractNumber}`,
+        );
       } catch (error) {
         this.logger.error('Erreur lors de la génération du contrat:', error);
-        // Ne pas bloquer l'inscription si la génération échoue
+      }
+    }
+
+    // GÉNÉRER LE NDA pour les collaborateurs et managers
+    if (dto.role === UserRole.COLLABORATEUR || dto.role === UserRole.MANAGER) {
+      try {
+        this.logger.log(`Génération du NDA pour l'utilisateur: ${user._id}`);
+        await this.ndaService.generateNda((user._id as any).toString());
+        this.logger.log(`✅ NDA généré avec succès`);
+      } catch (error) {
+        this.logger.error('Erreur lors de la génération du NDA:', error);
+        // Ne pas bloquer l'inscription si le NDA échoue
       }
     }
 
     const obj = user.toObject();
     delete obj.password;
 
-    const payload = { 
-      sub: obj._id.toString(), 
-      email: obj.email, 
+    const payload = {
+      sub: obj._id.toString(),
+      email: obj.email,
       role: obj.role,
-      profile: obj.profile // Peut être undefined pour admin/client
+      profile: obj.profile, // Peut être undefined pour admin/client
     };
     const token = this.jwtService.sign(payload);
 
@@ -138,42 +167,43 @@ export class AuthService {
   async completeClientProfile(userId: string, profileData: any) {
     const updateData = {
       ...profileData,
-      completedProfile: true
+      completedProfile: true,
     };
 
     return this.usersService.update(userId, updateData);
   }
 
   // --- VALIDATE USER ---
-async validateUser(email: string, password: string): Promise<any> {
-  const user = await this.usersService.findByEmailWithPassword(email);
-  if (!user) return null;
+  async validateUser(email: string, password: string): Promise<any> {
+    const user = await this.usersService.findByEmailWithPassword(email);
+    if (!user) return null;
 
-  const isMatch = await bcrypt.compare(password, user.password);
-  if (!isMatch) return null;
+    const isMatch = await bcrypt.compare(password, user.password);
+    if (!isMatch) return null;
 
-  const obj = user.toObject();
-  delete obj.password;
-  
-  // Retourner les informations cohérentes avec le nouveau schéma
-  return {
-    ...obj,
-    _id: obj._id,
-    role: obj.role,
-    profile: obj.profile // Peut être undefined pour admin/client
-  };
-}
+    const obj = user.toObject();
+    delete obj.password;
+
+    // Retourner les informations cohérentes avec le nouveau schéma
+    return {
+      ...obj,
+      _id: obj._id,
+      role: obj.role,
+      profile: obj.profile, // Peut être undefined pour admin/client
+    };
+  }
 
   // --- LOGIN ---
   async login(dto: LoginDto) {
     const user = await this.validateUser(dto.email, dto.password);
-    if (!user) throw new UnauthorizedException('Email ou mot de passe incorrect');
+    if (!user)
+      throw new UnauthorizedException('Email ou mot de passe incorrect');
 
-    const payload = { 
-      sub: (user as any)._id.toString(), 
-      email: user.email, 
+    const payload = {
+      sub: (user as any)._id.toString(),
+      email: user.email,
       role: (user as any).role,
-      profile: (user as any).profile // Peut être undefined pour admin/client
+      profile: (user as any).profile, // Peut être undefined pour admin/client
     };
     const token = this.jwtService.sign(payload);
 
