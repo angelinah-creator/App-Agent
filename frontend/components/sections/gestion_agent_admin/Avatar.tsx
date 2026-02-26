@@ -31,7 +31,7 @@ export function Avatar({
       {photoUrl ? (
         <img src={photoUrl} alt={`${agent.prenoms} ${agent.nom}`} className="w-full h-full object-cover" />
       ) : (
-        <div className="w-full h-full flex items-center justify-center font-bold text-white">
+        <div className="w-full h-full flex items-center justify-center font-bold text-white bg-[#6C4EA8]">
           {getInitials(agent)}
         </div>
       )}

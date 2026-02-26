@@ -99,12 +99,12 @@ function Btn({
 
 function StatCard({ label, value, color, sub }: any) {
   return (
-    <div className="bg-[#1a1c26] border border-[#2e3144] rounded-xl p-4">
-      <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-1">
+    <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-4">
+      <p className="text-xs text-white font-medium uppercase tracking-wider mb-1">
         {label}
       </p>
       <p className={`text-3xl font-bold tabular-nums ${color}`}>{value}</p>
-      {sub && <p className="text-xs text-gray-600 mt-1">{sub}</p>}
+      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
     </div>
   );
 }
@@ -113,10 +113,10 @@ function FilterBtn({ active, onClick, children }: any) {
   return (
     <button
       onClick={onClick}
-      className={`px-3 py-1.5 text-xs font-medium rounded-lg transition-all duration-150 cursor-pointer ${
+      className={`px-3 py-1.5 text-xs font-medium rounded-sm transition-all duration-150 cursor-pointer ${
         active
-          ? "bg-violet-600 text-white shadow-lg shadow-violet-500/20"
-          : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5 border border-[#2e3144]"
+          ? "bg-[#6C4EA8] text-white"
+          : "bg-transparent text-gray-400 hover:text-white hover:bg-white/5 border border-[#313442]"
       }`}
     >
       {children}
@@ -212,7 +212,7 @@ export function AgentsSection({
         <StatCard
           label="Total Agents"
           value={effectiveAgents.length}
-          color="text-violet-400"
+          color="text-[#6C4EA8]"
           sub={`${activeAgents.length} actifs · ${archivedAgents.length} archivés`}
         />
         <StatCard
@@ -225,8 +225,8 @@ export function AgentsSection({
           value={activeAgents.filter((a) => a.profile === "prestataire").length}
           color="text-emerald-400"
         />
-        <div className="bg-[#1a1c26] border border-[#2e3144] rounded-xl p-4">
-          <p className="text-xs text-gray-500 font-medium uppercase tracking-wider mb-2">
+        <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-4">
+          <p className="text-xs text-white font-medium uppercase tracking-wider mb-2">
             Statut
           </p>
           <div className="space-y-1">
@@ -238,7 +238,7 @@ export function AgentsSection({
             </div>
             <div className="flex items-center justify-between">
               <span className="text-xs text-gray-400">Archivés</span>
-              <span className="text-xs font-semibold text-gray-500">
+              <span className="text-xs font-semibold text-white">
                 {archivedAgents.length}
               </span>
             </div>
@@ -247,7 +247,7 @@ export function AgentsSection({
       </div>
 
       {/* Filters */}
-      <div className="bg-[#1a1c26] border border-[#2e3144] rounded-xl p-3 mb-3">
+      <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-3 mb-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex gap-1.5">
             <FilterBtn
@@ -289,16 +289,16 @@ export function AgentsSection({
       </div>
 
       {/* Table Card */}
-      <div className="bg-[#1a1c26] border border-[#2e3144] rounded-2xl overflow-hidden">
-        <div className="px-5 py-4 flex items-center justify-between border-b border-[#2e3144]">
+      <div className="bg-[#1F2128] border border-[#313442] rounded-2xl overflow-hidden">
+        <div className="px-5 py-4 flex items-center justify-between border-b border-[#313442]">
           <div>
             <h2 className="text-base font-semibold text-white">
               {showArchived ? "Agents Archivés" : "Agents Actifs"}
             </h2>
-            <p className="text-xs text-gray-500 mt-0.5">
+            <p className="text-xs text-white mt-0.5">
               {showArchived
                 ? "Ces agents ne sont plus actifs — toutes les données sont conservées"
-                : "Gérez vos stagiaires et prestataires"}
+                : ""}
             </p>
           </div>
           {!showArchived && (
@@ -324,7 +324,7 @@ export function AgentsSection({
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-[#2e3144]">
+                <tr className="border-b border-[#313442]">
                   {[
                     "Agent",
                     "Profil",
@@ -335,7 +335,7 @@ export function AgentsSection({
                   ].map((h) => (
                     <th
                       key={h}
-                      className="text-left py-3 px-4 text-[10px] font-semibold uppercase tracking-wider text-gray-500"
+                      className="text-left py-3 px-4 text-[10px] font-semibold uppercase tracking-wider text-white"
                     >
                       {h}
                     </th>
@@ -346,7 +346,7 @@ export function AgentsSection({
                 {filteredAgents.map((agent) => (
                   <tr
                     key={agent._id}
-                    className={`border-b border-[#2e3144]/50 transition-colors ${
+                    className={`border-b border-[#313442]/50 transition-colors ${
                       agent.archived
                         ? "opacity-60 hover:opacity-80"
                         : "hover:bg-white/[0.02]"
@@ -384,7 +384,7 @@ export function AgentsSection({
                           <p className="text-sm font-semibold text-white leading-tight">
                             {agent.prenoms} {agent.nom}
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <p className="text-xs text-white mt-0.5">
                             {agent.email}
                           </p>
                         </div>
@@ -439,6 +439,7 @@ export function AgentsSection({
                               onClick={() => handleEdit(agent)}
                             >
                               <Edit size={11} />
+                              Modifier
                             </Btn>
                             <Btn
                               size="sm"
@@ -447,6 +448,7 @@ export function AgentsSection({
                               disabled={archiveAgentPending}
                             >
                               <Archive size={11} />
+                              Archiver
                             </Btn>
                           </>
                         ) : (
