@@ -38,7 +38,8 @@ import { EspacesPartageSection } from "@/components/sections/espaces_partage-sec
 import { EspacesCollaboSection } from "@/components/sections/espaces_collabo-section";
 
 import { AbsencesSectionAdmin } from "@/components/sections/absences-section-admin";
-import { AgentsSection } from "@/components/sections/agents-section";
+// import { AgentsSection } from "@/components/sections/agents-section";
+import { AgentsSection } from "@/components/sections/gestion_agent_admin/AgentsSection";
 import { ContractsSectionAdmin } from "@/components/sections/contracts-section-admin";
 import { DocumentsSectionAdmin } from "@/components/sections/documents-section-admin";
 import { UploadDocumentModal } from "@/components/modals/upload-document-modal";
@@ -855,7 +856,6 @@ function HomePage() {
           <Header
             title={getHeaderContent().title}
             subtitle={getHeaderContent().subtitle}
-            userInitials={`${userData.prenoms[0]}${userData.nom[0]}`}
             notificationBell={<NotificationBell />}
           />
         </div>
