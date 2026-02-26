@@ -35,6 +35,7 @@ export interface Agent {
   domainePrestation?: string;
   tarifJournalier?: number;
   dureeJournaliere?: number;
+  profilePhoto?: { url: string; publicId: string; _id: string };
 
   archived: boolean;
   archivedAt?: string;
