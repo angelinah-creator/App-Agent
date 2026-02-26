@@ -38,13 +38,11 @@ export function VideoSection() {
       setCurrentTime(current);
       setProgress((current / duration) * 100);
 
-      // Marquer les chapitres comme complétés si on les a dépassés
       const updatedChapters = video.chapters.map(chapter => ({
         ...chapter,
         completed: current >= chapter.startTime
       }));
       
-      // Mettre à jour l'état si nécessaire
       if (JSON.stringify(updatedChapters) !== JSON.stringify(video.chapters)) {
         setVideo(prev => prev ? { ...prev, chapters: updatedChapters } : null);
       }
@@ -90,75 +88,75 @@ export function VideoSection() {
 
   if (loading) {
     return (
-      <div className="w-full flex flex-col gap-10">
+      <div className="w-full flex flex-col gap-6">
         <div className="animate-pulse">
-          <div className="h-8 bg-gray-700 rounded w-1/3 mb-2"></div>
-          <div className="h-4 bg-gray-700 rounded w-1/2"></div>
+          <div className="h-6 bg-gray-700 rounded w-1/4 mb-1"></div>
+          <div className="h-3 bg-gray-700 rounded w-1/3"></div>
         </div>
-        <div className="animate-pulse bg-[#14141A] p-6 rounded-xl border border-[#2E2E38] h-32"></div>
-        <div className="animate-pulse bg-[#14141A] p-10 rounded-xl border border-[#2E2E38] h-96"></div>
+        <div className="animate-pulse bg-[#14141A] p-4 rounded-lg border border-[#2E2E38] h-20"></div>
+        <div className="animate-pulse bg-[#14141A] p-6 rounded-lg border border-[#2E2E38] h-64"></div>
       </div>
     );
   }
 
   if (error || !video) {
     return (
-      <div className="w-full flex flex-col gap-10">
+      <div className="w-full flex flex-col gap-6">
         <div>
-          <h2 className="text-3xl font-extrabold text-white">Onboarding</h2>
-          <p className="text-gray-400">Aucune vidéo disponible pour le moment</p>
+          <h2 className="text-2xl font-extrabold text-white">Onboarding</h2>
+          <p className="text-gray-400 text-sm">Aucune vidéo disponible</p>
         </div>
-        <div className="bg-[#14141A] p-10 rounded-xl border border-[#2E2E38] text-center">
-          <Video className="w-16 h-16 text-gray-600 mx-auto mb-4" />
-          <p className="text-gray-400">{error || "Aucune vidéo n'a été uploadée"}</p>
+        <div className="bg-[#14141A] p-6 rounded-lg border border-[#2E2E38] text-center">
+          <Video className="w-10 h-10 text-gray-600 mx-auto mb-3" />
+          <p className="text-gray-400 text-sm">{error || "Aucune vidéo uploadée"}</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full flex flex-col gap-10">
+    <div className="w-full flex flex-col gap-6 -mt-8">
       <div>
-        <h2 className="text-3xl font-extrabold text-white">Onboarding</h2>
-        <p className="text-gray-400">Complete your onboarding to get started with Code-Talent</p>
+        <h2 className="text-2xl font-extrabold text-white">Onboarding</h2>
+        <p className="text-gray-400 text-sm">Complete your onboarding to get started with Code-Talent</p>
       </div>
 
-      {/* ---- PROGRESSION ---- */}
-      <div className="bg-[#14141A] p-6 rounded-xl border border-[#2E2E38]">
-        <h2 className="text-white font-semibold text-lg mb-4">
+      {/* PROGRESSION */}
+      <div className="bg-[#14141A] p-4 rounded-lg border border-[#2E2E38]">
+        <h2 className="text-white font-medium text-sm mb-3">
           Ta Progression
         </h2>
 
-        <div className="w-full bg-[#262633] h-3 rounded-full overflow-hidden">
+        <div className="w-full bg-[#262633] h-2 rounded-full overflow-hidden">
           <div
             style={{ width: `${overallProgress}%` }}
             className="h-full bg-[#6C4EA8] transition-all duration-300"
           ></div>
         </div>
 
-        <div className="flex justify-between text-white mt-1 text-sm font-medium">
-          <span>{completedChapters} sur {totalChapters} chapitres complétés</span>
+        <div className="flex justify-between text-white mt-1 text-xs font-medium">
+          <span>{completedChapters}/{totalChapters} chapitres</span>
           <span>{Math.round(overallProgress)}%</span>
         </div>
       </div>
 
-      {/* ---- VIDEO ---- */}
-      <div className="bg-[#14141A] p-10 rounded-xl border border-[#2E2E38]">
-        <div className="text-center mb-6">
-          <div className="w-28 h-28 mx-auto mb-3 bg-[#CFB7FF24] rounded-full flex items-center justify-center">
-            <Video className="text-[#6C4EA8] w-14 h-14" />
+      {/* VIDEO */}
+      <div className="bg-[#14141A] p-6 rounded-lg border border-[#2E2E38]">
+        <div className="text-center mb-4">
+          <div className="w-16 h-16 mx-auto mb-2 bg-[#CFB7FF24] rounded-full flex items-center justify-center">
+            <Video className="text-[#6C4EA8] w-8 h-8" />
           </div>
-          <p className="text-gray-400 text-sm mt-1 max-w-md mx-auto">
+          <p className="text-gray-400 text-xs max-w-md mx-auto">
             {video.description}
           </p>
         </div>
 
         <div className="w-full flex justify-center">
-          <div className="relative w-full max-w-4xl">
+          <div className="relative w-full max-w-3xl">
             <video
               ref={videoRef}
               controls
-              className="rounded-xl w-full border border-[#2E2E38]"
+              className="rounded-lg w-full border border-[#2E2E38]"
               onTimeUpdate={handleTimeUpdate}
               onPlay={() => setIsPlaying(true)}
               onPause={() => setIsPlaying(false)}
@@ -168,17 +166,16 @@ export function VideoSection() {
               Votre navigateur ne supporte pas la lecture de vidéos.
             </video>
             
-            {/* Contrôles personnalisés */}
-            <div className="flex items-center justify-between mt-4 px-2">
+            <div className="flex items-center justify-between mt-3 px-1">
               <button
                 onClick={handlePlayPause}
-                className="flex items-center gap-2 px-4 py-2 bg-[#6C4EA8] text-white rounded-lg hover:bg-[#5a3d8a] transition-colors"
+                className="flex items-center gap-1 px-3 py-1.5 bg-[#6C4EA8] text-white rounded hover:bg-[#5a3d8a] transition-colors text-xs"
               >
-                {isPlaying ? <Pause size={20} /> : <Play size={20} />}
+                {isPlaying ? <Pause size={14} /> : <Play size={14} />}
                 {isPlaying ? 'Pause' : 'Lecture'}
               </button>
               
-              <div className="text-white text-sm">
+              <div className="text-white text-xs">
                 {Math.floor(currentTime / 60)}:{(currentTime % 60).toFixed(0).padStart(2, '0')} / 
                 {video.duration ? `${Math.floor(video.duration / 60)}:${(video.duration % 60).toFixed(0).padStart(2, '0')}` : '--:--'}
               </div>
@@ -186,24 +183,23 @@ export function VideoSection() {
           </div>
         </div>
 
-        {/* Message final */}
         {progress >= 99 && (
-          <div className="mt-5 text-center">
-            <span className="text-[#71D296] text-sm bg-[#9AFFB524] px-4 py-2 rounded-lg">
-              Félicitations, vous avez visionné la vidéo jusqu'à la fin
+          <div className="mt-4 text-center">
+            <span className="text-[#71D296] text-xs bg-[#9AFFB524] px-3 py-1.5 rounded">
+              Félicitations, visionnage terminé
             </span>
           </div>
         )}
       </div>
 
-      {/* ---- CHAPTER LIST ---- */}
+      {/* CHAPTER LIST */}
       {video.chapters && video.chapters.length > 0 && (
-        <div className="bg-[#14141A] p-10 rounded-xl border border-[#2E2E38]">
-          <h2 className="text-white text-xl font-semibold mb-6">
-            Liste des chapitres dans la vidéo
+        <div className="bg-[#14141A] p-6 rounded-lg border border-[#2E2E38]">
+          <h2 className="text-white text-base font-medium mb-4">
+            Liste des chapitres
           </h2>
 
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-3">
             {video.chapters.map((chapter, index) => {
               const isCompleted = currentTime >= chapter.startTime;
               const chapterProgress = calculateChapterProgress(chapter);
@@ -211,34 +207,33 @@ export function VideoSection() {
               return (
                 <div
                   key={index}
-                  className={`border border-[#2E2E38] p-5 rounded-xl flex gap-4 items-start cursor-pointer hover:border-[#6C4EA8] transition-colors ${
+                  className={`border border-[#2E2E38] p-3 rounded-lg flex gap-3 items-start cursor-pointer hover:border-[#6C4EA8] transition-colors ${
                     isCompleted ? 'bg-[#9AFFB524]' : 'bg-[#1E1E28]'
                   }`}
                   onClick={() => seekToTime(chapter.startTime)}
                 >
                   <CheckCircle 
-                    className={`w-6 h-6 flex-shrink-0 ${
+                    className={`w-4 h-4 flex-shrink-0 mt-0.5 ${
                       isCompleted ? 'text-green-400' : 'text-gray-400'
                     }`} 
                   />
 
                   <div className="flex-1">
-                    <h3 className={`font-bold text-xl ${
+                    <h3 className={`font-medium text-sm ${
                       isCompleted ? 'text-[#71D296]' : 'text-white'
                     }`}>
                       {chapter.title}
                     </h3>
-                    <p className="text-gray-400 text-sm mb-2">{chapter.description}</p>
+                    <p className="text-gray-400 text-xs mb-1.5">{chapter.description}</p>
                     
-                    {/* Barre de progression du chapitre */}
-                    <div className="w-full bg-[#262633] h-2 rounded-full overflow-hidden">
+                    <div className="w-full bg-[#262633] h-1.5 rounded-full overflow-hidden">
                       <div
                         style={{ width: `${chapterProgress}%` }}
                         className="h-full bg-[#6C4EA8] transition-all duration-300"
                       ></div>
                     </div>
                     
-                    <div className="flex justify-between text-gray-400 text-xs mt-1">
+                    <div className="flex justify-between text-gray-400 text-[10px] mt-0.5">
                       <span>
                         {Math.floor(chapter.startTime / 60)}:{(chapter.startTime % 60).toFixed(0).padStart(2, '0')}
                         {chapter.endTime && ` - ${Math.floor(chapter.endTime / 60)}:${(chapter.endTime % 60).toFixed(0).padStart(2, '0')}`}

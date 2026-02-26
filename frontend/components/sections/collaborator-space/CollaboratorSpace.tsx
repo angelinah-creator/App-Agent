@@ -1,10 +1,11 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import { UserX } from "lucide-react";
 import { usersService, type Agent } from "@/lib/users-service";
 import { taskAdminService } from "@/lib/task-admin-service";
 import { Task } from "@/lib/task-service";
-import CollaboratorList from "./CollaboratorList";
+import CollaboratorDropdown from "./CollaboratorDropdown";
 import CollaboratorKanban from "./CollaboratorKanban";
 
 export default function CollaboratorSpace() {
@@ -13,48 +14,41 @@ export default function CollaboratorSpace() {
   const [collaboratorTasks, setCollaboratorTasks] = useState<Task[]>([]);
   const [loadingCollaborators, setLoadingCollaborators] = useState(true);
   const [loadingTasks, setLoadingTasks] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
-  // ✅ Mémoisation des fonctions pour éviter les re-renders inutiles
-  const loadCollaborators = useCallback(async (search = "") => {
+  const loadCollaborators = useCallback(async () => {
     try {
       setLoadingCollaborators(true);
-      // Charger tous les collaborateurs (non archivés par défaut)
       const data = await usersService.searchUsers({
         role: "collaborateur",
-        searchTerm: search || undefined,
       });
       setCollaborators(data);
-      if (data.length > 0 && !selectedCollaborator) {
-        setSelectedCollaborator(data[0]);
-      }
     } catch (error) {
       console.error("Erreur chargement collaborateurs:", error);
     } finally {
       setLoadingCollaborators(false);
     }
-  }, [selectedCollaborator]);
+  }, []);
 
-  // Charger les collaborateurs au démarrage
   useEffect(() => {
     loadCollaborators();
   }, [loadCollaborators]);
 
-  // Charger les tâches quand un collaborateur est sélectionné
   useEffect(() => {
     if (selectedCollaborator) {
       loadCollaboratorTasks(selectedCollaborator._id);
+    } else {
+      setCollaboratorTasks([]);
     }
   }, [selectedCollaborator]);
 
   const loadCollaboratorTasks = async (userId: string) => {
     try {
       setLoadingTasks(true);
-      // Utiliser le nouveau service admin pour récupérer les tâches
       const tasks = await taskAdminService.getUserTasks(userId);
       setCollaboratorTasks(tasks);
     } catch (error) {
-      console.error("Erreur chargement tâches collaborateur:", error);
+      console.error("Erreur chargement tâches:", error);
       setCollaboratorTasks([]);
     } finally {
       setLoadingTasks(false);
@@ -70,36 +64,42 @@ export default function CollaboratorSpace() {
     }
   };
 
-  const handleSelectCollaborator = (collaborator: Agent) => {
+  const handleSelectCollaborator = (collaborator: Agent | null) => {
     setSelectedCollaborator(collaborator);
+    setIsDropdownOpen(false);
   };
 
-  const handleSearch = (term: string) => {
-    setSearchTerm(term);
-    // Utiliser un délai pour éviter trop d'appels API
-    const timeoutId = setTimeout(() => {
-      loadCollaborators(term);
-    }, 500);
-    
-    return () => clearTimeout(timeoutId);
+  const toggleDropdown = () => {
+    setIsDropdownOpen(!isDropdownOpen);
   };
 
   return (
-    <div className="min-h-screen bg-[#0f0f10] text-gray-100 flex">
-      {/* Sidebar des collaborateurs */}
-      <div className="w-80 bg-[#1a1a1d] border-r border-gray-800 flex flex-col">
-        <CollaboratorList
-          collaborators={collaborators}
-          selectedCollaborator={selectedCollaborator}
-          onSelectCollaborator={handleSelectCollaborator}
-          searchTerm={searchTerm}
-          onSearchChange={handleSearch}
-          loading={loadingCollaborators}
-        />
+    <div className=" bg-[#0f0f10] text-gray-100">
+
+      <div className="mb-6 flex justify-between items-center fixed -mt-15">
+        <div>
+          <h1 className="text-2xl font-bold text-white">Espace Collaborateur</h1>
+          <p className="text-gray-400 mt-1">Visionnez les tâches de vos collaborateurs</p>
+        </div>
+      </div>
+      {/* Barre de navigation */}
+      <div className="fixed top-35 left-54 z-50 px-4 py-3">
+        <div className="flex items-center justify-between">
+          <div className="relative">
+            <CollaboratorDropdown
+              collaborators={collaborators}
+              selectedCollaborator={selectedCollaborator}
+              onSelectCollaborator={handleSelectCollaborator}
+              isOpen={isDropdownOpen}
+              onToggle={toggleDropdown}
+              loading={loadingCollaborators}
+            />
+          </div>
+        </div>
       </div>
 
-      {/* Espace Kanban du collaborateur */}
-      <div className="flex-1">
+      {/* Contenu principal */}
+      <div className="p-4 mt-10">
         {selectedCollaborator ? (
           <CollaboratorKanban
             collaborator={selectedCollaborator}
@@ -108,14 +108,14 @@ export default function CollaboratorSpace() {
             onLoadSubtasks={handleLoadSubtasks}
           />
         ) : (
-          <div className="h-full flex items-center justify-center">
+          <div className="h-[calc(100vh-100px)] flex flex-col items-center justify-center">
             <div className="text-center max-w-md">
-              <div className="w-16 h-16 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <span className="text-2xl">👥</span>
+              <div className="w-25 h-25 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserX className="text-gray-500 w-12 h-12"/>
               </div>
-              <h3 className="text-xl font-semibold mb-2">Sélectionnez un collaborateur</h3>
-              <p className="text-gray-400">
-                Choisissez un collaborateur dans la sidebar pour voir ses tâches en mode consultation.
+              <h2 className="text-xl font-bold mb-2">Aucun collaborateur sélectionné</h2>
+              <p className="text-sm text-gray-400 mb-4">
+                Sélectionnez un collaborateur dans le menu déroulant pour consulter ses tâches.
               </p>
             </div>
           </div>

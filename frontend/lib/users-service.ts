@@ -359,4 +359,136 @@ export const usersService = {
 
     return response.json();
   },
+/**
+   * Uploader une photo de profil via l'API backend
+   */
+  async uploadProfilePhoto(userId: string, file: File): Promise<Agent> {
+    const formData = new FormData();
+    formData.append('photo', file);
+
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/profile-photo`, {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorText;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Supprimer la photo de profil
+   */
+  async deleteProfilePhoto(userId: string): Promise<Agent> {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/profile-photo`, {
+      method: 'DELETE',
+      headers: getAuthHeaders()
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorText;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Mettre à jour les informations personnelles
+   */
+  async updatePersonalInfo(
+    userId: string, 
+    data: {
+      nom?: string;
+      prenoms?: string;
+      email?: string;
+      telephone?: string;
+      profilePhoto?: File;
+    }
+  ): Promise<Agent> {
+    const formData = new FormData();
+    
+    if (data.nom) formData.append('nom', data.nom);
+    if (data.prenoms) formData.append('prenoms', data.prenoms);
+    if (data.email) formData.append('email', data.email);
+    if (data.telephone) formData.append('telephone', data.telephone);
+    if (data.profilePhoto) formData.append('profilePhoto', data.profilePhoto);
+
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/personal-info`, {
+      method: 'PATCH',
+      headers: {
+        'Authorization': `Bearer ${localStorage.getItem('authToken')}`,
+      },
+      body: formData
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorText;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+      
+      throw new Error(errorMessage);
+    }
+
+    return response.json();
+  },
+
+  /**
+   * Changer le mot de passe
+   */
+  async changePassword(
+    userId: string,
+    currentPassword: string,
+    newPassword: string
+  ): Promise<void> {
+    const response = await fetch(`${API_BASE_URL}/users/${userId}/change-password`, {
+      method: 'PATCH',
+      headers: getAuthHeaders(),
+      body: JSON.stringify({ currentPassword, newPassword })
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      let errorMessage = `Erreur ${response.status}: ${response.statusText}`;
+      
+      try {
+        const errorData = JSON.parse(errorText);
+        errorMessage = errorData.message || errorData.error || errorText;
+      } catch (e) {
+        // Ignore parsing errors
+      }
+      
+      throw new Error(errorMessage);
+    }
+  },
 };

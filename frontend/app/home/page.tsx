@@ -13,6 +13,7 @@ import {
 } from "@tanstack/react-query";
 import { authService } from "@/lib/auth-service";
 import { contractService, type Contract } from "@/lib/contract-service";
+import { ndaService, type Nda } from "@/lib/nda-service";
 import { documentService, type Document } from "@/lib/document-service";
 import { invoiceService, type Invoice } from "@/lib/invoice-service";
 import { kpiService, type KPI } from "@/lib/kpi-service";
@@ -22,6 +23,7 @@ import { Sidebar } from "@/components/sidebar";
 import { Header } from "@/components/header";
 import { NotificationBell } from "@/components/notifications/notification-bell";
 import { DocumentsSection } from "@/components/sections/documents-section";
+import { NdasSectionAdmin } from "@/components/sections/ndas-section-admin";
 import { FacturesSection } from "@/components/sections/factures-section";
 import { FacturesSectionAdmin } from "@/components/sections/factures-section-admin";
 import { KPIsSection } from "@/components/sections/kpis-section";
@@ -87,8 +89,8 @@ function HomePage() {
       } else if (isCollaborateur) {
         setActiveSection("dashboard");
       } else if (isManager) {
-        setActiveSection("tableau_de_bord")
-      } else if (isClient){
+        setActiveSection("tableau_de_bord");
+      } else if (isClient) {
         setActiveSection("profil");
       }
     }
@@ -198,7 +200,7 @@ function HomePage() {
     queryFn: async () => {
       const allAgents = await usersService.getAllAgents(true); // Inclure les archivés
       const contractPromises = allAgents.map((agent) =>
-        contractService.getUserContracts(agent._id)
+        contractService.getUserContracts(agent._id),
       );
       const contractsArrays = await Promise.all(contractPromises);
       return contractsArrays.flat();
@@ -212,7 +214,7 @@ function HomePage() {
     queryFn: async () => {
       const allAgents = await usersService.getAllAgents(true); // Inclure les archivés
       const documentsPromises = allAgents.map((agent) =>
-        documentService.getUserDocuments().catch(() => [])
+        documentService.getUserDocuments().catch(() => []),
       );
       const documentsArrays = await Promise.all(documentsPromises);
       return documentsArrays.flat();
@@ -226,6 +228,93 @@ function HomePage() {
     queryFn: () => contractService.getUserContracts(userData?._id || ""),
     enabled: !!userData?._id && !isAdmin,
   });
+
+  // Agent: Récupération des NDA personnels
+  const { data: ndas = [], isLoading: ndasLoading } = useQuery<Nda[]>({
+    queryKey: ["ndas"],
+    queryFn: () => ndaService.getUserNdas(userData?._id || ""),
+    enabled: !!userData?._id && (isCollaborateur || isManager),
+  });
+
+  // Admin: Récupération de tous les NDA
+  const { data: allNdas = [], isLoading: allNdasLoading } = useQuery<Nda[]>({
+    queryKey: ["all-ndas", showArchivedAgents],
+    queryFn: async () => {
+      return ndaService.getAllNdas({
+        includeArchived: showArchivedAgents,
+      });
+    },
+    enabled: !!userData && isAdmin,
+  });
+
+  // AJOUTER LES MUTATIONS
+  const generateNdaMutation = useMutation({
+    mutationFn: () => ndaService.generateNda(userData!._id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ndas"] });
+      queryClient.invalidateQueries({ queryKey: ["all-ndas"] });
+    },
+    onError: (error: any) => {
+      console.error("Erreur génération NDA:", error);
+      alert(
+        error.response?.data?.message || "Erreur lors de la génération du NDA",
+      );
+    },
+  });
+
+  const deleteNdaMutation = useMutation({
+    mutationFn: ndaService.deleteNda,
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["ndas"] });
+      queryClient.invalidateQueries({ queryKey: ["all-ndas"] });
+    },
+    onError: (error: any) => {
+      console.error("Erreur suppression NDA:", error);
+      alert(
+        error.response?.data?.message || "Erreur lors de la suppression du NDA",
+      );
+    },
+  });
+
+  // AJOUTER LES HANDLERS
+  const handleGenerateNda = () => {
+    generateNdaMutation.mutate();
+  };
+
+  const handleDeleteNda = (ndaId: string) => {
+    confirm({
+      title: "Supprimer ce NDA",
+      description:
+        "Êtes-vous sûr de vouloir supprimer cet accord de confidentialité ?",
+      confirmText: "Supprimer",
+      cancelText: "Annuler",
+      variant: "destructive",
+      onConfirm: () => {
+        deleteNdaMutation.mutate(ndaId);
+      },
+    });
+  };
+
+  const handleDownloadNda = async (nda: Nda) => {
+    try {
+      const response = await fetch(nda.pdfUrl);
+      if (!response.ok) throw new Error("Erreur de téléchargement");
+      const blob = await response.blob();
+      const pdfBlob = new Blob([blob], { type: "application/pdf" });
+      const url = window.URL.createObjectURL(pdfBlob);
+      const link = document.createElement("a");
+      link.href = url;
+      link.download = nda.fileName;
+      link.style.display = "none";
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      setTimeout(() => window.URL.revokeObjectURL(url), 100);
+    } catch (error) {
+      console.error("Erreur téléchargement NDA:", error);
+      window.open(nda.pdfUrl, "_blank");
+    }
+  };
 
   // Agent: Récupération des documents personnels
   const { data: documents = [], isLoading: documentsLoading } = useQuery({
@@ -284,7 +373,8 @@ function HomePage() {
     onError: (error: any) => {
       console.error("Erreur archivage agent:", error);
       alert(
-        error.response?.data?.message || "Erreur lors de l'archivage de l'agent"
+        error.response?.data?.message ||
+          "Erreur lors de l'archivage de l'agent",
       );
     },
   });
@@ -299,7 +389,7 @@ function HomePage() {
       console.error("Erreur restauration agent:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la restauration de l'agent"
+          "Erreur lors de la restauration de l'agent",
       );
     },
   });
@@ -319,7 +409,7 @@ function HomePage() {
       console.error("Erreur modification agent:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la modification de l'agent"
+          "Erreur lors de la modification de l'agent",
       );
     },
   });
@@ -350,7 +440,7 @@ function HomePage() {
     onError: (error: any) => {
       console.error("Erreur ajout facture:", error);
       alert(
-        error.response?.data?.message || "Erreur lors de l'ajout de la facture"
+        error.response?.data?.message || "Erreur lors de l'ajout de la facture",
       );
     },
   });
@@ -365,7 +455,7 @@ function HomePage() {
       console.error("Erreur suppression facture:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la suppression de la facture"
+          "Erreur lors de la suppression de la facture",
       );
     },
   });
@@ -380,7 +470,7 @@ function HomePage() {
       console.error("Erreur validation facture:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la validation de la facture"
+          "Erreur lors de la validation de la facture",
       );
     },
   });
@@ -422,7 +512,7 @@ function HomePage() {
     onError: (error: any) => {
       console.error("Erreur suppression KPI:", error);
       alert(
-        error.response?.data?.message || "Erreur lors de la suppression du KPI"
+        error.response?.data?.message || "Erreur lors de la suppression du KPI",
       );
     },
   });
@@ -437,7 +527,7 @@ function HomePage() {
       console.error("Erreur génération contrat:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la génération du contrat"
+          "Erreur lors de la génération du contrat",
       );
     },
   });
@@ -464,7 +554,7 @@ function HomePage() {
     onError: (error: any) => {
       console.error("Erreur upload document:", error);
       alert(
-        error.response?.data?.message || "Erreur lors de l'upload du document"
+        error.response?.data?.message || "Erreur lors de l'upload du document",
       );
     },
   });
@@ -479,7 +569,7 @@ function HomePage() {
       console.error("Erreur suppression document:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la suppression du document"
+          "Erreur lors de la suppression du document",
       );
     },
   });
@@ -494,7 +584,7 @@ function HomePage() {
       console.error("Erreur suppression contrat:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la suppression du contrat"
+          "Erreur lors de la suppression du contrat",
       );
     },
   });
@@ -503,7 +593,7 @@ function HomePage() {
   // Ajoutez ces handlers après les handlers existants :
   const handleArchiveAgent = async (
     agentId: string,
-    archiveReason?: string
+    archiveReason?: string,
   ) => {
     archiveAgentMutation.mutate({ agentId, archiveReason });
   };
@@ -749,7 +839,7 @@ function HomePage() {
     >
       {dialog}
       {/* Sidebar - reste fixe */}
-      <div className="fixed left-0 top-0 h-screen w-64 z-40">
+      <div className="fixed left-0 top-0 h-screen w-50 z-40">
         <Sidebar
           activeSection={activeSection}
           onSectionChange={setActiveSection}
@@ -759,9 +849,9 @@ function HomePage() {
       </div>
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col ml-64 min-h-screen">
+      <div className="flex-1 flex flex-col ml-50 min-h-screen -mt-5">
         {/* Header - fixed */}
-        <div className="fixed top-0 left-64 right-0 z-30">
+        <div className="fixed top-0 left-50 right-0 z-30">
           <Header
             title={getHeaderContent().title}
             subtitle={getHeaderContent().subtitle}
@@ -849,17 +939,40 @@ function HomePage() {
 
                 {activeSection === "taches" && <TachesSection />}
 
-                {activeSection === "espaces_partages" && < EspacesPartageSection /> }
+                {activeSection === "espaces_partages" && (
+                  <EspacesPartageSection />
+                )}
 
-                {activeSection === "espaces_des_agents" && < EspacesCollaboSection /> }
+                {activeSection === "espaces_des_agents" && (
+                  <EspacesCollaboSection />
+                )}
 
                 {activeSection === "timer" && <TimerSection />}
 
                 {activeSection === "rapports" && <RapportSection />}
 
-                {activeSection === "rapports_collabo" && <RapportCollaboSection />}
+                {activeSection === "rapports_collabo" && (
+                  <RapportCollaboSection />
+                )}
 
                 {activeSection === "video_admin" && <VideoSectionAdmin />}
+
+                {activeSection === "ndas" && (
+                  <NdasSectionAdmin
+                    ndas={allNdas}
+                    agents={agents}
+                    isLoading={allNdasLoading}
+                    onView={(nda) => window.open(nda.pdfUrl, "_blank")}
+                    onDownload={handleDownloadNda}
+                    onDelete={handleDeleteNda}
+                    onRegenerate={(ndaId) => {
+                      // Implémenter la régénération si nécessaire
+                    }}
+                    deleteNdaPending={deleteNdaMutation.isPending}
+                    showArchived={showArchivedAgents}
+                    onToggleArchived={handleToggleArchivedAgents}
+                  />
+                )}
               </>
             )}
 
@@ -881,6 +994,13 @@ function HomePage() {
                     generateContractPending={generateContractMutation.isPending}
                     deleteDocumentPending={deleteDocumentMutation.isPending}
                     deleteContractPending={deleteContractMutation.isPending}
+                    ndas={ndas}
+                    ndasLoading={ndasLoading}
+                    onGenerateNda={handleGenerateNda}
+                    onDownloadNda={handleDownloadNda}
+                    onDeleteNda={handleDeleteNda}
+                    generateNdaPending={generateNdaMutation.isPending}
+                    deleteNdaPending={deleteNdaMutation.isPending}
                   />
                 )}
 
@@ -921,7 +1041,9 @@ function HomePage() {
 
                 {activeSection === "taches" && <TachesSection />}
 
-                {activeSection === "espaces_partages" && < EspacesPartageSection /> }
+                {activeSection === "espaces_partages" && (
+                  <EspacesPartageSection />
+                )}
 
                 {activeSection === "timer" && <TimerSection />}
 
@@ -947,6 +1069,13 @@ function HomePage() {
                     generateContractPending={generateContractMutation.isPending}
                     deleteDocumentPending={deleteDocumentMutation.isPending}
                     deleteContractPending={deleteContractMutation.isPending}
+                    ndas={ndas}
+                    ndasLoading={ndasLoading}
+                    onGenerateNda={handleGenerateNda}
+                    onDownloadNda={handleDownloadNda}
+                    onDeleteNda={handleDeleteNda}
+                    generateNdaPending={generateNdaMutation.isPending}
+                    deleteNdaPending={deleteNdaMutation.isPending}
                   />
                 )}
 
@@ -983,15 +1112,21 @@ function HomePage() {
 
                 {activeSection === "taches" && <TachesSection />}
 
-                {activeSection === "espaces_partages" && < EspacesPartageSection /> }
+                {activeSection === "espaces_partages" && (
+                  <EspacesPartageSection />
+                )}
 
-                {activeSection === "espaces_des_agents" && < EspacesCollaboSection /> }
+                {activeSection === "espaces_des_agents" && (
+                  <EspacesCollaboSection />
+                )}
 
                 {activeSection === "timer" && <TimerSection />}
 
                 {activeSection === "rapports" && <RapportSection />}
 
-                {activeSection === "rapports_collabo" && <RapportCollaboSection />}
+                {activeSection === "rapports_collabo" && (
+                  <RapportCollaboSection />
+                )}
               </>
             )}
 
@@ -1040,7 +1175,7 @@ export default function HomePageWrapper() {
             staleTime: 5 * 60 * 1000,
           },
         },
-      })
+      }),
   );
 
   return (

@@ -46,7 +46,7 @@ import { TimeGrid } from "./timer/time-grid";
 
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-const PIXELS_PER_HOUR = 64;
+const PIXELS_PER_HOUR = 48; // Réduit de 64 à 48
 
 // Composant WeekSelector
 function WeekSelector({
@@ -105,29 +105,29 @@ function WeekSelector({
 
     return (
       <div className="flex-1">
-        <div className="flex items-center justify-between mb-3 px-2">
+        <div className="flex items-center justify-between mb-2 px-2">
           <button
             onClick={() => setCurrentMonth(subMonths(currentMonth, 1))}
-            className="p-1 hover:bg-white/5 rounded transition"
+            className="p-0.5 hover:bg-white/5 rounded transition"
           >
-            <ChevronLeft size={16} className="text-white" />
+            <ChevronLeft size={14} className="text-white" />
           </button>
-          <span className="text-white font-medium text-sm">
+          <span className="text-white font-medium text-xs">
             {format(currentMonth, "MMMM yyyy", { locale: fr })}
           </span>
           <button
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            className="p-1 hover:bg-white/5 rounded transition"
+            className="p-0.5 hover:bg-white/5 rounded transition"
           >
-            <ChevronRight size={16} className="text-white" />
+            <ChevronRight size={14} className="text-white" />
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 mb-1 px-2">
+        <div className="grid grid-cols-7 gap-0.5 mb-1 px-2">
           {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((day) => (
             <div
               key={day}
-              className="text-center text-[10px] text-gray-400 py-1"
+              className="text-center text-[9px] text-gray-400 py-0.5"
             >
               {day}
             </div>
@@ -144,12 +144,12 @@ function WeekSelector({
             return (
               <div
                 key={weekIdx}
-                className="grid grid-cols-8 gap-1 hover:bg-white/5 rounded transition cursor-pointer group"
+                className="grid grid-cols-8 gap-0.5 hover:bg-white/5 rounded transition cursor-pointer group"
                 onClick={() => handleWeekClick(week)}
               >
                 <div
                   className={`
-                  flex items-center justify-center text-[10px] py-1 rounded-l transition
+                  flex items-center justify-center text-[9px] py-0.5 rounded-l transition
                   ${isCurrentWeek ? "bg-purple-500 text-white" : "text-gray-500 bg-white/5"}
                   group-hover:bg-purple-500/30
                 `}
@@ -164,7 +164,7 @@ function WeekSelector({
                     <div
                       key={dayIdx}
                       className={`
-                        aspect-square flex items-center justify-center text-xs rounded transition
+                        aspect-square flex items-center justify-center text-[10px] rounded transition
                         ${!isCurrentMonth ? "text-gray-600" : "text-white"}
                         ${isCurrentWeek ? "bg-purple-500/20" : ""}
                       `}
@@ -184,10 +184,10 @@ function WeekSelector({
   return (
     <div
       ref={popupRef}
-      className="absolute left-0 top-full mt-2 bg-[#1F2128] border border-[#313442] rounded-xl shadow-2xl z-50 overflow-hidden"
-      style={{ width: "400px" }}
+      className="absolute left-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 overflow-hidden"
+      style={{ width: "320px" }}
     >
-      <div className="p-3" style={{ height: "320px" }}>
+      <div className="p-2" style={{ height: "280px" }}>
         {renderCalendar()}
       </div>
     </div>
@@ -240,7 +240,6 @@ export function TimerSection() {
       personalTaskService.getMyTasks({ status: TaskStatus.EN_COURS }),
   });
 
-  // FIX: Récupérer les tâches partagées
   const { data: sharedTasks = [] } = useQuery({
     queryKey: ["sharedTasks"],
     queryFn: () =>
@@ -299,10 +298,6 @@ export function TimerSection() {
       setIsRunning(false);
       setIsPaused(false);
       setSeconds(0);
-      // FIX: Ne PAS réinitialiser la sélection après l'arrêt
-      // setSelectedTaskId("");
-      // setSelectedTaskType("");
-      // setSelectedProject("");
     },
   });
 
@@ -320,6 +315,8 @@ export function TimerSection() {
     mutationFn: timerService.deleteEntry,
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["timeEntries"] });
+      setPopupData({ isOpen: false, entry: null, mode: "create" });
+      setEditingEntry(null);
     },
   });
 
@@ -334,7 +331,6 @@ export function TimerSection() {
           ? "shared"
           : "";
 
-      // FIX: S'assurer de bien récupérer l'ID string si c'est un objet
       const cleanTaskId =
         typeof taskId === "string" ? taskId : (taskId as any)?._id || "";
       const cleanProjectId =
@@ -447,7 +443,6 @@ export function TimerSection() {
   const getSelectedTaskName = () => {
     if (!selectedTaskId) return "Sur quoi travaillez-vous ?";
 
-    // FIX: Chercher dans les bonnes listes selon le type
     if (selectedTaskType === "personal") {
       const task = personalTasks.find((t: any) => t._id === selectedTaskId);
       return task?.title || "Tâche supprimée";
@@ -502,7 +497,6 @@ export function TimerSection() {
     return daysWithEntries > 0 ? weekTotalSeconds / daysWithEntries : 0;
   }, [entries, weekTotalSeconds]);
 
-  // FIX: Gérer les tâches qui passent minuit
   const gridEntries = useMemo(() => {
     const allEntries = [...entries];
 
@@ -536,12 +530,10 @@ export function TimerSection() {
       const durationMs = entry.duration * 1000;
       const entryEnd = new Date(entryStart.getTime() + durationMs);
 
-      // Vérifier si l'entrée dépasse minuit
       if (
         entryStart.getDate() !== entryEnd.getDate() ||
         entryStart.getMonth() !== entryEnd.getMonth()
       ) {
-        // Diviser l'entrée en plusieurs segments
         let currentStart = entryStart;
         let segmentIndex = 0;
 
@@ -595,12 +587,10 @@ export function TimerSection() {
             segmentIndex++;
           }
 
-          // Passer au jour suivant à 00:00
           currentStart = addDays(currentStart, 1);
           currentStart.setHours(0, 0, 0, 0);
         }
       } else {
-        // Entrée normale (ne dépasse pas minuit)
         const dayIndex =
           entryStart.getDay() === 0 ? 6 : entryStart.getDay() - 1;
         const startHour = entryStart.getHours() + entryStart.getMinutes() / 60;
@@ -658,6 +648,7 @@ export function TimerSection() {
         entry: originalEntry,
         mode: "edit",
       });
+      setEditingEntry(originalEntry);
     }
   };
 
@@ -702,7 +693,7 @@ export function TimerSection() {
       isOpen: true,
       entry: {
         startTime: clickedDate.toISOString(),
-        duration: 900, // 15 minutes par défaut
+        duration: 900,
         endTime: new Date(clickedDate.getTime() + 900000).toISOString(),
         personalTaskId:
           selectedTaskId && selectedTaskType === "personal"
@@ -720,121 +711,101 @@ export function TimerSection() {
 
   const handlePopupSave = async (data: Partial<TimeEntry>) => {
     try {
-      console.log("💾 handlePopupSave - données reçues:", data);
-
       if (popupData.mode === "create") {
-        console.log("➕ Mode création");
         await timerService.createEntry(data);
       } else if (popupData.entry?._id) {
-        console.log("✏️ Mode édition, ID:", popupData.entry._id);
-
-        // Utiliser la mutation pour bénéficier de l'invalidation automatique
         await updateMutation.mutateAsync({
           id: popupData.entry._id,
           data,
         });
       }
 
-      // Invalider les queries pour forcer le rechargement
-      console.log("🔄 Invalidation des queries...");
       await queryClient.invalidateQueries({ queryKey: ["timeEntries"] });
       await queryClient.invalidateQueries({ queryKey: ["activeTimer"] });
 
-      // Forcer le refetch immédiat
-      console.log("📥 Refetch forcé...");
       await queryClient.refetchQueries({
         queryKey: ["timeEntries", weekStart, weekEnd],
       });
 
-      console.log("✅ Sauvegarde terminée");
-
-      // Fermer le popup
       setPopupData({ isOpen: false, entry: null, mode: "create" });
     } catch (error: any) {
-      console.error("❌ Erreur lors de la sauvegarde:", {
+      console.error("Erreur lors de la sauvegarde:", {
         status: error.response?.status,
         message: error.response?.data?.message,
         details: error.response?.data,
         fullError: error,
       });
 
-      // Afficher un message d'erreur à l'utilisateur
       alert(
         `Erreur: ${error.response?.data?.message || "Impossible de sauvegarder"}`,
       );
     }
   };
 
-  // Dans timer-section.tsx, remplacez handleTaskUpdate par cette version :
+  const handleTaskUpdate = async (
+    entryId: string,
+    startHour: number,
+    durationHours: number,
+  ) => {
+    const entry = entries.find((e) => e._id === entryId);
+    if (!entry) return;
 
-  // Dans timer-section.tsx, remplacez handleTaskUpdate par cette version :
+    const startDate = new Date(entry.startTime);
+    startDate.setHours(Math.floor(startHour), (startHour % 1) * 60, 0, 0);
 
-const handleTaskUpdate = async (entryId: string, startHour: number, durationHours: number) => {
-  const entry = entries.find(e => e._id === entryId);
-  if (!entry) return;
+    const endDate = new Date(startDate.getTime() + durationHours * 3600000);
 
-  const startDate = new Date(entry.startTime);
-  startDate.setHours(Math.floor(startHour), (startHour % 1) * 60, 0, 0);
-  
-  const endDate = new Date(startDate.getTime() + durationHours * 3600000);
+    const extractId = (value: any): string | undefined => {
+      if (!value) return undefined;
+      if (typeof value === "string") return value;
+      if (typeof value === "object" && value._id) return value._id;
+      return undefined;
+    };
 
-  // ✅ FONCTION pour extraire l'ID string d'un objet ou string
-  const extractId = (value: any): string | undefined => {
-    if (!value) return undefined;
-    if (typeof value === 'string') return value;
-    if (typeof value === 'object' && value._id) return value._id;
-    return undefined;
+    const updateData: any = {
+      startTime: startDate.toISOString(),
+      endTime: endDate.toISOString(),
+      duration: Math.floor(durationHours * 3600),
+    };
+
+    const personalTaskId = extractId(entry.personalTaskId);
+    const sharedTaskId = extractId(entry.sharedTaskId);
+    const projectId = extractId(entry.projectId);
+
+    if (personalTaskId) updateData.personalTaskId = personalTaskId;
+    if (sharedTaskId) updateData.sharedTaskId = sharedTaskId;
+    if (projectId) updateData.projectId = projectId;
+
+    try {
+      await updateMutation.mutateAsync({
+        id: entryId,
+        data: updateData,
+      });
+    } catch (error: any) {
+      console.error("Resize - Erreur backend:", {
+        status: error.response?.status,
+        message: error.response?.data?.message,
+        details: error.response?.data,
+      });
+    }
   };
-
-  // ✅ Nettoyer les IDs pour envoyer uniquement des strings
-  const updateData: any = {
-    startTime: startDate.toISOString(),
-    endTime: endDate.toISOString(),
-    duration: Math.floor(durationHours * 3600),
-  };
-
-  // Ajouter les IDs uniquement s'ils existent
-  const personalTaskId = extractId(entry.personalTaskId);
-  const sharedTaskId = extractId(entry.sharedTaskId);
-  const projectId = extractId(entry.projectId);
-
-  if (personalTaskId) updateData.personalTaskId = personalTaskId;
-  if (sharedTaskId) updateData.sharedTaskId = sharedTaskId;
-  if (projectId) updateData.projectId = projectId;
-
-  console.log('📤 Resize - Envoi update avec données nettoyées:', updateData);
-
-  try {
-    await updateMutation.mutateAsync({
-      id: entryId,
-      data: updateData,
-    });
-    console.log('✅ Resize - Update réussi');
-  } catch (error: any) {
-    console.error('❌ Resize - Erreur backend:', {
-      status: error.response?.status,
-      message: error.response?.data?.message,
-      details: error.response?.data,
-    });
-  }
-};
 
   return (
-    <div className="flex flex-col h-[calc(100vh-120px)] bg-transparent -mb-8 -mt-8">
+    <div className="flex flex-col h-[calc(100vh-100px)] bg-transparent -mb-8 -mt-8">
       {/* Status de connexion */}
-      <div
-        className={`fixed top-20 right-6 z-50 px-3 py-1 rounded-full text-xs font-medium ${isOnline ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}
+      {/* <div
+        className={`fixed top-16 right-4 z-50 px-2 py-0.5 rounded-full text-[10px] font-medium ${isOnline ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}
       >
         {isOnline ? (
-          <Wifi size={14} className="inline mr-1" />
+          <Wifi size={12} className="inline mr-1" />
         ) : (
-          <WifiOff size={14} className="inline mr-1" />
+          <WifiOff size={12} className="inline mr-1" />
         )}
         {isOnline ? "En ligne" : "Hors ligne"}
-      </div>
+      </div> */}
 
       {/* TOP BAR */}
-      <div className="border-b px-6 py-4 flex items-center gap-4 bg-transparent z-30 flex-shrink-0">
+      <div className="border-b px-4 py-2 flex items-center gap-3 bg-transparent z-30 flex-shrink-0">
         <div className="flex-1 relative" ref={taskSelectorRef}>
           <div
             onClick={() =>
@@ -842,25 +813,25 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
               !isPaused &&
               setIsTaskSelectorOpen(!isTaskSelectorOpen)
             }
-            className={`text-lg outline-none text-white bg-transparent cursor-pointer ${isRunning || isPaused ? "opacity-50" : "hover:text-purple-400"}`}
+            className={`text-base font-medium outline-none text-white bg-transparent cursor-pointer ${isRunning || isPaused ? "opacity-50" : "hover:text-purple-400"}`}
           >
             {getSelectedTaskName()}
           </div>
 
           {/* Task Selector Popup */}
           {isTaskSelectorOpen && (
-            <div className="absolute top-full left-0 mt-2 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 w-96 max-h-96 overflow-y-auto">
-              <div className="p-2">
+            <div className="absolute top-full left-0 mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 w-80 max-h-80 overflow-y-auto">
+              <div className="p-1">
                 {personalTasks.length > 0 && (
                   <>
-                    <div className="text-gray-400 text-xs px-3 py-2 font-semibold">
+                    <div className="text-gray-400 text-[10px] px-2 py-1 font-semibold">
                       TÂCHES PERSONNELLES
                     </div>
                     {personalTasks.map((task: any) => (
                       <button
                         key={task._id}
                         onClick={() => handleSelectTask(task._id, "personal")}
-                        className="w-full text-left px-3 py-2 rounded hover:bg-white/5 text-white text-sm"
+                        className="w-full text-left px-2 py-1.5 rounded hover:bg-white/5 text-white text-xs"
                       >
                         {task.title}
                       </button>
@@ -870,14 +841,14 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
 
                 {sharedTasks.length > 0 && (
                   <>
-                    <div className="text-gray-400 text-xs px-3 py-2 font-semibold mt-2">
+                    <div className="text-gray-400 text-[10px] px-2 py-1 font-semibold mt-1">
                       TÂCHES PARTAGÉES
                     </div>
                     {sharedTasks.map((task: any) => (
                       <button
                         key={task._id}
                         onClick={() => handleSelectTask(task._id, "shared")}
-                        className="w-full text-left px-3 py-2 rounded hover:bg-white/5 text-white text-sm"
+                        className="w-full text-left px-2 py-1.5 rounded hover:bg-white/5 text-white text-xs"
                       >
                         {task.title}
                       </button>
@@ -886,7 +857,7 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
                 )}
 
                 {personalTasks.length === 0 && sharedTasks.length === 0 && (
-                  <div className="px-3 py-4 text-center text-gray-400 text-sm">
+                  <div className="px-2 py-3 text-center text-gray-400 text-xs">
                     Aucune tâche en cours
                   </div>
                 )}
@@ -896,7 +867,7 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
         </div>
 
         {getSelectedProjectName() && (
-          <div className="text-sm text-purple-400 px-3 py-1 bg-purple-500/10 rounded-md">
+          <div className="text-xs text-purple-400 px-2 py-0.5 bg-purple-500/10 rounded">
             {getSelectedProjectName()}
           </div>
         )}
@@ -904,7 +875,7 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
         <select
           value={selectedProject}
           onChange={(e) => setSelectedProject(e.target.value)}
-          className="border rounded-md px-3 py-1 text-sm text-white bg-[#0F0F12]"
+          className="border rounded px-2 py-0.5 text-xs text-white bg-[#0F0F12] w-32"
           disabled={isRunning || isPaused}
         >
           <option value="">Sans projet</option>
@@ -915,49 +886,51 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
           ))}
         </select>
 
-        <span className="font-mono text-xl w-[110px] text-center text-white">
+        <span className="font-mono text-base w-[100px] text-center text-white">
           {formatTime(seconds)}
         </span>
 
         <button
           onClick={handleTimerAction}
-          className={`px-4 py-2 rounded-md text-white ${isPaused ? "bg-blue-500" : isRunning ? "bg-yellow-500" : "bg-green-500"}`}
+          className={`px-3 py-1 rounded text-white ${isPaused ? "bg-blue-500" : isRunning ? "bg-yellow-500" : "bg-green-500"}`}
         >
           {isPaused ? (
-            <Play size={16} />
+            <Play size={14} />
           ) : isRunning ? (
-            <Pause size={16} />
+            <Pause size={14} />
           ) : (
-            <Play size={16} />
+            <Play size={14} />
           )}
         </button>
 
         {(isRunning || isPaused) && (
           <button
             onClick={handleStop}
-            className="px-4 py-2 rounded-md bg-red-500 text-white"
+            className="px-3 py-1 rounded bg-red-500 text-white"
           >
-            <Square size={16} />
+            <Square size={14} />
           </button>
         )}
       </div>
 
       {/* WEEK HEADER */}
-      <div className="border-b px-6 py-3 flex items-center justify-between bg-transparent text-white z-20 flex-shrink-0">
-        <div className="flex items-center gap-3 relative">
+      <div className="border-b px-4 py-1.5 flex items-center justify-between bg-transparent text-white z-20 flex-shrink-0">
+        <div className="flex items-center gap-2 relative">
           <button
             onClick={() => setWeekOffset((w) => w - 1)}
-            className="p-1 hover:bg-white/5 rounded-lg"
+            className="p-0.5 hover:bg-white/5 rounded"
           >
-            <ChevronLeft />
+            <ChevronLeft size={16} />
           </button>
           <div
             ref={weekSelectorButtonRef}
             onClick={() => setIsWeekSelectorOpen(!isWeekSelectorOpen)}
-            className="flex items-center gap-2 bg-[#0F0F12] px-4 py-2 rounded-lg cursor-pointer hover:bg-[#1a1a1f] transition"
+            className="flex items-center gap-1 bg-[#0F0F12] px-3 py-1 rounded cursor-pointer hover:bg-[#1a1a1f] transition"
           >
-            <Calendar className="text-purple-400" size={18} />
-            <span className="text-white font-medium">{weekDisplayText}</span>
+            <Calendar className="text-purple-400" size={14} />
+            <span className="text-white text-xs font-medium">
+              {weekDisplayText}
+            </span>
           </div>
 
           {isWeekSelectorOpen && (
@@ -972,32 +945,32 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
 
           <button
             onClick={() => setWeekOffset((w) => w + 1)}
-            className="p-1 hover:bg-white/5 rounded-lg"
+            className="p-0.5 hover:bg-white/5 rounded"
           >
-            <ChevronRight />
+            <ChevronRight size={16} />
           </button>
         </div>
-        <div className="flex gap-10">
-          <span className="text-lg font-medium font-mono">
+        <div className="flex gap-6">
+          <span className="text-base font-medium font-mono">
             Total : {formatTime(weekTotalSeconds)}
           </span>
-          <span className="text-lg font-medium font-mono">
-            Moyenne par jour : {formatTime(Math.floor(averageDailySeconds))}
+          <span className="text-base font-medium font-mono">
+            Moyenne journalière : {formatTime(Math.floor(averageDailySeconds))}
           </span>
         </div>
       </div>
 
       {/* DAYS HEADER */}
-      <div className="grid grid-cols-[80px_repeat(7,1fr)] border-b bg-transparent text-white z-10 flex-shrink-0">
+      <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b bg-transparent text-white z-10 flex-shrink-0">
         <div />
         {DAYS.map((day, i) => {
           const dayTotal = gridEntries
             .filter((e) => e.dayIndex === i)
             .reduce((sum, e) => sum + e.duration, 0);
           return (
-            <div key={day} className="text-center py-2 font-medium text-xl">
+            <div key={day} className="text-center py-1.5 font-medium text-sm">
               {day}
-              <p className="text-sm text-gray-400 font-mono">
+              <p className="text-xs text-gray-400 font-mono">
                 {formatTime(dayTotal)}
               </p>
             </div>
@@ -1007,7 +980,7 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
 
       {/* GRID */}
       <div className="flex-1 overflow-auto">
-        <div className="relative min-w-[900px]">
+        <div className="relative min-w-[700px]">
           <TimeGrid
             onCellClick={handleGridClick}
             pixelsPerHour={PIXELS_PER_HOUR}
@@ -1017,13 +990,13 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
           <div
             className="absolute w-full pointer-events-none z-10"
             style={{
-              left: `calc(80px + ${currentPosition.dayIndex} * (100% - 80px) / 7)`,
+              left: `calc(60px + ${currentPosition.dayIndex} * (100% - 60px) / 7)`,
               top: currentPosition.hourPosition * PIXELS_PER_HOUR,
-              width: `calc((100% - 80px) / 7)`,
+              width: `calc((100% - 60px) / 7)`,
             }}
           >
-            <div className="w-full h-1 bg-white relative">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-4 h-4 bg-white rounded-full -ml-2"></div>
+            <div className="w-full h-0.5 bg-white relative">
+              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full -ml-1"></div>
             </div>
           </div>
 
@@ -1051,9 +1024,10 @@ const handleTaskUpdate = async (entryId: string, startHour: number, durationHour
 
       <TaskPopup
         isOpen={popupData.isOpen}
-        onClose={() =>
-          setPopupData({ isOpen: false, entry: null, mode: "create" })
-        }
+        onClose={() => {
+          setPopupData({ isOpen: false, entry: null, mode: "create" });
+          setEditingEntry(null);
+        }}
         entry={popupData.entry}
         projects={projects}
         personalTasks={personalTasks}

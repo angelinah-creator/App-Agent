@@ -11,7 +11,7 @@ import {
   FileCheck,
   LogOut,
   Video,
-  Clock
+  Clock,
 } from "lucide-react";
 import { authService } from "@/lib/auth-service";
 import { useRouter } from "next/navigation";
@@ -43,14 +43,19 @@ export function Sidebar({
     const adminItems = [
       { id: "agents", label: "Agents", icon: Users },
       { id: "contracts", label: "Contrats", icon: FileCheck },
+      { id: "ndas", label: "NDAs", icon: FileCheck },
       { id: "documents", label: "Documents", icon: File },
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
       { id: "absences", label: "Absences", icon: Calendar },
-      {id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users},
-      { id: "espaces_partages", label: "Espace Partagé", icon: Calendar},
-      { id: "rapports_collabo", label: "Rapports Collaborateur", icon: FileText },
-       { id: "video_admin", label: "Onboarding", icon: Video },
+      { id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users },
+      { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
+      {
+        id: "rapports_collabo",
+        label: "Rapports Collaborateur",
+        icon: FileText,
+      },
+      { id: "video_admin", label: "Onboarding", icon: Video },
     ];
 
     const managerItems = [
@@ -61,11 +66,15 @@ export function Sidebar({
       { id: "absences", label: "Demande d'Absences", icon: Calendar },
       { id: "projets", label: "Projets", icon: FileText },
       { id: "taches", label: "Espace Personnel", icon: Calendar },
-      {id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users},
-      { id: "espaces_partages", label: "Espace Partagé", icon: Calendar},
-      { id: "timer", label: "Timer", icon: Clock},
+      { id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users },
+      { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
+      { id: "timer", label: "Timer", icon: Clock },
       { id: "rapports", label: "Rapports", icon: FileText },
-      { id: "rapports_collabo", label: "Rapports Collaborateur", icon: FileText },  
+      {
+        id: "rapports_collabo",
+        label: "Rapports Collaborateur",
+        icon: FileText,
+      },
       { id: "video", label: "Onboarding", icon: Video },
       // { id: "certifications", label: "Certifications", icon: FileText },
       // { id: "suivi_des_agents", label: "Suivi des Agents", icon: Calendar },
@@ -81,8 +90,8 @@ export function Sidebar({
       { id: "absences", label: "Absences", icon: Calendar },
 
       { id: "taches", label: "Taches Personnelles", icon: Calendar },
-      { id: "espaces_partages", label: "Espace Partagé", icon: Calendar},
-      { id: "timer", label: "Timer", icon: Clock},
+      { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
+      { id: "timer", label: "Timer", icon: Clock },
       { id: "rapports", label: "Rapports", icon: FileText },
       // { id: "certifications", label: "Certifications", icon: FileText },
       { id: "video", label: "Onboarding", icon: Video },
@@ -107,35 +116,35 @@ export function Sidebar({
   let sous_titre = "";
 
   if (userRole === "manager") {
-    sous_titre = "ESPACE MANAGER"
+    sous_titre = "ESPACE MANAGER";
   } else if (userRole === "admin") {
-    sous_titre = "ESPACE ADMIN"
+    sous_titre = "ESPACE ADMIN";
   } else if (userRole === "collaborateur") {
-    sous_titre = "ESPACE AGENT"
+    sous_titre = "ESPACE AGENT";
   } else if (userRole === "client") {
-    sous_titre = "ESPACE CLIENT"
+    sous_titre = "ESPACE CLIENT";
   }
 
   const menuItems = getMenuItems();
 
   return (
     <>
-      <div className="w-65 bg-[#1F2128] text-gray-300 flex flex-col h-screen border-r border-2 border-[#313442]">
+      <div className="w-50 bg-[#1F2128] text-gray-300 flex flex-col h-screen border-r border-2 border-[#313442]">
         {/* Logo */}
-        <div className="px-6 py-8 text-center">
-          <img src="/images/logo3.png" className="w-20 mx-auto" />
-          <p className="text-sm text-[#FFFFFF] mt-4 uppercase tracking-wide font-bold">
+        <div className="px-4 py-6 text-center">
+          <img src="/images/logo3.png" className="w-14 mx-auto" />
+          <p className="text-xs text-[#FFFFFF] mt-3 uppercase tracking-wide font-bold">
             {sous_titre}
           </p>
         </div>
 
         {/* Navigation */}
-        <nav className="flex-1 px-4 space-y-1">
+        <nav className="flex-1 px-3 space-y-1.5">
           {menuItems.map((item) => (
             <button
               key={item.id}
               onClick={() => onSectionChange(item.id)}
-              className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg transition 
+              className={`w-full flex items-center gap-2 px-3 py-2 rounded-sm transition 
                 ${
                   activeSection === item.id
                     ? "bg-[#6C4EA8] text-white shadow-md"
@@ -143,20 +152,20 @@ export function Sidebar({
                 }
               `}
             >
-              {item.icon ? <item.icon className="w-5 h-5" /> : null}
-              <span className="text-sm">{item.label}</span>
+              {item.icon ? <item.icon className="w-4 h-4" /> : null}
+              <span className="text-xs">{item.label}</span>
             </button>
           ))}
         </nav>
 
         {/* Bottom settings / logout */}
-        <div className="px-4 py-6 border-t border-gray-800">
+        <div className="px-3 py-4 border-t border-gray-800">
           <button
             onClick={() => setShowLogoutConfirm(true)}
-            className="w-full flex items-center gap-3 px-4 py-3 rounded-lg text-[#FFFFFF] hover:bg-white/5 transition"
+            className="w-full flex items-center gap-2 px-3 py-2 rounded-lg text-[#FFFFFF] hover:bg-white/5 transition"
           >
-            <LogOut className="w-5 h-5" />
-            <span className="text-sm">Déconnexion</span>
+            <LogOut className="w-4 h-4" />
+            <span className="text-xs">Déconnexion</span>
           </button>
         </div>
       </div>

@@ -550,16 +550,16 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
-            <h1 className="text-3xl font-extrabold">{space.name}</h1>
+            <h1 className="text-2xl font-extrabold">{space.name}</h1>
             {space.description && (
-              <p className="text-gray-400 mt-1">{space.description}</p>
+              <p className="text-gray-400 mt-1 text-xs">{space.description}</p>
             )}
           </div>
 
           <div className="flex items-center gap-3">
             {/* Indicateur de permission */}
             <div
-              className={`px-3 py-1 rounded-full text-sm ${
+              className={`px-3 py-1 rounded-full text-xs ${
                 userPermission === "super_editor"
                   ? "bg-purple-500/20 text-purple-300"
                   : userPermission === "editor"
@@ -578,9 +578,9 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
             {canEdit && (
               <button
                 onClick={() => setShowPermissions(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-lg transition"
+                className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-sm transition text-xs"
               >
-                <UserPlus size={18} />
+                <UserPlus size={16} />
                 Inviter
               </button>
             )}
@@ -593,14 +593,14 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
                 className="p-2 hover:bg-gray-800 rounded-lg"
                 title="Paramètres de l'espace"
               >
-                <Settings size={20} />
+                <Settings size={18} />
               </button>
             )}
           </div>
         </div>
 
         {/* Informations supplémentaires */}
-        <div className="flex items-center gap-6 text-sm text-gray-400">
+        <div className="flex items-center gap-6 text-gray-400 text-xs">
           <div className="flex items-center gap-2">
             <Users size={16} />
             <span>
@@ -621,7 +621,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
               setDefaultStatusForNewTask(undefined);
               setShowTaskForm(true);
             }}
-            className="bg-[#6C4EA8] hover:bg-[#5a3d8c] text-white px-4 py-2 rounded-lg transition"
+            className="bg-[#6C4EA8] hover:bg-[#5a3d8c] text-white px-4 py-2 rounded-sm transition text-xs"
           >
             + Nouvelle tâche
           </button>

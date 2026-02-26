@@ -34,38 +34,38 @@ export default function KanbanColumn({
   return (
     <div
       ref={setNodeRef}
-      className={`flex-shrink-0 w-80 rounded-xl border ${color} ${isOver ? "ring-2 ring-purple-500 bg-purple-500/10" : ""}`}
+      className={`flex-shrink-0 w-58 rounded-lg border ${color} ${isOver ? "ring-1 ring-purple-500 bg-purple-500/5" : ""}`}
     >
-      {/* En-tête de colonne */}
-      <div className={`p-4 rounded-t-xl ${bg}`}>
+      {/* En-tête de colonne - ultra compact */}
+      <div className={`p-2 rounded-t-lg ${bg}`}>
         <div className="flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <div className={`w-3 h-3 rounded-full ${getStatusColor(title)}`} />
-            <h3 className="font-semibold">{title}</h3>
-            <span className="px-2 py-1 text-xs bg-black/30 rounded-full">
+          <div className="flex items-center gap-1.5">
+            <div className={`w-1.5 h-1.5 rounded-full ${getStatusColor(title)}`} />
+            <h3 className="font-semibold text-xs text-gray-200">{title}</h3>
+            <span className="px-1.5 py-0.5 text-[10px] bg-black/20 rounded-full text-gray-300">
               {count}
             </span>
           </div>
           <button
             onClick={() => onAddTask(id)}
-            className="p-1 hover:bg-white/10 rounded"
+            className="p-0.5 hover:bg-white/5 rounded text-gray-400 hover:text-white"
             title="Ajouter une tâche"
           >
-            <Plus size={18} />
+            <Plus size={14} />
           </button>
         </div>
       </div>
 
       {/* Liste des tâches */}
-      <div className="p-3 space-y-3 max-h-[calc(100vh-300px)] overflow-y-auto">
+      <div className="p-1.5 space-y-1.5 max-h-[calc(100vh-280px)] overflow-y-auto">
         {children}
       </div>
 
       {/* Pied de colonne */}
-      <div className={`p-3 rounded-b-xl ${bg}`}>
+      <div className={`p-1.5 rounded-b-lg ${bg}`}>
         <button
           onClick={() => onAddTask(id)}
-          className="w-full py-2 text-sm text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition"
+          className="w-full py-1 text-[11px] text-gray-400 hover:text-white hover:bg-white/5 rounded transition"
         >
           + Ajouter une tâche
         </button>

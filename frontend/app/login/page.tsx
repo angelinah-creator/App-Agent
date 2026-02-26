@@ -103,17 +103,17 @@ export default function LoginPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center relative bg-[#110521] px-4">
-      <div className="relative z-10 w-full max-w-xl bg-black rounded-xl py-15 px-12">
+      <div className="relative z-10 w-full max-w-md bg-black rounded-xl py-8 px-8">
         {/* Logo */}
-        <div className="flex justify-center mb-6">
-          <Image src="/images/logo2.png" width={110} height={110} alt="Logo" />
+        <div className="flex justify-center mb-4">
+          <Image src="/images/logo2.png" width={80} height={80} alt="Logo" />
         </div>
 
         {/* Titre */}
-        <h1 className="text-center text-3xl font-bold text-white">
+        <h1 className="text-center text-2xl font-bold text-white">
           OPSIDE - CODE TALENT
         </h1>
-        <p className="text-center text-gray-500 text-sm mt-2 mb-8">
+        <p className="text-center text-gray-500 text-sm mt-1 mb-6">
           Connectez-vous à votre espace
         </p>
 
@@ -127,7 +127,7 @@ export default function LoginPage() {
         <form onSubmit={handleSubmit} className="space-y-5">
           {/* Email */}
           <div className="space-y-2">
-            <label className="text-sm text-gray-300">E-mail</label>
+            <label className="text-xs text-gray-300">E-mail</label>
             <input
               id="email"
               type="email"
@@ -135,7 +135,7 @@ export default function LoginPage() {
               value={formData.email}
               onChange={(e) => handleInputChange("email", e.target.value)}
               required
-              className={`w-full bg-[#161616] text-white placeholder-gray-500 border rounded-sm px-4 py-3 outline-none ${
+              className={`w-full bg-[#161616] text-white placeholder-gray-500 border rounded-sm px-3 py-2 outline-none ${
                 errors.email ? "border-red-500" : "border-[#333]"
               } focus:border-purple-500`}
             />
@@ -143,7 +143,7 @@ export default function LoginPage() {
 
           {/* Password */}
           <div className="space-y-2">
-            <label className="text-sm text-gray-300">Mot de passe</label>
+            <label className="text-xs text-gray-300">Mot de passe</label>
             <div className="relative">
               <input
                 id="password"
@@ -152,7 +152,7 @@ export default function LoginPage() {
                 value={formData.password}
                 onChange={(e) => handleInputChange("password", e.target.value)}
                 required
-                className={`w-full bg-[#161616] text-white placeholder-gray-500 border rounded-sm px-4 py-3 pr-12 outline-none ${
+                className={`w-full bg-[#161616] text-white placeholder-gray-500 border rounded-sm px-3 py-2 pr-12 outline-none ${
                   errors.password ? "border-red-500" : "border-[#333]"
                 } focus:border-purple-500`}
               />
@@ -171,7 +171,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#8254ff] hover:bg-[#6d46d9] text-white py-3 rounded-sm font-medium transition disabled:opacity-50"
+            className="w-full bg-[#8254ff] hover:bg-[#6d46d9] text-white py-2 rounded-sm font-medium transition disabled:opacity-50"
           >
             {isLoading ? "Connexion..." : "Se connecter"}
           </button>

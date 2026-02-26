@@ -55,7 +55,7 @@ export function AbsencesSection() {
     select: (data) =>
       [...data].sort(
         (a, b) =>
-          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+          new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
       ),
   });
 
@@ -99,7 +99,7 @@ export function AbsencesSection() {
       console.error("[v0] Error response:", error.response?.data);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la création de la demande"
+          "Erreur lors de la création de la demande",
       );
     },
   });
@@ -113,7 +113,7 @@ export function AbsencesSection() {
       console.error("Erreur suppression absence:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la suppression de la demande"
+          "Erreur lors de la suppression de la demande",
       );
     },
   });
@@ -189,8 +189,8 @@ export function AbsencesSection() {
 
   if (isLoading) {
     return (
-      <div className="flex items-center justify-center py-12">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-violet-200 border-t-violet-600"></div>
+      <div className="flex items-center justify-center py-6">
+        <div className="animate-spin rounded-full h-6 w-6 border-4 border-violet-200 border-t-violet-600"></div>
       </div>
     );
   }
@@ -209,7 +209,7 @@ export function AbsencesSection() {
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-3 -mt-8">
       {dialog}
       <Card className="bg-[#1F2128] border-[#313442]">
         <CardHeader>
@@ -225,9 +225,11 @@ export function AbsencesSection() {
         </CardHeader>
         <CardContent className="border-[#313442]">
           {absences.length === 0 ? (
-            <div className="text-center py-12">
-              <Calendar className="h-12 w-12 text-muted-foreground mx-auto mb-3 opacity-50" />
-              <p className="text-muted-foreground">Aucune demande d'absence</p>
+            <div className="text-center py-6">
+              <Calendar className="h-10 w-10 text-muted-foreground mx-auto mb-3 opacity-50" />
+              <p className="text-muted-foreground text-sm">
+                Aucune demande d'absence
+              </p>
               <Button
                 variant="outline"
                 className="mt-4 border-violet-600 text-violet-600 hover:bg-violet-50 bg-transparent"
@@ -237,27 +239,27 @@ export function AbsencesSection() {
               </Button>
             </div>
           ) : (
-            <div className="space-y-3">
+            <div className="space-y-2">
               {absences.map((absence) => (
                 <div
                   key={absence._id}
-                  className="border border-[#313442] rounded-lg p-4 bg-[#303237] text-white"
+                  className="border border-[#313442] rounded-lg p-3 bg-[#303237] text-white"
                 >
-                  <div className="flex items-start justify-between mb-3">
-                    <div className="flex items-center gap-3">
+                  <div className="flex items-start justify-between mb-2">
+                    <div className="flex items-center gap-2">
                       <div
                         className={cn(
                           "w-3 h-3 rounded-full flex-shrink-0",
-                          getStatusColor(absence.status)
+                          getStatusColor(absence.status),
                         )}
                       />
-                      <Calendar className="h-5 w-5 text-muted-foreground" />
+                      <Calendar className="h-4 w-4 text-muted-foreground" />
                       <div>
-                        <p className="font-medium">
+                        <p className="font-medium text-sm">
                           {formatDate(absence.startDate)} →{" "}
                           {formatDate(absence.endDate)}
                         </p>
-                        <p className="text-sm text-muted-foreground">
+                        <p className="text-xs text-muted-foreground">
                           {absence.duration} jours
                         </p>
                       </div>
@@ -265,30 +267,30 @@ export function AbsencesSection() {
                     {getStatusBadge(absence.status)}
                   </div>
 
-                  <div className="space-y-2 mb-3">
+                  <div className="space-y-1 mb-2">
                     <div className="flex items-start gap-2">
-                      <FileText className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <FileText className="h-3 w-3 text-muted-foreground mt-0.5" />
                       <div className="flex-1">
                         <p className="text-xs font-medium text-muted-foreground">
                           Raison
                         </p>
-                        <p className="text-sm">{absence.reason}</p>
+                        <p className="text-xs">{absence.reason}</p>
                       </div>
                     </div>
                     <div className="flex items-start gap-2">
-                      <User className="h-4 w-4 text-muted-foreground mt-0.5" />
+                      <User className="h-3 w-3 text-muted-foreground mt-0.5" />
                       <div className="flex-1">
                         <p className="text-xs font-medium text-muted-foreground">
                           Personne de remplacement
                         </p>
-                        <p className="text-sm">{absence.backupPerson}</p>
+                        <p className="text-xs">{absence.backupPerson}</p>
                       </div>
                     </div>
                   </div>
 
                   {absence.adminReason && (
                     <div
-                      className={`p-3 rounded mb-3 ${
+                      className={`p-2 rounded mb-2 ${
                         absence.status === "approved"
                           ? "bg-green-200 border border-green-200"
                           : "bg-red-200 border border-red-200"
@@ -347,8 +349,8 @@ export function AbsencesSection() {
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
-            <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-3">
+            <div className="grid grid-cols-2 gap-3">
               <div>
                 <Label htmlFor="startDate">Date de début</Label>
                 <Input

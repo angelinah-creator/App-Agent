@@ -111,11 +111,6 @@ export function AgentsSection({
     setShowDetailsModal(true);
   };
 
-  const handleChangeProfile = (agent: Agent) => {
-    setAgentToChangeProfile(agent);
-    setShowChangeProfileModal(true);
-  };
-
   const handleConfirmProfileChange = async (newProfile: UserProfile) => {
     if (!agentToChangeProfile) return;
 
@@ -279,92 +274,84 @@ export function AgentsSection({
   return (
     <>
       {/* Stats Cards mises à jour */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white">
+      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6 -mt-8">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
+            <CardTitle className="text-xs font-medium text-white">
               Total Agents
             </CardTitle>
-            <Users className="w-5 h-5 text-violet-600" />
+            <Users className="w-4 h-4 text-violet-600" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 pt-0 -mt-5">
             <div className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-fuchsia-600 bg-clip-text text-transparent">
               {agents.length}
             </div>
-            <p className="text-xs text-white mt-1">
+            <p className="text-xs text-white mt-0.5">
               {activeAgents.length} actifs, {archivedAgents.length} archivés
             </p>
           </CardContent>
         </Card>
 
-        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
+            <CardTitle className="text-xs font-medium text-white">
               Stagiaires
             </CardTitle>
-            <div className="w-3 h-3 bg-blue-600 rounded-full" />
+            <div className="w-2 h-2 bg-blue-600 rounded-full" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 pt-0 -mt-5">
             <div className="text-3xl font-bold text-blue-600">
-              
-              {" "}
               {activeAgents.filter((a) => a.profile === "stagiaire").length}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
+            <CardTitle className="text-xs font-medium text-white">
               Prestataires
             </CardTitle>
-            <div className="w-3 h-3 bg-green-600 rounded-full" />
+            <div className="w-2 h-2 bg-green-600 rounded-full" />
           </CardHeader>
-          <CardContent>
+          <CardContent className="p-3 pt-0 -mt-5">
             <div className="text-3xl font-bold text-green-600">
-              
-              {" "}
               {activeAgents.filter((a) => a.profile === "prestataire").length}
             </div>
           </CardContent>
         </Card>
 
-        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm hover:shadow-xl transition-all duration-300 hover:scale-105">
-          <CardHeader className="flex flex-row items-center justify-between pb-2">
-            <CardTitle className="text-sm font-medium text-white">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
+          <CardHeader className="flex flex-row items-center justify-between pb-2 p-3">
+            <CardTitle className="text-xs font-medium text-white">
               Agents actifs et archivés
             </CardTitle>
-            <Users className="w-5 h-5 text-violet-600" />
+            <Users className="w-4 h-4 text-violet-600" />
           </CardHeader>
-          <CardContent>
-            <div className="text-sm text-white">
-              <p>
-                Actifs: {activeAgents.length}
-              </p>
-              <p>
-                Archivés: {archivedAgents.length}
-              </p>
+          <CardContent className="p-3 pt-0 -mt-5">
+            <div className="text-xs text-white">
+              <p>Actifs: {activeAgents.length}</p>
+              <p>Archivés: {archivedAgents.length}</p>
             </div>
           </CardContent>
         </Card>
       </div>
 
       {/* Contrôles de filtrage */}
-      <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm mb-6">
-        <CardContent className="p-4">
+      <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm mb-4">
+        <CardContent className="p-3">
           <div className="flex items-center justify-between">
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <Button
                 variant={!showArchived ? "default" : "outline"}
                 size="sm"
                 onClick={() => onToggleArchived(false)}
                 className={
                   !showArchived
-                    ? "bg-[#6C4EA8] text-white shadow-md"
-                    : "border-violet-300 hover:bg-gray-600"
+                    ? "bg-[#6C4EA8] text-white shadow-md text-xs"
+                    : "border-violet-300 hover:bg-gray-600 text-xs"
                 }
               >
-                <Users size={16} className="mr-2" />
+                <Users size={14} className="mr-1" />
                 Agents Actifs ({activeAgents.length})
               </Button>
               <Button
@@ -373,24 +360,24 @@ export function AgentsSection({
                 onClick={() => onToggleArchived(true)}
                 className={
                   showArchived
-                    ? "bg-[#6C4EA8] text-white shadow-md"
-                    : "border-violet-300 hover:bg-gray-600"
+                    ? "bg-[#6C4EA8] text-white shadow-md text-xs"
+                    : "border-violet-300 hover:bg-gray-600 text-xs"
                 }
               >
-                <Archive size={16} className="mr-2" />
+                <Archive size={14} className="mr-1" />
                 Agents Archivés ({archivedAgents.length})
               </Button>
             </div>
 
-            <div className="flex gap-2">
+            <div className="flex gap-1">
               <Button
                 variant={filterProfile === "all" ? "default" : "outline"}
                 size="sm"
                 onClick={() => setFilterProfile("all")}
                 className={
                   filterProfile === "all"
-                    ? "bg-[#6C4EA8] text-white shadow-md"
-                    : "border-violet-300 hover:bg-gray-600"
+                    ? "bg-[#6C4EA8] text-white shadow-md text-xs"
+                    : "border-violet-300 hover:bg-gray-600 text-xs"
                 }
               >
                 Tous
@@ -401,8 +388,8 @@ export function AgentsSection({
                 onClick={() => setFilterProfile("stagiaire")}
                 className={
                   filterProfile === "stagiaire"
-                    ? "bg-[#6C4EA8] text-white shadow-md"
-                    : "border-violet-300 hover:bg-gray-600"
+                    ? "bg-[#6C4EA8] text-white shadow-md text-xs"
+                    : "border-violet-300 hover:bg-gray-600 text-xs"
                 }
               >
                 Stagiaires
@@ -415,8 +402,8 @@ export function AgentsSection({
                 onClick={() => setFilterProfile("prestataire")}
                 className={
                   filterProfile === "prestataire"
-                    ? "bg-[#6C4EA8] text-white shadow-md"
-                    : "border-violet-300 hover:bg-gray-600"
+                    ? "bg-[#6C4EA8] text-white shadow-md text-xs"
+                    : "border-violet-300 hover:bg-gray-600 text-xs"
                 }
               >
                 Prestataires
@@ -428,13 +415,13 @@ export function AgentsSection({
 
       {/* Liste des agents */}
       <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
-        <CardHeader>
+        <CardHeader className="p-4">
           <div className="flex items-center justify-between">
             <div>
-              <CardTitle className="text-xl text-white">
+              <CardTitle className="text-lg text-white">
                 {showArchived ? "Agents Archivés" : "Agents Actifs"}
               </CardTitle>
-              <CardDescription>
+              <CardDescription className="text-xs">
                 {showArchived
                   ? "Liste des agents archivés - Ces agents ne sont plus actifs"
                   : "Gérez vos stagiaires et prestataires actifs"}
@@ -443,21 +430,21 @@ export function AgentsSection({
             {!showArchived && (
               <Button
                 onClick={() => setShowAddModal(true)}
-                className="bg-[#6C4EA8] hover:from-violet-500 hover:to-fuchsia-500"
+                className="bg-[#6C4EA8] hover:bg-[#5a3d8a] text-sm h-8"
               >
-                <Plus size={16} className="mr-2" />
+                <Plus size={14} className="mr-1" />
                 Ajouter agent
               </Button>
             )}
           </div>
         </CardHeader>
-        <CardContent>
+        <CardContent className="p-4">
           {agentsLoading ? (
-            <div className="text-center py-8">
-              <div className="h-8 w-8 border-4 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto" />
+            <div className="text-center py-6">
+              <div className="h-6 w-6 border-3 border-violet-600 border-t-transparent rounded-full animate-spin mx-auto" />
             </div>
           ) : filteredAgents.length === 0 ? (
-            <div className="text-center py-8 text-gray-500">
+            <div className="text-center py-6 text-gray-500 text-sm">
               {showArchived
                 ? "Aucun agent archivé trouvé"
                 : "Aucun agent trouvé"}
@@ -467,24 +454,24 @@ export function AgentsSection({
               <table className="w-full">
                 <thead className="">
                   <tr className="border-b border-[#313442]">
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-white">
                       Agent
                     </th>
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-white">
                       Profil
                     </th>
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-white">
                       Contact
                     </th>
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-white">
                       Poste
                     </th>
                     {showArchived && (
-                      <th className="text-left py-4 px-4 text-sm font-semibold text-white">
+                      <th className="text-left py-3 px-3 text-xs font-semibold text-white">
                         Archivé le
                       </th>
                     )}
-                    <th className="text-left py-4 px-4 text-sm font-semibold text-white">
+                    <th className="text-left py-3 px-3 text-xs font-semibold text-white">
                       Actions
                     </th>
                   </tr>
@@ -499,10 +486,10 @@ export function AgentsSection({
                           : "hover:bg-violet-50/10"
                       }`}
                     >
-                      <td className="py-4 px-4">
-                        <div className="flex items-center gap-3">
+                      <td className="py-3 px-3">
+                        <div className="flex items-center gap-2">
                           <div
-                            className={`w-3 h-3 rounded-full ${
+                            className={`w-2 h-2 rounded-full ${
                               agent.archived
                                 ? "bg-gray-400"
                                 : agent.profile === "stagiaire"
@@ -519,7 +506,7 @@ export function AgentsSection({
                           />
                           <div>
                             <p
-                              className={`font-semibold ${
+                              className={`font-semibold text-sm ${
                                 agent.archived
                                   ? "text-white"
                                   : "text-white"
@@ -528,7 +515,7 @@ export function AgentsSection({
                               {agent.prenoms} {agent.nom}
                             </p>
                             <p
-                              className={`text-sm ${
+                              className={`text-xs ${
                                 agent.archived
                                   ? "text-gray-500"
                                   : "text-white"
@@ -539,9 +526,9 @@ export function AgentsSection({
                           </div>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-3 px-3">
                         <span
-                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium capitalize ${
+                          className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium capitalize ${
                             agent.archived
                               ? "bg-gray-100 text-white"
                               : agent.profile === "stagiaire"
@@ -553,21 +540,21 @@ export function AgentsSection({
                           {agent.archived && " (archivé)"}
                         </span>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-3 px-3">
                         <div
-                          className={`text-sm ${
+                          className={`text-xs ${
                             agent.archived ? "text-gray-500" : "text-white"
                           }`}
                         >
                           <p className="flex items-center gap-1">
-                            <Phone className="w-3 h-3" />
+                            <Phone className="w-2.5 h-2.5" />
                             {agent.telephone}
                           </p>
                         </div>
                       </td>
-                      <td className="py-4 px-4">
+                      <td className="py-3 px-3">
                         <p
-                          className={`text-sm ${
+                          className={`text-xs ${
                             agent.archived ? "text-white" : "text-white"
                           }`}
                         >
@@ -575,8 +562,8 @@ export function AgentsSection({
                         </p>
                       </td>
                       {showArchived && (
-                        <td className="py-4 px-4">
-                          <p className="text-sm text-white">
+                        <td className="py-3 px-3">
+                          <p className="text-xs text-white">
                             {agent.archivedAt
                               ? new Date(agent.archivedAt).toLocaleDateString(
                                   "fr-FR"
@@ -584,52 +571,43 @@ export function AgentsSection({
                               : "N/A"}
                           </p>
                           {agent.archiveReason && (
-                            <p className="text-xs text-gray-500 mt-1">
+                            <p className="text-xs text-gray-500 mt-0.5">
                               {agent.archiveReason}
                             </p>
                           )}
                         </td>
                       )}
-                      <td className="py-4 px-4">
-                        <div className="flex items-center justify-end gap-2">
+                      <td className="py-3 px-3">
+                        <div className="flex items-center justify-end gap-1">
                           {!agent.archived ? (
                             // Actions pour les agents actifs
                             <>
-                              {/* <Button
-                                size="sm"
-                                variant="outline"
-                                onClick={() => handleChangeProfile(agent)}
-                                className="border-purple-300 hover:bg-purple-600 hover:text-white"
-                                title="Changer le profil"
-                              >
-                                <RefreshCw size={14} />
-                              </Button> */}
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleViewDetails(agent)}
-                                className="border-violet-300 hover:bg-violet-300"
+                                className="border-violet-300 hover:bg-violet-300 text-xs h-7"
                               >
-                                <Eye size={14} className="mr-1" />
+                                <Eye size={12} className="mr-0.5" />
                                 Détails
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleEdit(agent)}
-                                className="border-blue-300 hover:bg-blue-600 hover:text-white"
+                                className="border-blue-300 hover:bg-blue-600 hover:text-white text-xs h-7"
                               >
-                                <Edit size={14} />
+                                <Edit size={12} />
                                 Modifier
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleArchive(agent)}
-                                className="border-orange-300 hover:bg-orange-600 hover:text-white"
+                                className="border-orange-300 hover:bg-orange-600 hover:text-white text-xs h-7"
                                 disabled={archiveAgentPending}
                               >
-                                <Archive size={14} />
+                                <Archive size={12} />
                                 Archiver
                               </Button>
                             </>
@@ -640,19 +618,19 @@ export function AgentsSection({
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleViewDetails(agent)}
-                                className="border-violet-300 hover:bg-violet-300"
+                                className="border-violet-300 hover:bg-violet-300 text-xs h-7"
                               >
-                                <Eye size={14} className="mr-1" />
+                                <Eye size={12} className="mr-0.5" />
                                 Détails
                               </Button>
                               <Button
                                 size="sm"
                                 variant="outline"
                                 onClick={() => handleRestore(agent)}
-                                className="border-green-300 hover:bg-green-600 hover:text-white"
+                                className="border-green-300 hover:bg-green-600 hover:text-white text-xs h-7"
                                 disabled={archiveAgentPending}
                               >
-                                <RefreshCw size={14} className="mr-1" />
+                                <RefreshCw size={12} className="mr-0.5" />
                                 Restaurer
                               </Button>
                             </>
@@ -670,21 +648,21 @@ export function AgentsSection({
 
       {/* Modal de confirmation d'archivage */}
       {showArchiveModal && selectedAgent && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full">
-            <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-6 rounded-t-2xl">
-              <h2 className="text-xl font-bold">Archiver l'agent</h2>
-              <p className="text-orange-100 mt-1">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3">
+          <div className="bg-white rounded-lg shadow-xl max-w-sm w-full">
+            <div className="bg-gradient-to-r from-orange-600 to-amber-600 text-white p-4 rounded-t-lg">
+              <h2 className="text-lg font-bold">Archiver l'agent</h2>
+              <p className="text-orange-100 text-xs mt-0.5">
                 Êtes-vous sûr de vouloir archiver {selectedAgent.prenoms}{" "}
                 {selectedAgent.nom} ?
               </p>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="p-4 space-y-3">
               <div>
                 <Label
                   htmlFor="archiveReason"
-                  className="text-sm font-medium text-gray-700"
+                  className="text-xs font-medium text-gray-700"
                 >
                   Raison de l'archivage (optionnel)
                 </Label>
@@ -693,18 +671,18 @@ export function AgentsSection({
                   value={archiveReason}
                   onChange={(e) => setArchiveReason(e.target.value)}
                   placeholder="Ex: Fin de contrat, départ..."
-                  className="mt-1"
+                  className="mt-1 text-sm h-8"
                 />
               </div>
 
-              <div className="bg-amber-50 border border-amber-200 rounded-lg p-4">
-                <div className="flex items-start gap-3">
-                  <div className="w-5 h-5 bg-amber-100 border border-amber-300 rounded-full flex items-center justify-center mt-0.5">
+              <div className="bg-amber-50 border border-amber-200 rounded p-3">
+                <div className="flex items-start gap-2">
+                  <div className="w-4 h-4 bg-amber-100 border border-amber-300 rounded-full flex items-center justify-center mt-0.5">
                     <span className="text-amber-600 text-xs">!</span>
                   </div>
-                  <div className="text-amber-800 text-sm">
+                  <div className="text-amber-800 text-xs">
                     <p className="font-medium">Information</p>
-                    <p className="mt-1">
+                    <p className="mt-0.5">
                       L'agent sera marqué comme archivé et ne sera plus visible
                       dans la liste des agents actifs. Toutes ses données
                       seront conservées.
@@ -714,7 +692,7 @@ export function AgentsSection({
               </div>
             </div>
 
-            <div className="flex gap-3 p-6 border-t">
+            <div className="flex gap-2 p-4 border-t">
               <Button
                 type="button"
                 variant="outline"
@@ -723,7 +701,7 @@ export function AgentsSection({
                   setArchiveReason("");
                   setSelectedAgent(null);
                 }}
-                className="flex-1"
+                className="flex-1 text-xs h-8"
                 disabled={archiveAgentPending}
               >
                 Annuler
@@ -731,7 +709,7 @@ export function AgentsSection({
               <Button
                 type="button"
                 onClick={handleConfirmArchive}
-                className="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500"
+                className="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 text-xs h-8"
                 disabled={archiveAgentPending}
               >
                 {archiveAgentPending ? "Archivage..." : "Confirmer l'archivage"}
@@ -743,29 +721,29 @@ export function AgentsSection({
 
       {/* Modal d'ajout */}
       {showAddModal && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
-              <h2 className="text-2xl font-bold">Ajouter un agent</h2>
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto">
+            <div className="sticky top-0 bg-gradient-to-r from-violet-600 to-fuchsia-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-lg font-bold">Ajouter un agent</h2>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowAddModal(false)}
-                className="hover:bg-white/20 text-white"
+                className="hover:bg-white/20 text-white h-8 w-8"
               >
-                <X size={24} />
+                <X size={18} />
               </Button>
             </div>
 
-            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleSubmit} className="p-4 space-y-4">
               {/* Informations de base */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Informations de base
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="profile">Profil *</Label>
+                    <Label htmlFor="profile" className="text-xs">Profil *</Label>
                     <Select
                       value={formData.profile}
                       onValueChange={(value) =>
@@ -775,18 +753,18 @@ export function AgentsSection({
                         })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="stagiaire">Stagiaire</SelectItem>
-                        <SelectItem value="prestataire">Prestataire</SelectItem>
-                        <SelectItem value="admin">Admin</SelectItem>
+                        <SelectItem value="stagiaire" className="text-xs">Stagiaire</SelectItem>
+                        <SelectItem value="prestataire" className="text-xs">Prestataire</SelectItem>
+                        <SelectItem value="admin" className="text-xs">Admin</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="nom">Nom *</Label>
+                    <Label htmlFor="nom" className="text-xs">Nom *</Label>
                     <Input
                       id="nom"
                       value={formData.nom}
@@ -794,10 +772,11 @@ export function AgentsSection({
                         setFormData({ ...formData, nom: e.target.value })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="prenoms">Prénoms *</Label>
+                    <Label htmlFor="prenoms" className="text-xs">Prénoms *</Label>
                     <Input
                       id="prenoms"
                       value={formData.prenoms}
@@ -805,27 +784,28 @@ export function AgentsSection({
                         setFormData({ ...formData, prenoms: e.target.value })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="genre">Genre *</Label>
+                    <Label htmlFor="genre" className="text-xs">Genre *</Label>
                     <Select
                       value={formData.genre}
                       onValueChange={(value) =>
                         setFormData({ ...formData, genre: value as Genre })
                       }
                     >
-                      <SelectTrigger>
+                      <SelectTrigger className="h-8 text-xs">
                         <SelectValue />
                       </SelectTrigger>
                       <SelectContent>
-                        <SelectItem value="Homme">Homme</SelectItem>
-                        <SelectItem value="Femme">Femme</SelectItem>
+                        <SelectItem value="Homme" className="text-xs">Homme</SelectItem>
+                        <SelectItem value="Femme" className="text-xs">Femme</SelectItem>
                       </SelectContent>
                     </Select>
                   </div>
                   <div>
-                    <Label htmlFor="dateNaissance">Date de naissance *</Label>
+                    <Label htmlFor="dateNaissance" className="text-xs">Date de naissance *</Label>
                     <Input
                       id="dateNaissance"
                       type="date"
@@ -837,10 +817,11 @@ export function AgentsSection({
                         })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="cin">CIN *</Label>
+                    <Label htmlFor="cin" className="text-xs">CIN *</Label>
                     <Input
                       id="cin"
                       value={formData.cin}
@@ -848,6 +829,7 @@ export function AgentsSection({
                         setFormData({ ...formData, cin: e.target.value })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                 </div>
@@ -855,12 +837,12 @@ export function AgentsSection({
 
               {/* Contact */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Contact
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="email">Email *</Label>
+                    <Label htmlFor="email" className="text-xs">Email *</Label>
                     <Input
                       id="email"
                       type="email"
@@ -869,10 +851,11 @@ export function AgentsSection({
                         setFormData({ ...formData, email: e.target.value })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="telephone">Téléphone *</Label>
+                    <Label htmlFor="telephone" className="text-xs">Téléphone *</Label>
                     <Input
                       id="telephone"
                       value={formData.telephone}
@@ -880,10 +863,11 @@ export function AgentsSection({
                         setFormData({ ...formData, telephone: e.target.value })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label htmlFor="adresse">Adresse *</Label>
+                    <Label htmlFor="adresse" className="text-xs">Adresse *</Label>
                     <Input
                       id="adresse"
                       value={formData.adresse}
@@ -891,10 +875,11 @@ export function AgentsSection({
                         setFormData({ ...formData, adresse: e.target.value })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="password">Mot de passe *</Label>
+                    <Label htmlFor="password" className="text-xs">Mot de passe *</Label>
                     <Input
                       id="password"
                       type="password"
@@ -903,6 +888,7 @@ export function AgentsSection({
                         setFormData({ ...formData, password: e.target.value })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                 </div>
@@ -910,12 +896,12 @@ export function AgentsSection({
 
               {/* Informations professionnelles */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Informations professionnelles
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="poste">Poste *</Label>
+                    <Label htmlFor="poste" className="text-xs">Poste *</Label>
                     <Input
                       id="poste"
                       value={formData.poste}
@@ -923,20 +909,22 @@ export function AgentsSection({
                         setFormData({ ...formData, poste: e.target.value })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="mission">Mission</Label>
+                    <Label htmlFor="mission" className="text-xs">Mission</Label>
                     <Input
                       id="mission"
                       value={formData.mission || ""}
                       onChange={(e) =>
                         setFormData({ ...formData, mission: e.target.value })
                       }
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="dateDebut">Date de début *</Label>
+                    <Label htmlFor="dateDebut" className="text-xs">Date de début *</Label>
                     <Input
                       id="dateDebut"
                       type="date"
@@ -945,10 +933,11 @@ export function AgentsSection({
                         setFormData({ ...formData, dateDebut: e.target.value })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="dateFin">Date de fin</Label>
+                    <Label htmlFor="dateFin" className="text-xs">Date de fin</Label>
                     <Input
                       id="dateFin"
                       type="date"
@@ -957,9 +946,10 @@ export function AgentsSection({
                         setFormData({ ...formData, dateFin: e.target.value })
                       }
                       disabled={formData.dateFinIndeterminee}
+                      className="h-8 text-sm"
                     />
                   </div>
-                  <div className="col-span-2 flex items-center gap-2">
+                  <div className="col-span-2 flex items-center gap-1">
                     <Checkbox
                       id="dateFinIndeterminee"
                       checked={formData.dateFinIndeterminee}
@@ -969,10 +959,11 @@ export function AgentsSection({
                           dateFinIndeterminee: checked as boolean,
                         })
                       }
+                      className="h-4 w-4"
                     />
                     <Label
                       htmlFor="dateFinIndeterminee"
-                      className="cursor-pointer"
+                      className="cursor-pointer text-xs"
                     >
                       Date de fin indéterminée
                     </Label>
@@ -982,14 +973,14 @@ export function AgentsSection({
 
               {/* Informations financières */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Informations financières
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {formData.profile === "stagiaire" ? (
                     <>
                       <div>
-                        <Label htmlFor="indemnite">Indemnité mensuelle</Label>
+                        <Label htmlFor="indemnite" className="text-xs">Indemnité mensuelle</Label>
                         <Input
                           id="indemnite"
                           type="number"
@@ -1000,12 +991,11 @@ export function AgentsSection({
                               indemnite: Number(e.target.value),
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="indemniteConnexion">
-                          Indemnité de connexion
-                        </Label>
+                        <Label htmlFor="indemniteConnexion" className="text-xs">Indemnité de connexion</Label>
                         <Input
                           id="indemniteConnexion"
                           type="number"
@@ -1016,15 +1006,14 @@ export function AgentsSection({
                               indemniteConnexion: Number(e.target.value),
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                     </>
                   ) : (
                     <>
                       <div>
-                        <Label htmlFor="tjm">
-                          TJM (Taux Journalier Moyen) *
-                        </Label>
+                        <Label htmlFor="tjm" className="text-xs">TJM (Taux Journalier Moyen) *</Label>
                         <Input
                           id="tjm"
                           type="number"
@@ -1036,12 +1025,11 @@ export function AgentsSection({
                             })
                           }
                           required
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="tarifJournalier">
-                          Tarif journalier
-                        </Label>
+                        <Label htmlFor="tarifJournalier" className="text-xs">Tarif journalier</Label>
                         <Input
                           id="tarifJournalier"
                           type="number"
@@ -1052,12 +1040,11 @@ export function AgentsSection({
                               tarifJournalier: Number(e.target.value),
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="dureeJournaliere">
-                          Durée journalière (heures)
-                        </Label>
+                        <Label htmlFor="dureeJournaliere" className="text-xs">Durée journalière (heures)</Label>
                         <Input
                           id="dureeJournaliere"
                           type="number"
@@ -1068,12 +1055,11 @@ export function AgentsSection({
                               dureeJournaliere: Number(e.target.value),
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="domainePrestation">
-                          Domaine de prestation
-                        </Label>
+                        <Label htmlFor="domainePrestation" className="text-xs">Domaine de prestation</Label>
                         <Input
                           id="domainePrestation"
                           value={formData.domainePrestation || ""}
@@ -1083,6 +1069,7 @@ export function AgentsSection({
                               domainePrestation: e.target.value,
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                     </>
@@ -1090,19 +1077,19 @@ export function AgentsSection({
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex gap-2 pt-3 border-t">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setShowAddModal(false)}
-                  className="flex-1"
+                  className="flex-1 text-xs h-8"
                   disabled={isSubmitting}
                 >
                   Annuler
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
+                  className="flex-1 bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500 text-xs h-8"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Création..." : "Créer l'agent"}
@@ -1115,31 +1102,31 @@ export function AgentsSection({
 
       {/* Modal de modification */}
       {showEditModal && selectedAgent && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-6 rounded-t-2xl flex items-center justify-between">
-              <h2 className="text-2xl font-bold">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3">
+          <div className="bg-white rounded-lg shadow-xl max-w-3xl w-full max-h-[85vh] overflow-y-auto">
+            <div className="sticky top-0 bg-gradient-to-r from-blue-600 to-cyan-600 text-white p-4 rounded-t-lg flex items-center justify-between">
+              <h2 className="text-lg font-bold">
                 Modifier {selectedAgent.prenoms} {selectedAgent.nom}
               </h2>
               <Button
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowEditModal(false)}
-                className="hover:bg-white/20 text-white"
+                className="hover:bg-white/20 text-white h-8 w-8"
               >
-                <X size={24} />
+                <X size={18} />
               </Button>
             </div>
 
-            <form onSubmit={handleEditSubmit} className="p-6 space-y-6">
+            <form onSubmit={handleEditSubmit} className="p-4 space-y-4">
               {/* Informations de base */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Informations de base
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="edit-nom">Nom *</Label>
+                    <Label htmlFor="edit-nom" className="text-xs">Nom *</Label>
                     <Input
                       id="edit-nom"
                       value={editFormData.nom || ""}
@@ -1150,10 +1137,11 @@ export function AgentsSection({
                         })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edit-prenoms">Prénoms *</Label>
+                    <Label htmlFor="edit-prenoms" className="text-xs">Prénoms *</Label>
                     <Input
                       id="edit-prenoms"
                       value={editFormData.prenoms || ""}
@@ -1164,6 +1152,7 @@ export function AgentsSection({
                         })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                 </div>
@@ -1171,12 +1160,12 @@ export function AgentsSection({
 
               {/* Contact */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Contact
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="edit-email">Email *</Label>
+                    <Label htmlFor="edit-email" className="text-xs">Email *</Label>
                     <Input
                       id="edit-email"
                       type="email"
@@ -1188,10 +1177,11 @@ export function AgentsSection({
                         })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edit-telephone">Téléphone *</Label>
+                    <Label htmlFor="edit-telephone" className="text-xs">Téléphone *</Label>
                     <Input
                       id="edit-telephone"
                       value={editFormData.telephone || ""}
@@ -1202,10 +1192,11 @@ export function AgentsSection({
                         })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div className="col-span-2">
-                    <Label htmlFor="edit-adresse">Adresse *</Label>
+                    <Label htmlFor="edit-adresse" className="text-xs">Adresse *</Label>
                     <Input
                       id="edit-adresse"
                       value={editFormData.adresse || ""}
@@ -1216,6 +1207,7 @@ export function AgentsSection({
                         })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                 </div>
@@ -1223,12 +1215,12 @@ export function AgentsSection({
 
               {/* Informations professionnelles */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Informations professionnelles
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <Label htmlFor="edit-poste">Poste *</Label>
+                    <Label htmlFor="edit-poste" className="text-xs">Poste *</Label>
                     <Input
                       id="edit-poste"
                       value={editFormData.poste || ""}
@@ -1239,10 +1231,11 @@ export function AgentsSection({
                         })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edit-mission">Mission</Label>
+                    <Label htmlFor="edit-mission" className="text-xs">Mission</Label>
                     <Input
                       id="edit-mission"
                       value={editFormData.mission || ""}
@@ -1252,10 +1245,11 @@ export function AgentsSection({
                           mission: e.target.value,
                         })
                       }
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edit-dateDebut">Date de début *</Label>
+                    <Label htmlFor="edit-dateDebut" className="text-xs">Date de début *</Label>
                     <Input
                       id="edit-dateDebut"
                       type="date"
@@ -1269,10 +1263,11 @@ export function AgentsSection({
                         })
                       }
                       required
+                      className="h-8 text-sm"
                     />
                   </div>
                   <div>
-                    <Label htmlFor="edit-dateFin">Date de fin</Label>
+                    <Label htmlFor="edit-dateFin" className="text-xs">Date de fin</Label>
                     <Input
                       id="edit-dateFin"
                       type="date"
@@ -1286,9 +1281,10 @@ export function AgentsSection({
                         })
                       }
                       disabled={editFormData.dateFinIndeterminee}
+                      className="h-8 text-sm"
                     />
                   </div>
-                  <div className="col-span-2 flex items-center gap-2">
+                  <div className="col-span-2 flex items-center gap-1">
                     <Checkbox
                       id="edit-dateFinIndeterminee"
                       checked={editFormData.dateFinIndeterminee || false}
@@ -1298,10 +1294,11 @@ export function AgentsSection({
                           dateFinIndeterminee: checked as boolean,
                         })
                       }
+                      className="h-4 w-4"
                     />
                     <Label
                       htmlFor="edit-dateFinIndeterminee"
-                      className="cursor-pointer"
+                      className="cursor-pointer text-xs"
                     >
                       Date de fin indéterminée
                     </Label>
@@ -1311,16 +1308,14 @@ export function AgentsSection({
 
               {/* Informations financières */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3">
+                <h3 className="text-sm font-semibold text-white mb-2">
                   Informations financières
                 </h3>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-2 gap-3">
                   {selectedAgent.profile === "stagiaire" ? (
                     <>
                       <div>
-                        <Label htmlFor="edit-indemnite">
-                          Indemnité mensuelle
-                        </Label>
+                        <Label htmlFor="edit-indemnite" className="text-xs">Indemnité mensuelle</Label>
                         <Input
                           id="edit-indemnite"
                           type="number"
@@ -1331,12 +1326,11 @@ export function AgentsSection({
                               indemnite: Number(e.target.value),
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="edit-indemniteConnexion">
-                          Indemnité de connexion
-                        </Label>
+                        <Label htmlFor="edit-indemniteConnexion" className="text-xs">Indemnité de connexion</Label>
                         <Input
                           id="edit-indemniteConnexion"
                           type="number"
@@ -1347,15 +1341,14 @@ export function AgentsSection({
                               indemniteConnexion: Number(e.target.value),
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                     </>
                   ) : (
                     <>
                       <div>
-                        <Label htmlFor="edit-tjm">
-                          TJM (Taux Journalier Moyen) *
-                        </Label>
+                        <Label htmlFor="edit-tjm" className="text-xs">TJM (Taux Journalier Moyen) *</Label>
                         <Input
                           id="edit-tjm"
                           type="number"
@@ -1367,12 +1360,11 @@ export function AgentsSection({
                             })
                           }
                           required
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="edit-tarifJournalier">
-                          Tarif journalier
-                        </Label>
+                        <Label htmlFor="edit-tarifJournalier" className="text-xs">Tarif journalier</Label>
                         <Input
                           id="edit-tarifJournalier"
                           type="number"
@@ -1383,12 +1375,11 @@ export function AgentsSection({
                               tarifJournalier: Number(e.target.value),
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="edit-dureeJournaliere">
-                          Durée journalière (heures)
-                        </Label>
+                        <Label htmlFor="edit-dureeJournaliere" className="text-xs">Durée journalière (heures)</Label>
                         <Input
                           id="edit-dureeJournaliere"
                           type="number"
@@ -1399,12 +1390,11 @@ export function AgentsSection({
                               dureeJournaliere: Number(e.target.value),
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                       <div>
-                        <Label htmlFor="edit-domainePrestation">
-                          Domaine de prestation
-                        </Label>
+                        <Label htmlFor="edit-domainePrestation" className="text-xs">Domaine de prestation</Label>
                         <Input
                           id="edit-domainePrestation"
                           value={editFormData.domainePrestation || ""}
@@ -1414,6 +1404,7 @@ export function AgentsSection({
                               domainePrestation: e.target.value,
                             })
                           }
+                          className="h-8 text-sm"
                         />
                       </div>
                     </>
@@ -1421,19 +1412,19 @@ export function AgentsSection({
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex gap-2 pt-3 border-t">
                 <Button
                   type="button"
                   variant="outline"
                   onClick={() => setShowEditModal(false)}
-                  className="flex-1"
+                  className="flex-1 text-xs h-8"
                   disabled={isSubmitting}
                 >
                   Annuler
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500"
+                  className="flex-1 bg-gradient-to-r from-blue-600 to-cyan-600 hover:from-blue-500 hover:to-cyan-500 text-xs h-8"
                   disabled={isSubmitting}
                 >
                   {isSubmitting ? "Modification..." : "Modifier l'agent"}
@@ -1446,20 +1437,20 @@ export function AgentsSection({
 
       {/* Modal de détails */}
       {showDetailsModal && selectedAgent && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-3">
+          <div className="bg-white rounded-lg shadow-xl max-w-lg w-full max-h-[85vh] overflow-y-auto">
             <div
-              className={`sticky top-0 text-white p-6 rounded-t-2xl flex items-center justify-between ${
+              className={`sticky top-0 text-white p-4 rounded-t-lg flex items-center justify-between ${
                 selectedAgent.archived
                   ? "bg-gradient-to-r from-gray-600 to-gray-500"
                   : "bg-gradient-to-r from-violet-600 to-fuchsia-600"
               }`}
             >
               <div>
-                <h2 className="text-2xl font-bold">
+                <h2 className="text-lg font-bold">
                   {selectedAgent.prenoms} {selectedAgent.nom}
                 </h2>
-                <div className="flex items-center gap-2 mt-1">
+                <div className="flex items-center gap-1 mt-0.5">
                   <div
                     className={`w-2 h-2 rounded-full ${
                       selectedAgent.archived
@@ -1469,7 +1460,7 @@ export function AgentsSection({
                         : "bg-emerald-300"
                     }`}
                   />
-                  <span className="text-sm capitalize">
+                  <span className="text-xs capitalize">
                     {selectedAgent.profile}
                     {selectedAgent.archived && " (archivé)"}
                   </span>
@@ -1479,22 +1470,22 @@ export function AgentsSection({
                 variant="ghost"
                 size="icon"
                 onClick={() => setShowDetailsModal(false)}
-                className="hover:bg-white/20 text-white"
+                className="hover:bg-white/20 text-white h-8 w-8"
               >
-                <X size={24} />
+                <X size={18} />
               </Button>
             </div>
 
-            <div className="p-6 space-y-6">
+            <div className="p-4 space-y-4">
               {selectedAgent.archived && (
-                <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-start gap-3">
-                    <div className="w-5 h-5 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center mt-0.5">
+                <div className="bg-gray-50 border border-gray-200 rounded p-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-4 h-4 bg-gray-100 border border-gray-300 rounded-full flex items-center justify-center mt-0.5">
                       <span className="text-white text-xs">!</span>
                     </div>
-                    <div className="text-gray-700 text-sm">
+                    <div className="text-gray-700 text-xs">
                       <p className="font-medium">Agent archivé</p>
-                      <p className="mt-1">
+                      <p className="mt-0.5">
                         Cet agent a été archivé le{" "}
                         {selectedAgent.archivedAt
                           ? new Date(
@@ -1511,32 +1502,32 @@ export function AgentsSection({
 
               {/* Informations personnelles */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                  <Users size={20} className="text-violet-600" />
+                <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1">
+                  <Users size={16} className="text-violet-600" />
                   Informations Personnelles
                 </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <p className="text-white">Email</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-white text-sm">
                       {selectedAgent.email}
                     </p>
                   </div>
                   <div>
                     <p className="text-white">Téléphone</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-white text-sm">
                       {selectedAgent.telephone}
                     </p>
                   </div>
                   <div>
                     <p className="text-white">CIN</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-white text-sm">
                       {selectedAgent.cin}
                     </p>
                   </div>
                   <div>
                     <p className="text-white">Date de naissance</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-white text-sm">
                       {new Date(
                         selectedAgent.dateNaissance
                       ).toLocaleDateString("fr-FR")}
@@ -1544,13 +1535,13 @@ export function AgentsSection({
                   </div>
                   <div>
                     <p className="text-white">Genre</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-white text-sm">
                       {selectedAgent.genre}
                     </p>
                   </div>
                   <div>
                     <p className="text-white">Adresse</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-white text-sm">
                       {selectedAgent.adresse}
                     </p>
                   </div>
@@ -1559,28 +1550,28 @@ export function AgentsSection({
 
               {/* Informations professionnelles */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                  <Briefcase size={20} className="text-violet-600" />
+                <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1">
+                  <Briefcase size={16} className="text-violet-600" />
                   Informations Professionnelles
                 </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-3 text-xs">
                   <div>
                     <p className="text-white">Poste</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-white text-sm">
                       {selectedAgent.poste}
                     </p>
                   </div>
                   {selectedAgent.mission && (
                     <div>
                       <p className="text-white">Mission</p>
-                      <p className="font-medium text-white">
+                      <p className="font-medium text-white text-sm">
                         {selectedAgent.mission}
                       </p>
                     </div>
                   )}
                   <div>
                     <p className="text-white">Date de début</p>
-                    <p className="font-medium text-white">
+                    <p className="font-medium text-white text-sm">
                       {new Date(selectedAgent.dateDebut).toLocaleDateString(
                         "fr-FR"
                       )}
@@ -1590,7 +1581,7 @@ export function AgentsSection({
                     !selectedAgent.dateFinIndeterminee && (
                       <div>
                         <p className="text-white">Date de fin</p>
-                        <p className="font-medium text-white">
+                        <p className="font-medium text-white text-sm">
                           {new Date(selectedAgent.dateFin).toLocaleDateString(
                             "fr-FR"
                           )}
@@ -1602,22 +1593,22 @@ export function AgentsSection({
 
               {/* Informations financières */}
               <div>
-                <h3 className="text-lg font-semibold text-white mb-3 flex items-center gap-2">
-                  <FileText size={20} className="text-violet-600" />
+                <h3 className="text-sm font-semibold text-white mb-2 flex items-center gap-1">
+                  <FileText size={16} className="text-violet-600" />
                   Informations Financières
                 </h3>
-                <div className="grid grid-cols-2 gap-4 text-sm">
+                <div className="grid grid-cols-2 gap-3 text-xs">
                   {selectedAgent.profile === "stagiaire" ? (
                     <>
                       <div>
                         <p className="text-white">Indemnité mensuelle</p>
-                        <p className="font-medium text-white">
+                        <p className="font-medium text-white text-sm">
                           {selectedAgent.indemnite || 0} Ar
                         </p>
                       </div>
                       <div>
                         <p className="text-white">Indemnité de connexion</p>
-                        <p className="font-medium text-white">
+                        <p className="font-medium text-white text-sm">
                           {selectedAgent.indemniteConnexion || 0} Ar
                         </p>
                       </div>
@@ -1625,17 +1616,15 @@ export function AgentsSection({
                   ) : (
                     <>
                       <div>
-                        <p className="text-white">
-                          TJM (Taux Journalier Moyen)
-                        </p>
-                        <p className="font-medium text-white">
+                        <p className="text-white">TJM (Taux Journalier Moyen)</p>
+                        <p className="font-medium text-white text-sm">
                           {selectedAgent.tjm} Ar
                         </p>
                       </div>
                       {selectedAgent.tarifJournalier && (
                         <div>
                           <p className="text-white">Tarif journalier</p>
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-white text-sm">
                             {selectedAgent.tarifJournalier} Ar
                           </p>
                         </div>
@@ -1643,7 +1632,7 @@ export function AgentsSection({
                       {selectedAgent.dureeJournaliere && (
                         <div>
                           <p className="text-white">Durée journalière</p>
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-white text-sm">
                             {selectedAgent.dureeJournaliere}h
                           </p>
                         </div>
@@ -1651,7 +1640,7 @@ export function AgentsSection({
                       {selectedAgent.domainePrestation && (
                         <div className="col-span-2">
                           <p className="text-white">Domaine de prestation</p>
-                          <p className="font-medium text-white">
+                          <p className="font-medium text-white text-sm">
                             {selectedAgent.domainePrestation}
                           </p>
                         </div>
@@ -1661,10 +1650,10 @@ export function AgentsSection({
                 </div>
               </div>
 
-              <div className="flex gap-3 pt-4 border-t">
+              <div className="flex gap-2 pt-3 border-t">
                 <Button
                   onClick={() => setShowDetailsModal(false)}
-                  className={`flex-1 ${
+                  className={`flex-1 text-xs h-8 ${
                     selectedAgent.archived
                       ? "bg-gradient-to-r from-gray-600 to-gray-500 hover:from-gray-500 hover:to-gray-400"
                       : "bg-gradient-to-r from-violet-600 to-fuchsia-600 hover:from-violet-500 hover:to-fuchsia-500"
@@ -1677,9 +1666,9 @@ export function AgentsSection({
                     <Button
                       variant="outline"
                       onClick={() => handleEdit(selectedAgent)}
-                      className="border-blue-300 hover:bg-blue-50 hover:text-blue-600"
+                      className="border-blue-300 hover:bg-blue-50 hover:text-blue-600 text-xs h-8"
                     >
-                      <Edit size={16} className="mr-2" />
+                      <Edit size={14} className="mr-1" />
                       Modifier
                     </Button>
                     <Button
@@ -1688,9 +1677,9 @@ export function AgentsSection({
                         setShowDetailsModal(false);
                         handleArchive(selectedAgent);
                       }}
-                      className="border-orange-300 hover:bg-orange-50 hover:text-orange-600"
+                      className="border-orange-300 hover:bg-orange-50 hover:text-orange-600 text-xs h-8"
                     >
-                      <Archive size={16} className="mr-2" />
+                      <Archive size={14} className="mr-1" />
                       Archiver
                     </Button>
                   </>
@@ -1702,9 +1691,9 @@ export function AgentsSection({
                       setShowDetailsModal(false);
                       handleRestore(selectedAgent);
                     }}
-                    className="border-green-300 hover:bg-green-50 hover:text-green-600"
+                    className="border-green-300 hover:bg-green-50 hover:text-green-600 text-xs h-8"
                   >
-                    <RefreshCw size={16} className="mr-2" />
+                    <RefreshCw size={14} className="mr-1" />
                     Restaurer
                   </Button>
                 )}

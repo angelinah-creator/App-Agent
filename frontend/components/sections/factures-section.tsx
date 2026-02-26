@@ -78,7 +78,7 @@ export function FacturesSection({
   addInvoicePending = false,
 }: FacturesSectionProps) {
   const [selectedYear, setSelectedYear] = useState<string>(
-    new Date().getFullYear().toString()
+    new Date().getFullYear().toString(),
   );
   const [selectedStatus, setSelectedStatus] = useState<string>("all");
   const [selectedMonth, setSelectedMonth] = useState<string>("all");
@@ -133,20 +133,22 @@ export function FacturesSection({
   // Modifiez le calcul des statistiques pour inclure "unpaid" :
   const totalInvoices = filteredInvoices.length;
   const invoicesPaid = filteredInvoices.filter(
-    (f) => f.status === "paid"
+    (f) => f.status === "paid",
   ).length;
   const invoicesPending = filteredInvoices.filter(
-    (f) => f.status === "pending"
+    (f) => f.status === "pending",
   ).length;
   const invoicesUnpaid = filteredInvoices.filter(
-    (f) => f.status === "unpaid"
+    (f) => f.status === "unpaid",
   ).length; // AJOUT
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-      <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-[#F1F1F1]">Mes Factures</h3>
+    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8">
+      <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-[#F1F1F1]">
+            Mes Factures
+          </h3>
           <Button
             onClick={() => setIsDialogOpen(true)}
             className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105"
@@ -156,9 +158,9 @@ export function FacturesSection({
           </Button>
         </div>
 
-        <div className="flex gap-3 mb-6 flex-wrap text-white">
+        <div className="flex gap-2 mb-4 flex-wrap text-white">
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[140px] border-[#313442]">
+            <SelectTrigger className="w-[120px] border-[#313442]">
               <SelectValue placeholder="Année" />
             </SelectTrigger>
             <SelectContent>
@@ -172,7 +174,7 @@ export function FacturesSection({
           </Select>
 
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-[160px] border-[#313442]">
+            <SelectTrigger className="w-[140px] border-[#313442]">
               <SelectValue placeholder="Mois" />
             </SelectTrigger>
             <SelectContent>
@@ -186,7 +188,7 @@ export function FacturesSection({
           </Select>
 
           <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-            <SelectTrigger className="w-[160px] border-[#313442]">
+            <SelectTrigger className="w-[140px] border-[#313442]">
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
@@ -200,34 +202,34 @@ export function FacturesSection({
         </div>
 
         {invoicesLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-violet-200 border-t-violet-600 mx-auto"></div>
-            <p className="text-[#F1F1F1] mt-3 font-medium">
+          <div className="text-center py-6">
+            <div className="animate-spin rounded-full h-6 w-6 border-4 border-violet-200 border-t-violet-600 mx-auto"></div>
+            <p className="text-[#F1F1F1] mt-2 font-medium text-sm">
               Chargement des factures...
             </p>
           </div>
         ) : filteredInvoices.length === 0 ? (
-          <div className="text-center py-12 bg-[#303237] rounded-xl">
-            <FileText className="mx-auto h-14 w-14 text-slate-400" />
-            <p className="mt-4 text-[#F1F1F1] font-medium">
+          <div className="text-center py-6 bg-[#303237] rounded-xl">
+            <FileText className="mx-auto h-10 w-10 text-slate-400" />
+            <p className="mt-3 text-[#F1F1F1] font-medium text-sm">
               Aucune facture trouvée
             </p>
-            <p className="text-sm text-[#F1F1F1] mt-1">
+            <p className="text-xs text-[#F1F1F1] mt-1">
               Cliquez sur "Ajouter une facture" pour créer votre première
               facture
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             {filteredInvoices.map((invoice) => (
               <Card
                 key={invoice._id}
                 className="border-[#313442] hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm"
               >
-                <CardContent className="p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center flex-shrink-0 shadow-sm">
-                      <FileText className="w-6 h-6 text-violet-600" />
+                <CardContent className="p-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <FileText className="w-4 h-4 text-violet-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-[#F1F1F1] truncate">
@@ -245,7 +247,7 @@ export function FacturesSection({
                         <p className="text-xs text-[#F1F1F1]">
                           Payé le{" "}
                           {new Date(invoice.paymentDate).toLocaleDateString(
-                            "fr-FR"
+                            "fr-FR",
                           )}
                         </p>
                       )}
@@ -296,18 +298,18 @@ export function FacturesSection({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="border-[#313442] hover:shadow-xl hover:shadow-violet-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
-                <FileText className="w-7 h-7 text-white" />
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+                <FileText className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-[#F1F1F1] font-medium">
+                <p className="text-xs text-[#F1F1F1] font-medium">
                   Total factures
                 </p>
-                <p className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+                <p className="text-xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
                   {totalInvoices}
                 </p>
               </div>
@@ -316,14 +318,14 @@ export function FacturesSection({
         </Card>
 
         <Card className="border-[#313442] hover:shadow-xl hover:shadow-orange-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
-                <Calendar className="w-7 h-7 text-white" />
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
+                <Calendar className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-[#F1F1F1] font-medium">En attente</p>
-                <p className="text-3xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
+                <p className="text-xs text-[#F1F1F1] font-medium">En attente</p>
+                <p className="text-xl font-bold bg-gradient-to-r from-orange-600 to-red-600 bg-clip-text text-transparent">
                   {invoicesPending}
                 </p>
               </div>
@@ -332,14 +334,14 @@ export function FacturesSection({
         </Card>
 
         <Card className="border-[#313442] hover:shadow-xl hover:shadow-green-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
-                <DollarSign className="w-7 h-7 text-white" />
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
+                <DollarSign className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-[#F1F1F1] font-medium">Payées</p>
-                <p className="text-3xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
+                <p className="text-xs text-[#F1F1F1] font-medium">Payées</p>
+                <p className="text-xl font-bold bg-gradient-to-r from-green-600 to-emerald-600 bg-clip-text text-transparent">
                   {invoicesPaid}
                 </p>
               </div>

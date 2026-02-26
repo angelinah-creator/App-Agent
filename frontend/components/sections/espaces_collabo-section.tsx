@@ -3,5 +3,9 @@
 import CollaboratorSpace from "./collaborator-space/CollaboratorSpace";
 
 export function EspacesCollaboSection() {
-  return <CollaboratorSpace />;
+  return (
+    <div className="-mt-8">
+      <CollaboratorSpace/>
+    </div>
+  );
 }

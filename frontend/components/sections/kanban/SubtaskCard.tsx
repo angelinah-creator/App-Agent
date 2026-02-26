@@ -73,7 +73,7 @@ export default function SubtaskCard({
       {/* En-tête */}
       <div className="flex justify-between items-start mb-2">
         <div className="flex-1 pr-6">
-          <h5 className="text-xs font-medium text-gray-200 leading-tight">
+          <h5 className="text-[10px] font-medium text-gray-200 leading-tight">
             {task.title}
           </h5>
         </div>
@@ -131,12 +131,12 @@ export default function SubtaskCard({
       <div className="flex items-center gap-2 flex-wrap text-xs">
         {/* Priorité */}
         <div
-          className={`flex items-center gap-1 border rounded px-1.5 py-0.5 ${
+          className={`flex items-center gap-1 border rounded px-1 py-0.5 ${
             priorityColors[task.priority]
           }`}
         >
           <Flag size={8} />
-          <span className="text-xs">{task.priority}</span>
+          <span className="text-[10px]">{task.priority}</span>
         </div>
 
         {/* Assignations */}
@@ -149,7 +149,7 @@ export default function SubtaskCard({
       </div>
 
       {task.description && (
-        <p className="text-xs text-gray-400 mt-2 line-clamp-2">
+        <p className="text-[10px] text-gray-400 mt-2 line-clamp-2">
           {task.description}
         </p>
       )}

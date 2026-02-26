@@ -12,15 +12,11 @@ const COLORS = ["#9B59B6", "#E9B44C", "#3498DB", "#E74C3C", "#1ABC9C", "#95A5A6"
 
 type PeriodType = "day" | "week" | "month" | "year" | "custom";
 
-// ✅ Fonction corrigée pour formater les heures (sans négatif)
 function formatHours(hours: number): string {
-  // Prendre la valeur absolue pour éviter les négatifs
   const absHours = Math.abs(hours);
-  
   const h = Math.floor(absHours);
   const m = Math.floor((absHours - h) * 60);
   const s = Math.round(((absHours - h) * 60 - m) * 60);
-  
   return `${h}:${m.toString().padStart(2, "0")}:${s.toString().padStart(2, "0")}`;
 }
 
@@ -31,7 +27,7 @@ function formatDuration(hours: number): string {
   return `${h}h${m.toString().padStart(2, "0")}m`;
 }
 
-// Composant PeriodSelector
+// Composant PeriodSelector réduit
 function PeriodSelector({ 
   isOpen, 
   onClose, 
@@ -74,12 +70,12 @@ function PeriodSelector({
   if (!isOpen) return null;
 
   const shortcuts = [
-    { label: "Today", value: "day" as PeriodType },
-    { label: "This week", value: "week" as PeriodType, default: true },
-    { label: "This month", value: "month" as PeriodType },
-    { label: "This year", value: "year" as PeriodType },
-    { label: "Last week", value: "last_week" as PeriodType },
-    { label: "Last month", value: "last_month" as PeriodType },
+    { label: "Aujourd'hui", value: "day" as PeriodType },
+    { label: "Cette semaine", value: "week" as PeriodType },
+    { label: "Ce mois", value: "month" as PeriodType },
+    { label: "Cette année", value: "year" as PeriodType },
+    { label: "Semaine dernière", value: "last_week" as PeriodType },
+    { label: "Mois dernier", value: "last_month" as PeriodType },
   ];
 
   const handleShortcutClick = (value: string) => {
@@ -150,38 +146,35 @@ function PeriodSelector({
 
     return (
       <div className="flex-1">
-        <div className="flex items-center justify-between mb-3 px-2">
+        <div className="flex items-center justify-between mb-2 px-1">
           <button
             onClick={() => setCurrentMonth(addMonths(currentMonth, -1))}
-            className="p-1 hover:bg-white/5 rounded transition"
+            className="p-0.5 hover:bg-white/5 rounded transition"
           >
-            <ChevronLeft size={16} className="text-white" />
+            <ChevronLeft size={14} className="text-white" />
           </button>
-          <span className="text-white font-medium text-sm">
-            {format(currentMonth, "MMMM yyyy", { locale: fr })}
+          <span className="text-white font-medium text-xs">
+            {format(currentMonth, "MMM yyyy", { locale: fr })}
           </span>
           <button
             onClick={() => setCurrentMonth(addMonths(currentMonth, 1))}
-            className="p-1 hover:bg-white/5 rounded transition"
+            className="p-0.5 hover:bg-white/5 rounded transition"
           >
-            <ChevronRight size={16} className="text-white" />
+            <ChevronRight size={14} className="text-white" />
           </button>
         </div>
 
-        <div className="grid grid-cols-7 gap-1 mb-1 px-2">
-          {["Mo", "Tu", "We", "Th", "Fr", "Sa", "Su"].map((day) => (
-            <div key={day} className="text-center text-[10px] text-gray-400 py-1">
+        <div className="grid grid-cols-7 gap-0.5 mb-1 px-1">
+          {["L", "M", "M", "J", "V", "S", "D"].map((day) => (
+            <div key={day} className="text-center text-[9px] text-gray-400 py-0.5">
               {day}
             </div>
           ))}
         </div>
 
-        <div className="space-y-0.5 px-2">
+        <div className="space-y-0.5 px-1">
           {weeks.map((week, weekIdx) => (
-            <div key={weekIdx} className="grid grid-cols-8 gap-1">
-              <div className="flex items-center justify-center text-[10px] text-gray-500">
-                W{format(week[0], "w")}
-              </div>
+            <div key={weekIdx} className="grid grid-cols-7 gap-0.5">
               {week.map((day, dayIdx) => {
                 const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
                 const inRange = isInRange(day);
@@ -193,11 +186,11 @@ function PeriodSelector({
                     key={dayIdx}
                     onClick={() => handleDayClick(day)}
                     className={`
-                      aspect-square flex items-center justify-center text-xs rounded transition
+                      aspect-square flex items-center justify-center text-[10px] rounded transition
                       ${!isCurrentMonth ? "text-gray-600" : "text-white"}
                       ${inRange && !isStartDay && !isEndDay ? "bg-purple-500/30" : "hover:bg-white/5"}
-                      ${isStartDay ? "bg-purple-700 text-white font-bold" : ""}
-                      ${isEndDay ? "bg-purple-700 text-white font-bold" : ""}
+                      ${isStartDay ? "bg-purple-600 text-white" : ""}
+                      ${isEndDay ? "bg-purple-600 text-white" : ""}
                     `}
                   >
                     {format(day, "d")}
@@ -209,15 +202,15 @@ function PeriodSelector({
         </div>
 
         {customStart && customEnd && (
-          <div className="mt-3 px-2">
+          <div className="mt-2 px-1">
             <button
               onClick={() => {
                 onSelectPeriod("custom", customStart, customEnd);
                 onClose();
               }}
-              className="w-full py-1.5 bg-purple-500 hover:bg-purple-600 rounded-lg text-white text-xs font-medium transition"
+              className="w-full py-1 bg-purple-500 hover:bg-purple-600 rounded text-white text-[10px] font-medium transition"
             >
-              Apply: {format(customStart, "dd MMM")} - {format(customEnd, "dd MMM yyyy")}
+              {format(customStart, "dd MMM")} - {format(customEnd, "dd MMM")}
             </button>
           </div>
         )}
@@ -228,31 +221,28 @@ function PeriodSelector({
   return (
     <div 
       ref={popupRef}
-      className="absolute left-0 top-full mt-2 bg-[#1F2128] border border-[#313442] rounded-xl shadow-2xl z-50 overflow-hidden"
-      style={{ width: "650px" }}
+      className="absolute left-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 overflow-hidden"
+      style={{ width: "320px" }}
     >
-      <div className="flex" style={{ height: "320px" }}>
-        <div className="w-48 border-r border-[#313442] p-2 overflow-y-auto">
-          <div className="space-y-1">
+      <div className="flex" style={{ height: "280px" }}>
+        <div className="w-40 border-r border-[#313442] p-2 overflow-y-auto">
+          <div className="space-y-0.5">
             {shortcuts.map((shortcut) => (
               <button
                 key={shortcut.value}
                 onClick={() => handleShortcutClick(shortcut.value)}
-                className={`w-full text-left px-3 py-2 rounded-lg transition text-sm ${
-                  shortcut.default && currentPeriodType === "week"
-                    ? "bg-purple-500/20 text-white font-medium"
+                className={`w-full text-left px-2 py-1.5 rounded transition text-xs ${
+                  shortcut.value === currentPeriodType
+                    ? "bg-purple-500/20 text-white"
                     : "text-gray-300 hover:bg-white/5"
                 }`}
               >
                 {shortcut.label}
-                {shortcut.default && currentPeriodType === "week" && (
-                  <span className="text-[10px] bg-purple-500 px-1.5 py-0.5 rounded ml-1">Default</span>
-                )}
               </button>
             ))}
           </div>
         </div>
-        <div className="flex-1 p-3">
+        <div className="flex-1 p-2">
           {renderCalendar()}
         </div>
       </div>
@@ -288,7 +278,7 @@ export function RapportSection() {
       return {
         periodStart: customStart,
         periodEnd: customEnd,
-        displayText: `${format(customStart, "dd MMM")} - ${format(customEnd, "dd MMM yyyy", { locale: fr })}`,
+        displayText: `${format(customStart, "dd MMM")} - ${format(customEnd, "dd MMM")}`,
       };
     }
 
@@ -306,7 +296,7 @@ export function RapportSection() {
         return {
           periodStart: weekStart,
           periodEnd: weekEnd,
-          displayText: `${format(weekStart, "dd MMM", { locale: fr })} - ${format(weekEnd, "dd MMM yyyy", { locale: fr })} • W${format(weekStart, "w", { locale: fr })}`,
+          displayText: `${format(weekStart, "dd MMM")} - ${format(weekEnd, "dd MMM")} • W${format(weekStart, "w")}`,
         };
       case "month":
         const month = addMonths(now, offset);
@@ -315,7 +305,7 @@ export function RapportSection() {
         return {
           periodStart: monthStart,
           periodEnd: monthEnd,
-          displayText: format(month, "MMMM yyyy", { locale: fr }),
+          displayText: format(month, "MMM yyyy", { locale: fr }),
         };
       case "year":
         const year = addYears(now, offset);
@@ -324,7 +314,7 @@ export function RapportSection() {
         return {
           periodStart: yearStart,
           periodEnd: yearEnd,
-          displayText: format(year, "yyyy", { locale: fr }),
+          displayText: format(year, "yyyy"),
         };
       default:
         return {
@@ -335,7 +325,6 @@ export function RapportSection() {
     }
   }, [periodType, offset, customStart, customEnd]);
 
-  // 🔥 REFETCH EVERY SECOND
   const { data: report, isLoading } = useQuery({
     queryKey: ["report", periodStart, periodEnd],
     queryFn: () =>
@@ -346,7 +335,6 @@ export function RapportSection() {
     refetchInterval: 1000,
   });
 
-  // ✅ DONNÉES DU GRAPHIQUE - Utiliser les vraies entrées comme dans timer-section
   const dailyData = useMemo(() => {
     if (!report || !report.entries) return [];
 
@@ -354,8 +342,6 @@ export function RapportSection() {
 
     return days.map((day) => {
       const dayKey = format(day, "yyyy-MM-dd");
-      
-      // ✅ Calculer la durée RÉELLE à partir des entries (comme dans timer-section)
       const dayEntries = report.entries.filter(entry => {
         const entryDate = format(new Date(entry.startTime), "yyyy-MM-dd");
         return entryDate === dayKey;
@@ -373,7 +359,6 @@ export function RapportSection() {
     });
   }, [report, periodStart, periodEnd]);
 
-  // 🎯 Données du graphique circulaire (par tâche)
   const taskData = useMemo(() => {
     if (!report || !report.entries) return [];
 
@@ -405,7 +390,6 @@ export function RapportSection() {
     setIsPeriodSelectorOpen(false);
   };
 
-  // ✅ Calcul de la moyenne journalière corrigé
   const weekTotalHours = useMemo(() => {
     return dailyData.reduce((sum, day) => sum + day.hours, 0);
   }, [dailyData]);
@@ -418,11 +402,11 @@ export function RapportSection() {
   const CustomTooltip = ({ active, payload }: any) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-[#1F2128] border border-[#313442] rounded-lg p-3 shadow-lg">
-          <p className="text-white font-medium">
+        <div className="bg-[#1F2128] border border-[#313442] rounded p-2 shadow">
+          <p className="text-white text-xs font-medium">
             {payload[0].payload.day} {payload[0].payload.date}
           </p>
-          <p className="text-purple-400 font-mono text-sm mt-1">{payload[0].payload.formattedTime}</p>
+          <p className="text-purple-400 font-mono text-xs mt-0.5">{payload[0].payload.formattedTime}</p>
         </div>
       );
     }
@@ -432,28 +416,28 @@ export function RapportSection() {
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
-        <div className="text-white">Chargement...</div>
+        <div className="text-white text-sm">Chargement...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6 p-6 bg-[#0F0F12] min-h-screen">
+    <div className="space-y-4 p-4 bg-[#0F0F12] -mt-8">
       {/* EN-TÊTE */}
-      <div className="bg-[#1F2128] rounded-xl border border-[#313442] p-6">
-        <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-4 relative">
-            <button onClick={() => setOffset((o) => o - 1)} className="p-2 hover:bg-white/5 rounded-lg transition">
-              <ChevronLeft className="text-white" />
+      <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
+        <div className="flex items-center justify-between mb-4">
+          <div className="flex items-center gap-2 relative">
+            <button onClick={() => setOffset((o) => o - 1)} className="p-1 hover:bg-white/5 rounded transition">
+              <ChevronLeft className="text-white" size={16} />
             </button>
 
             <div 
               ref={periodSelectorButtonRef}
               onClick={() => setIsPeriodSelectorOpen(!isPeriodSelectorOpen)}
-              className="flex items-center gap-2 bg-[#0F0F12] px-4 py-2 rounded-lg cursor-pointer hover:bg-[#1a1a1f] transition"
+              className="flex items-center gap-1 bg-[#0F0F12] px-3 py-1 rounded cursor-pointer hover:bg-[#1a1a1f] transition"
             >
-              <Calendar className="text-purple-400" size={18} />
-              <span className="text-white font-medium">{displayText}</span>
+              <Calendar className="text-purple-400" size={14} />
+              <span className="text-white text-xs font-medium">{displayText}</span>
             </div>
 
             <PeriodSelector 
@@ -464,8 +448,8 @@ export function RapportSection() {
               buttonRef={periodSelectorButtonRef}
             />
 
-            <button onClick={() => setOffset((o) => o + 1)} className="p-2 hover:bg-white/5 rounded-lg transition">
-              <ChevronRight className="text-white" />
+            <button onClick={() => setOffset((o) => o + 1)} className="p-1 hover:bg-white/5 rounded transition">
+              <ChevronRight className="text-white" size={16} />
             </button>
 
             <select
@@ -474,7 +458,7 @@ export function RapportSection() {
                 setPeriodType(e.target.value as PeriodType);
                 setOffset(0);
               }}
-              className="bg-[#0F0F12] text-white px-3 py-2 rounded-lg border border-[#313442]"
+              className="bg-[#0F0F12] text-white px-2 py-1 rounded border border-[#313442] text-xs"
             >
               <option value="day">Jour</option>
               <option value="week">Semaine</option>
@@ -483,52 +467,52 @@ export function RapportSection() {
             </select>
           </div>
 
-          <button className="flex items-center gap-2 px-4 py-2 bg-purple-500 hover:bg-purple-600 rounded-lg transition text-white">
-            <Download size={18} />
-            <span className="text-sm">Exporter PDF</span>
+          <button className="flex items-center gap-1 px-3 py-1 bg-purple-500 hover:bg-purple-600 rounded transition text-white">
+            <Download size={14} />
+            <span className="text-xs">Export PDF</span>
           </button>
         </div>
 
         {/* STATISTIQUES PRINCIPALES */}
-        <div className="grid grid-cols-2 gap-4">
-          <div className="bg-[#0F0F12] rounded-lg p-4 border border-[#313442]">
-            <p className="text-gray-400 text-sm mb-1">Heures totales</p>
-            <p className="text-white text-2xl font-bold font-mono">{formatHours(report?.totalHours || 0)}</p>
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-[#0F0F12] rounded p-3 border border-[#313442]">
+            <p className="text-gray-400 text-xs mb-0.5">Heures totales</p>
+            <p className="text-white text-xl font-bold font-mono">{formatHours(report?.totalHours || 0)}</p>
           </div>
-          <div className="bg-[#0F0F12] rounded-lg p-4 border border-[#313442]">
-            <p className="text-gray-400 text-sm mb-1">Moyenne journalière</p>
-            <p className="text-white text-2xl font-bold font-mono">{formatHours(averageDailyHours)}</p>
+          <div className="bg-[#0F0F12] rounded p-3 border border-[#313442]">
+            <p className="text-gray-400 text-xs mb-0.5">Moyenne/jour</p>
+            <p className="text-white text-xl font-bold font-mono">{formatHours(averageDailyHours)}</p>
           </div>
         </div>
       </div>
 
       {/* GRAPHIQUES */}
-      <div className="grid grid-cols-3 gap-6">
+      <div className="grid grid-cols-3 gap-4">
         {/* GRAPHIQUE EN BARRES */}
-        <div className="col-span-2 bg-[#1F2128] rounded-xl border border-[#313442] p-6">
-          <h3 className="text-white font-semibold text-lg mb-4">Durée par jour</h3>
-          <ResponsiveContainer width="100%" height={300}>
+        <div className="col-span-2 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
+          <h3 className="text-white font-semibold text-sm mb-3">Durée par jour</h3>
+          <ResponsiveContainer width="100%" height={250}>
             <BarChart data={dailyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#313442" />
-              <XAxis dataKey="day" stroke="#9CA3AF" tick={{ fill: "#9CA3AF" }} />
-              <YAxis stroke="#9CA3AF" tick={{ fill: "#9CA3AF" }} tickFormatter={(value) => `${value}h`} />
+              <XAxis dataKey="day" stroke="#9CA3AF" tick={{ fill: "#9CA3AF", fontSize: 10 }} />
+              <YAxis stroke="#9CA3AF" tick={{ fill: "#9CA3AF", fontSize: 10 }} tickFormatter={(value) => `${value}h`} />
               <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(139, 92, 246, 0.1)" }} />
-              <Bar dataKey="hours" fill="#9B59B6" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="hours" fill="#9B59B6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
 
-        {/* GRAPHIQUE CIRCULAIRE PAR TÂCHE */}
-        <div className="col-span-1 bg-[#1F2128] rounded-xl border border-[#313442] p-6">
-          <h3 className="text-white font-semibold text-lg mb-4">Temps par tâche</h3>
-          <ResponsiveContainer width="100%" height={200}>
+        {/* GRAPHIQUE CIRCULAIRE */}
+        <div className="col-span-1 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
+          <h3 className="text-white font-semibold text-sm mb-3">Temps par tâche</h3>
+          <ResponsiveContainer width="100%" height={150}>
             <PieChart>
               <Pie
                 data={taskData}
                 cx="50%"
                 cy="50%"
-                innerRadius={50}
-                outerRadius={80}
+                innerRadius={40}
+                outerRadius={60}
                 paddingAngle={2}
                 dataKey="value"
               >
@@ -540,10 +524,10 @@ export function RapportSection() {
                 content={({ active, payload }: any) => {
                   if (active && payload && payload.length) {
                     return (
-                      <div className="bg-[#1F2128] border border-[#313442] rounded-lg p-3 shadow-lg">
-                        <p className="text-white font-medium text-sm">{payload[0].payload.name}</p>
-                        <p className="text-purple-400 font-mono text-sm">{formatDuration(payload[0].value)}</p>
-                        <p className="text-gray-400 text-xs">{payload[0].payload.percentage.toFixed(1)}%</p>
+                      <div className="bg-[#1F2128] border border-[#313442] rounded p-2 shadow">
+                        <p className="text-white text-xs font-medium">{payload[0].payload.name}</p>
+                        <p className="text-purple-400 font-mono text-xs">{formatDuration(payload[0].value)}</p>
+                        <p className="text-gray-400 text-[10px]">{payload[0].payload.percentage.toFixed(1)}%</p>
                       </div>
                     );
                   }
@@ -552,30 +536,30 @@ export function RapportSection() {
               />
             </PieChart>
           </ResponsiveContainer>
-          <div className="mt-4 space-y-2 max-h-[150px] overflow-y-auto">
+          <div className="mt-3 space-y-1 max-h-[100px] overflow-y-auto">
             {taskData.map((item, index) => (
-              <div key={index} className="flex items-center justify-between text-sm">
-                <div className="flex items-center gap-2 flex-1">
-                  <div className="w-3 h-3 rounded-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                  <span className="text-gray-300 truncate text-xs">{item.name}</span>
+              <div key={index} className="flex items-center justify-between text-xs">
+                <div className="flex items-center gap-1 flex-1">
+                  <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                  <span className="text-gray-300 truncate text-[10px]">{item.name}</span>
                 </div>
-                <span className="text-white font-medium text-xs">{item.percentage.toFixed(1)}%</span>
+                <span className="text-white font-medium text-[10px]">{item.percentage.toFixed(1)}%</span>
               </div>
             ))}
           </div>
         </div>
       </div>
 
-      {/* TABLEAU DÉTAILLÉ PAR PROJET */}
-      <div className="bg-[#1F2128] rounded-xl border border-[#313442] p-6">
-        <h3 className="text-white font-semibold text-lg mb-4">Détails par projet</h3>
+      {/* TABLEAU DÉTAILLÉ */}
+      <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
+        <h3 className="text-white font-semibold text-sm mb-3">Détails par projet</h3>
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#313442]">
-              <th className="text-left text-gray-400 font-medium py-3 px-4 text-sm">PROJET | TÂCHE</th>
-              <th className="text-right text-gray-400 font-medium py-3 px-4 text-sm">DURÉE</th>
-              <th className="text-right text-gray-400 font-medium py-3 px-4 text-sm">%</th>
-              <th className="text-right text-gray-400 font-medium py-3 px-4 text-sm">ENTRÉES</th>
+              <th className="text-left text-gray-400 font-medium py-2 px-3 text-xs">PROJET | TÂCHE</th>
+              <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">DURÉE</th>
+              <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">%</th>
+              <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">ENTRÉES</th>
             </tr>
           </thead>
           <tbody>
@@ -591,46 +575,46 @@ export function RapportSection() {
                     className="border-b border-[#313442]/50 hover:bg-white/5 cursor-pointer"
                     onClick={() => toggleProject(project.projectId || 'no-project')}
                   >
-                    <td className="py-3 px-4 text-white flex items-center gap-2">
+                    <td className="py-2 px-3 text-white flex items-center gap-1">
                       <ChevronRight 
-                        size={16} 
+                        size={12} 
                         className={`transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
                       />
-                      <span className="font-medium">{project.projectName}</span>
-                      <span className="text-gray-400 text-sm">({project.entriesCount})</span>
+                      <span className="text-xs font-medium">{project.projectName}</span>
+                      <span className="text-gray-400 text-[10px]">({project.entriesCount})</span>
                     </td>
-                    <td className="text-right py-3 px-4 text-white font-mono">{formatHours(project.hours)}</td>
-                    <td className="text-right py-3 px-4 text-white">{project.percentage.toFixed(2)}%</td>
-                    <td className="text-right py-3 px-4 text-white">{project.entriesCount}</td>
+                    <td className="text-right py-2 px-3 text-white font-mono text-xs">{formatHours(project.hours)}</td>
+                    <td className="text-right py-2 px-3 text-white text-xs">{project.percentage.toFixed(1)}%</td>
+                    <td className="text-right py-2 px-3 text-white text-xs">{project.entriesCount}</td>
                   </tr>
                   
                   {isExpanded && projectEntries.map((entry, idx) => (
                     <tr key={`${project.projectId}-entry-${idx}`} className="border-b border-[#313442]/30 bg-[#0F0F12]/50">
-                      <td className="py-2 px-4 pl-12 text-gray-300 text-sm">
+                      <td className="py-1 px-3 pl-8 text-gray-300 text-xs">
                         <div>{entry.taskTitle || entry.description || "Sans tâche"}</div>
-                        <div className="text-xs text-gray-500">
-                          {format(new Date(entry.startTime), "dd MMM yyyy • HH:mm", { locale: fr })}
+                        <div className="text-[10px] text-gray-500">
+                          {format(new Date(entry.startTime), "dd MMM • HH:mm", { locale: fr })}
                         </div>
                       </td>
-                      <td className="text-right py-2 px-4 text-gray-300 font-mono text-sm">
+                      <td className="text-right py-1 px-3 text-gray-300 font-mono text-xs">
                         {formatHours(entry.duration / 3600)}
                       </td>
-                      <td className="text-right py-2 px-4 text-gray-300 text-sm">
-                        {((entry.duration / 3600 / project.hours) * 100).toFixed(2)}%
+                      <td className="text-right py-1 px-3 text-gray-300 text-xs">
+                        {((entry.duration / 3600 / project.hours) * 100).toFixed(1)}%
                       </td>
-                      <td className="text-right py-2 px-4 text-gray-300 text-sm">1</td>
+                      <td className="text-right py-1 px-3 text-gray-300 text-xs">1</td>
                     </tr>
                   ))}
                 </React.Fragment>
               );
             })}
-            <tr className="border-t-2 border-[#313442] bg-[#0F0F12]">
-              <td className="py-3 px-4 text-white font-bold">TOTAL</td>
-              <td className="text-right py-3 px-4 text-white font-mono font-bold">
+            <tr className="border-t border-[#313442] bg-[#0F0F12]">
+              <td className="py-2 px-3 text-white font-bold text-xs">TOTAL</td>
+              <td className="text-right py-2 px-3 text-white font-mono font-bold text-xs">
                 {formatHours(report?.totalHours || 0)}
               </td>
-              <td className="text-right py-3 px-4 text-white font-bold">100%</td>
-              <td className="text-right py-3 px-4 text-white font-bold">{report?.entriesCount || 0}</td>
+              <td className="text-right py-2 px-3 text-white font-bold text-xs">100%</td>
+              <td className="text-right py-2 px-3 text-white font-bold text-xs">{report?.entriesCount || 0}</td>
             </tr>
           </tbody>
         </table>

@@ -2,8 +2,7 @@
 "use client";
 
 import type React from "react";
-
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -30,13 +29,10 @@ import {
   GraduationCap,
   Briefcase,
   User,
-  Calendar,
-  MapPin,
-  FileText,
-  Phone,
-  Mail,
-  Key,
+  Camera,
   ArrowLeft,
+  X,
+  FileSignature,
 } from "lucide-react";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 
@@ -48,6 +44,11 @@ export default function SignupPage() {
   const [step, setStep] = useState<"role" | "profile" | "form">("role");
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+  
+  // Refs pour les inputs file
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const signatureInputRef = useRef<HTMLInputElement>(null);
+  
   const [formData, setFormData] = useState({
     nom: "",
     prenoms: "",
@@ -71,7 +72,16 @@ export default function SignupPage() {
     indemniteConnexion: 0,
     tarifJournalier: 0,
     dureeJournaliere: 0,
+    
+    // Champs pour la photo de profil
+    profilePhoto: null as File | null,
+    profilePhotoPreview: "",
+    
+    // AJOUT : Champs pour la signature
+    signature: null as File | null,
+    signaturePreview: "",
   });
+  
   const [isLoading, setIsLoading] = useState(false);
   const { confirm, dialog } = useConfirmDialog();
 
@@ -82,6 +92,17 @@ export default function SignupPage() {
       confirm({
         title: "Mots de passe différents",
         description: "Les mots de passe ne correspondent pas",
+        confirmText: "OK",
+        onConfirm: () => {},
+      });
+      return;
+    }
+
+    // AJOUT : Validation signature obligatoire
+    if (!formData.signature) {
+      confirm({
+        title: "Signature requise",
+        description: "Veuillez uploader votre signature avant de continuer. Elle sera utilisée pour générer votre contrat.",
         confirmText: "OK",
         onConfirm: () => {},
       });
@@ -99,7 +120,7 @@ export default function SignupPage() {
       const adresse = `${formData.adresseLot}, ${formData.adresseFokontany}`;
 
       const registerData: RegisterData = {
-        role: userRole, // AJOUT: Rôle utilisateur
+        role: userRole,
         profile: userProfile,
         nom: formData.nom,
         prenoms: formData.prenoms,
@@ -133,12 +154,145 @@ export default function SignupPage() {
       localStorage.setItem("authToken", response.token);
       localStorage.setItem("userData", JSON.stringify(response.user));
 
+      // Si l'utilisateur a sélectionné une photo, l'uploader maintenant
+      if (formData.profilePhoto && response.user._id) {
+        try {
+          const formDataPhoto = new FormData();
+          formDataPhoto.append('photo', formData.profilePhoto);
+          
+          const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${response.user._id}/profile-photo`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${response.token}`,
+            },
+            body: formDataPhoto
+          });
+          
+          if (uploadResponse.ok) {
+            console.log("✅ Photo uploadée avec succès");
+            const updatedUser = await uploadResponse.json();
+            localStorage.setItem("userData", JSON.stringify(updatedUser));
+          }
+        } catch (uploadError) {
+          console.error("❌ Erreur upload photo:", uploadError);
+        }
+      }
+
+      // AJOUT : Upload de la signature (OBLIGATOIRE)
+      if (formData.signature && response.user._id) {
+        try {
+          const formDataSignature = new FormData();
+          formDataSignature.append('signature', formData.signature);
+          
+          const signatureResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${response.user._id}/signature`, {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${response.token}`,
+            },
+            body: formDataSignature
+          });
+          
+          if (signatureResponse.ok) {
+            console.log("✅ Signature uploadée avec succès");
+            const updatedUser = await signatureResponse.json();
+            localStorage.setItem("userData", JSON.stringify(updatedUser));
+          } else {
+            console.error("❌ Erreur lors de l'upload de la signature");
+          }
+        } catch (uploadError) {
+          console.error("❌ Erreur upload signature:", uploadError);
+        }
+      }
+
       router.push("/home");
     } catch (error: any) {
       console.error("Erreur inscription:", error);
       alert(error.response?.data?.message || "Erreur lors de l'inscription");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handlePhotoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 5 * 1024 * 1024) {
+        alert("L'image ne doit pas dépasser 5MB");
+        return;
+      }
+      
+      if (!file.type.startsWith("image/")) {
+        alert("Le fichier doit être une image");
+        return;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        profilePhoto: file
+      }));
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData(prev => ({
+          ...prev,
+          profilePhotoPreview: e.target?.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemovePhoto = () => {
+    setFormData(prev => ({
+      ...prev,
+      profilePhoto: null,
+      profilePhotoPreview: ""
+    }));
+    
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
+
+  // AJOUT : Fonctions de gestion de signature
+  const handleSignatureSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (file) {
+      if (file.size > 2 * 1024 * 1024) {
+        alert("L'image ne doit pas dépasser 2MB");
+        return;
+      }
+      
+      if (!file.type.startsWith("image/")) {
+        alert("Le fichier doit être une image");
+        return;
+      }
+      
+      setFormData(prev => ({
+        ...prev,
+        signature: file
+      }));
+      
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        setFormData(prev => ({
+          ...prev,
+          signaturePreview: e.target?.result as string
+        }));
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const handleRemoveSignature = () => {
+    setFormData(prev => ({
+      ...prev,
+      signature: null,
+      signaturePreview: ""
+    }));
+    
+    if (signatureInputRef.current) {
+      signatureInputRef.current.value = "";
     }
   };
 
@@ -181,6 +335,8 @@ export default function SignupPage() {
 
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-purple-50 p-4 relative overflow-hidden">
+      {dialog}
+      
       {/* Animated gradient orbs */}
       <div className="absolute top-0 right-0 w-[30rem] h-[30rem] bg-gradient-to-bl from-indigo-200/40 via-purple-200/40 to-pink-200/40 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-teal-200/40 via-emerald-200/40 to-green-200/40 rounded-full blur-3xl animate-pulse delay-700" />
@@ -358,6 +514,153 @@ export default function SignupPage() {
                     <ArrowLeft className="w-4 h-4 mr-1" />
                     Retour
                   </Button>
+                </div>
+
+                {/* Section Photo de profil */}
+                <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold text-slate-800">Photo de profil</h3>
+                      <p className="text-sm text-slate-600">Optionnel - Taille max: 5MB</p>
+                    </div>
+                    {formData.profilePhotoPreview && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRemovePhoto}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Supprimer
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      {formData.profilePhotoPreview ? (
+                        <div className="w-24 h-24 rounded-full overflow-hidden border-3 border-white shadow-lg">
+                          <img 
+                            src={formData.profilePhotoPreview} 
+                            alt="Preview photo"
+                            className="w-full h-full object-cover"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-24 h-24 rounded-full bg-gradient-to-br from-slate-100 to-slate-200 border-3 border-white shadow-lg flex items-center justify-center">
+                          <User className="w-12 h-12 text-slate-400" />
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-r from-blue-600 to-purple-600 text-white rounded-full flex items-center justify-center hover:from-blue-700 hover:to-purple-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                      >
+                        <Camera className="w-5 h-5" />
+                      </button>
+                      <input
+                        ref={fileInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handlePhotoSelect}
+                        className="hidden"
+                      />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => fileInputRef.current?.click()}
+                        className="border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        {formData.profilePhotoPreview ? "Changer la photo" : "Ajouter une photo"}
+                      </Button>
+                      <p className="text-xs text-slate-500 mt-2">
+                        Formats acceptés: JPG, PNG, WebP
+                      </p>
+                      <p className="text-xs text-slate-500">
+                        Votre photo apparaîtra dans votre profil et dans le header
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* AJOUT : Section Signature électronique */}
+                <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-slate-200">
+                  <div className="flex items-center justify-between mb-3">
+                    <div>
+                      <h3 className="font-semibold text-slate-800 flex items-center gap-2">
+                        <FileSignature className="w-5 h-5 text-purple-600" />
+                        Signature électronique *
+                      </h3>
+                      <p className="text-sm text-slate-600">Requis - Utilisée pour générer votre contrat</p>
+                    </div>
+                    {formData.signaturePreview && (
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="sm"
+                        onClick={handleRemoveSignature}
+                        className="text-red-600 hover:text-red-700 hover:bg-red-50"
+                      >
+                        <X className="w-4 h-4 mr-1" />
+                        Supprimer
+                      </Button>
+                    )}
+                  </div>
+                  
+                  <div className="flex items-center gap-6">
+                    <div className="relative">
+                      {formData.signaturePreview ? (
+                        <div className="w-48 h-24 rounded-lg overflow-hidden border-2 border-slate-200 bg-white shadow-sm">
+                          <img 
+                            src={formData.signaturePreview} 
+                            alt="Preview signature"
+                            className="w-full h-full object-contain p-2"
+                          />
+                        </div>
+                      ) : (
+                        <div className="w-48 h-24 rounded-lg bg-slate-50 border-2 border-dashed border-slate-300 flex items-center justify-center">
+                          <FileSignature className="w-8 h-8 text-slate-400" />
+                        </div>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => signatureInputRef.current?.click()}
+                        className="absolute -bottom-2 -right-2 w-10 h-10 bg-gradient-to-r from-purple-600 to-pink-600 text-white rounded-full flex items-center justify-center hover:from-purple-700 hover:to-pink-700 transition-all duration-300 hover:scale-105 shadow-lg"
+                      >
+                        <Camera className="w-5 h-5" />
+                      </button>
+                      <input
+                        ref={signatureInputRef}
+                        type="file"
+                        accept="image/*"
+                        onChange={handleSignatureSelect}
+                        className="hidden"
+                      />
+                    </div>
+                    
+                    <div className="flex-1">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        onClick={() => signatureInputRef.current?.click()}
+                        className="border-slate-200 hover:border-purple-400 text-slate-700 hover:text-purple-600 hover:bg-purple-50 transition-all duration-300"
+                      >
+                        <Camera className="w-4 h-4 mr-2" />
+                        {formData.signaturePreview ? "Changer la signature" : "Ajouter une signature"}
+                      </Button>
+                      <p className="text-xs text-slate-500 mt-2">
+                        Formats acceptés: JPG, PNG - Taille max: 2MB
+                      </p>
+                      <p className="text-xs text-red-500 mt-1 font-medium">
+                        ⚠️ Obligatoire pour la génération de votre contrat
+                      </p>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Common fields */}

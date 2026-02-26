@@ -1,18 +1,26 @@
-"use client"
+"use client";
 
-import { BarChart3, Eye, Download, Trash2, Plus, TrendingUp, FileText } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import type { KPI } from "@/lib/types"
+import {
+  BarChart3,
+  Eye,
+  Download,
+  Trash2,
+  Plus,
+  TrendingUp,
+  FileText,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent } from "@/components/ui/card";
+import type { KPI } from "@/lib/types";
 
 interface KPIsSectionProps {
-  kpis: KPI[]
-  kpisLoading: boolean
-  onAddKPI: () => void
-  onViewKPI: (url: string) => void
-  onDownloadKPI: (kpi: KPI) => void
-  onDeleteKPI: (id: string) => void
-  deleteKPIPending: boolean
+  kpis: KPI[];
+  kpisLoading: boolean;
+  onAddKPI: () => void;
+  onViewKPI: (url: string) => void;
+  onDownloadKPI: (kpi: KPI) => void;
+  onDeleteKPI: (id: string) => void;
+  deleteKPIPending: boolean;
 }
 
 export function KPIsSection({
@@ -30,36 +38,36 @@ export function KPIsSection({
       rapport_trimestriel: "Rapport Trimestriel",
       rapport_annuel: "Rapport Annuel",
       autre: "Autre",
-    }
-    return typeLabels[type] || type
-  }
+    };
+    return typeLabels[type] || type;
+  };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8">
       {/* KPI Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="border-[#313442] hover:shadow-xl hover:shadow-violet-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm">
-          <CardContent className="p-6">
-            <div className="flex items-center gap-4">
-              <div className="w-14 h-14 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
-                <BarChart3 className="w-7 h-7 text-white" />
+          <CardContent className="p-3">
+            <div className="flex items-center gap-3">
+              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
+                <BarChart3 className="w-5 h-5 text-white" />
               </div>
               <div>
-                <p className="text-sm text-white font-medium">Total rapports</p>
-                <p className="text-3xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
+                <p className="text-xs text-white font-medium">Total rapports</p>
+                <p className="text-xl font-bold bg-gradient-to-r from-violet-600 to-purple-600 bg-clip-text text-transparent">
                   {kpis.length}
                 </p>
               </div>
             </div>
           </CardContent>
         </Card>
-    
       </div>
 
-
-      <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-6">
-        <div className="flex items-center justify-between mb-6">
-          <h3 className="text-xl font-semibold text-white">Mes Rapports KPI</h3>
+      <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="text-base font-semibold text-white">
+            Mes Rapports KPI
+          </h3>
           <Button
             onClick={onAddKPI}
             className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105"
@@ -70,39 +78,55 @@ export function KPIsSection({
         </div>
 
         {kpisLoading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-10 w-10 border-4 border-violet-200 border-t-violet-600 mx-auto"></div>
-            <p className="text-white mt-3 font-medium">Chargement des KPIs...</p>
+          <div className="text-center py-6">
+            <div className="animate-spin rounded-full h-6 w-6 border-4 border-violet-200 border-t-violet-600 mx-auto"></div>
+            <p className="text-white mt-2 font-medium text-sm">
+              Chargement des KPIs...
+            </p>
           </div>
         ) : kpis.length === 0 ? (
-          <div className="text-center py-12 bg-gradient-to-br from-slate-50 to-violet-50/30 rounded-xl">
-            <BarChart3 className="mx-auto h-14 w-14 text-white" />
-            <p className="mt-4 text-white font-medium">Aucun rapport KPI uploadé</p>
-            <p className="text-sm text-white mt-1">
-              Cliquez sur "Ajouter un rapport" pour uploader vos premiers rapports
+          <div className="text-center py-6 bg-gradient-to-br from-slate-50 to-violet-50/30 rounded-xl">
+            <BarChart3 className="mx-auto h-10 w-10 text-white" />
+            <p className="mt-3 text-white font-medium text-sm">
+              Aucun rapport KPI uploadé
+            </p>
+            <p className="text-xs text-white mt-1">
+              Cliquez sur "Ajouter un rapport" pour uploader vos premiers
+              rapports
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
             {kpis.map((kpi: KPI) => (
               <Card
                 key={kpi._id}
                 className="border-[#313442] hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm"
               >
-                <CardContent className="p-5">
-                  <div className="flex items-start gap-3">
-                    <div className="w-12 h-12 rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center flex-shrink-0 shadow-sm">
-                      <BarChart3 className="w-6 h-6 text-violet-600" />
+                <CardContent className="p-3">
+                  <div className="flex items-start gap-2">
+                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <BarChart3 className="w-4 h-4 text-violet-600" />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <h4 className="font-semibold text-white truncate">{kpi.originalName}</h4>
+                      <h4 className="font-semibold text-white truncate">
+                        {kpi.originalName}
+                      </h4>
                       <p className="text-sm font-medium text-violet-600 mt-1">
-                        Période: {new Date(kpi.periode).toLocaleDateString("fr-FR", { year: "numeric", month: "long" })}
+                        Période:{" "}
+                        {new Date(kpi.periode).toLocaleDateString("fr-FR", {
+                          year: "numeric",
+                          month: "long",
+                        })}
                       </p>
                       <p className="text-xs text-slate-400 mt-1">
-                        Créé le {new Date(kpi.createdAt).toLocaleDateString("fr-FR")}
+                        Créé le{" "}
+                        {new Date(kpi.createdAt).toLocaleDateString("fr-FR")}
                       </p>
-                      {kpi.description && <p className="text-xs text-slate-500 mt-1 truncate">{kpi.description}</p>}
+                      {kpi.description && (
+                        <p className="text-xs text-slate-500 mt-1 truncate">
+                          {kpi.description}
+                        </p>
+                      )}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#313442]">
@@ -141,8 +165,6 @@ export function KPIsSection({
           </div>
         )}
       </div>
-
-      
     </div>
-  )
+  );
 }

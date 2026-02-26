@@ -121,12 +121,6 @@ export default function CollaboratorList({
                         <span className="ml-2 text-xs text-gray-400">(archivé)</span>
                       )}
                     </div>
-                    {/* <div className="text-xs text-gray-400 truncate">
-                      {collab.poste || "Aucun poste"}
-                    </div>
-                    <div className="text-xs text-gray-500 truncate">
-                      {collab.profile || ''}
-                    </div> */}
                   </div>
                 </div>
               </button>

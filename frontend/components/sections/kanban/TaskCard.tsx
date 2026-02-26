@@ -12,7 +12,6 @@ import {
   Lock,
   Edit,
   Trash2,
-  FileText,
   Plus,
 } from "lucide-react";
 import { useSortable } from "@dnd-kit/sortable";
@@ -102,16 +101,15 @@ export default function TaskCard({
   };
 
   const priorityColors = {
-    [TaskPriority.URGENTE]: "text-red-400 border-red-400",
-    [TaskPriority.ELEVEE]: "text-orange-400 border-orange-400",
-    [TaskPriority.NORMALE]: "text-blue-400 border-blue-400",
-    [TaskPriority.BASSE]: "text-gray-400 border-gray-400",
+    [TaskPriority.URGENTE]: "text-red-300 border-red-500/30",
+    [TaskPriority.ELEVEE]: "text-orange-300 border-orange-500/30",
+    [TaskPriority.NORMALE]: "text-blue-300 border-blue-500/30",
+    [TaskPriority.BASSE]: "text-gray-300 border-gray-500/30",
   };
 
   const isOverdue = task.end_date && new Date(task.end_date) < new Date();
 
   const handleCardClick = (e: React.MouseEvent) => {
-    // Vérifier si le clic provient du menu ou de ses enfants
     if (
       menuRef.current?.contains(e.target as Node) ||
       menuButtonRef.current?.contains(e.target as Node)
@@ -119,22 +117,18 @@ export default function TaskCard({
       return;
     }
 
-    // Vérifier si le clic provient du chevron de sous-tâches
     if ((e.target as HTMLElement).closest(".subtask-toggle")) {
       return;
     }
 
-    // Vérifier si le clic provient du bouton "Ajouter sous-tâche"
     if ((e.target as HTMLElement).closest(".add-subtask-btn")) {
       return;
     }
 
-    // Vérifier si le clic provient d'une carte de sous-tâche (CORRECTION PRINCIPALE)
     if ((e.target as HTMLElement).closest(".subtask-card")) {
       return;
     }
 
-    // Si aucune condition n'est remplie, ouvrir le modal de la tâche parente
     if (!isDragDisabled) {
       onEdit(task._id);
     }
@@ -163,33 +157,33 @@ export default function TaskCard({
       {...attributes}
       {...listeners}
       onClick={handleCardClick}
-      className={`relative bg-[#141416] border border-gray-800 rounded-lg p-4 ${
+      className={`relative bg-[#141416] border border-gray-800/50 rounded-lg p-2 ${
         isDragDisabled
-          ? "cursor-not-allowed opacity-80"
-          : "cursor-grab active:cursor-grabbing hover:shadow-lg hover:border-gray-700"
+          ? "cursor-not-allowed opacity-70"
+          : "cursor-grab active:cursor-grabbing hover:shadow-md hover:border-gray-700/50"
       } ${
-        isDragging ? "opacity-60 rotate-1 shadow-xl scale-105" : ""
-      } transition-all duration-150 group`}
+        isDragging ? "opacity-50 rotate-1 shadow-lg scale-[1.02]" : ""
+      } transition-all duration-100 group`}
     >
       {disabled && !isDragging && (
-        <div className="absolute inset-0 bg-black/10 rounded-lg flex items-center justify-center z-10 pointer-events-none">
-          <Lock size={14} className="text-gray-500" />
+        <div className="absolute inset-0 bg-black/5 rounded-lg flex items-center justify-center z-10 pointer-events-none">
+          <Lock size={10} className="text-gray-500" />
         </div>
       )}
 
-      <div className="flex justify-between items-start mb-3 pr-8">
+      <div className="flex justify-between items-start mb-1.5 pr-5">
         <div className="flex-1">
-          <h4 className="font-medium text-sm leading-tight text-gray-100">
+          <h4 className="font-medium text-xs text-gray-100 line-clamp-2 leading-tight">
             {task.title}
           </h4>
           {task.description && (
-            <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+            <p className="text-[11px] text-gray-400 mt-0.5 line-clamp-1">
               {task.description}
             </p>
           )}
         </div>
 
-        <div className="absolute top-3 right-3">
+        <div className="absolute top-1.5 right-1.5">
           <button
             ref={menuButtonRef}
             onClick={(e) => {
@@ -198,21 +192,21 @@ export default function TaskCard({
                 setShowMenu(!showMenu);
               }
             }}
-            className={`p-1.5 rounded transition-colors ${
+            className={`p-0.5 rounded transition-colors ${
               isDragDisabled
                 ? "text-gray-600 cursor-not-allowed"
-                : "text-gray-400 hover:text-white hover:bg-gray-800"
+                : "text-gray-400 hover:text-white hover:bg-gray-800/50"
             }`}
             disabled={isDragDisabled}
             aria-label="Options"
           >
-            <MoreVertical size={16} />
+            <MoreVertical size={12} />
           </button>
 
           {showMenu && !isDragDisabled && (
             <div
               ref={menuRef}
-              className="absolute right-0 mt-1 w-48 bg-[#1a1a1d] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden"
+              className="absolute right-0 mt-0.5 w-36 bg-[#1a1a1d] border border-gray-700 rounded-lg shadow-xl z-50 overflow-hidden"
               onClick={(e) => e.stopPropagation()}
             >
               <button
@@ -221,21 +215,10 @@ export default function TaskCard({
                   onEdit(task._id);
                   setShowMenu(false);
                 }}
-                className="w-full px-4 py-2.5 text-left hover:bg-gray-800 transition-colors flex items-center gap-2 text-sm text-gray-300"
+                className="w-full px-2.5 py-1.5 text-left hover:bg-gray-800 transition-colors flex items-center gap-1.5 text-[11px] text-gray-300"
               >
-                <Edit size={14} />
+                <Edit size={10} />
                 Modifier
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAddSubtask(task._id);
-                  setShowMenu(false);
-                }}
-                className="w-full px-4 py-2.5 text-left hover:bg-purple-900/30 transition-colors flex items-center gap-2 text-sm text-purple-300"
-              >
-                <Plus size={14} />
-                Ajouter une sous-tâche
               </button>
               <button
                 onClick={(e) => {
@@ -243,9 +226,9 @@ export default function TaskCard({
                   onDelete(task._id);
                   setShowMenu(false);
                 }}
-                className="w-full px-4 py-2.5 text-left hover:bg-red-900/30 text-red-400 transition-colors flex items-center gap-2 text-sm"
+                className="w-full px-2.5 py-1.5 text-left hover:bg-red-900/20 text-red-400 transition-colors flex items-center gap-1.5 text-[11px]"
               >
-                <Trash2 size={14} />
+                <Trash2 size={10} />
                 Supprimer
               </button>
             </div>
@@ -253,25 +236,20 @@ export default function TaskCard({
         </div>
       </div>
 
-      <div className="flex items-center justify-between text-xs">
-        <div className="flex items-center gap-2 flex-wrap">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-1 flex-wrap">
           <div
-            className={`flex items-center gap-1 border rounded px-1.5 py-0.5 ${
-              priorityColors[task.priority]
-            }`}
+            className={`flex items-center gap-0.5 border rounded px-1 py-0.5 text-[10px] ${priorityColors[task.priority]}`}
             title={`Priorité: ${task.priority}`}
           >
-            <Flag
-              size={10}
-              className={priorityColors[task.priority].split(" ")[0]}
-            />
-            <span className="capitalize text-xs">{task.priority}</span>
+            <Flag size={8} />
+            <span className="capitalize">{task.priority}</span>
           </div>
 
           {task.end_date && (
             <div
-              className={`flex items-center gap-1 px-1.5 py-0.5 rounded ${
-                isOverdue ? "bg-red-900/30 text-red-300" : "text-gray-400"
+              className={`flex items-center gap-0.5 px-1 py-0.5 rounded text-[10px] ${
+                isOverdue ? "bg-red-900/20 text-red-300" : "text-gray-400"
               }`}
               title={
                 isOverdue
@@ -279,61 +257,60 @@ export default function TaskCard({
                   : `Échéance: ${format(new Date(task.end_date), "dd/MM/yyyy")}`
               }
             >
-              <Calendar size={10} />
+              <Calendar size={8} />
               <span>
                 {format(new Date(task.end_date), "d MMM", { locale: fr })}
               </span>
-              {isOverdue && <Clock size={10} className="ml-0.5" />}
+              {isOverdue && <Clock size={8} className="ml-0.5" />}
             </div>
           )}
 
           {task.assignees && task.assignees.length > 0 && (
             <div
-              className="flex items-center gap-1 text-gray-400 px-1.5 py-0.5 rounded bg-gray-800/30"
+              className="flex items-center gap-0.5 text-gray-400 px-1 py-0.5 rounded bg-gray-800/20 text-[10px]"
               title={`${task.assignees.length} personne(s) assignée(s)`}
             >
-              <Users size={10} />
+              <Users size={8} />
               <span>{task.assignees.filter((a) => a).length}</span>
             </div>
           )}
         </div>
       </div>
 
-      <div className="mt-3 flex justify-end">
+      <div className="mt-1.5 flex justify-end">
         <button
           onClick={handleAddSubtask}
-          className="add-subtask-btn flex items-center gap-1 text-xs text-gray-400 hover:text-purple-300 transition-colors p-1 hover:bg-[#6C4EA821] rounded"
+          className="add-subtask-btn flex items-center gap-0.5 text-[10px] text-gray-400 hover:text-purple-300 transition-colors p-0.5 hover:bg-[#6C4EA810] rounded"
           disabled={isDragDisabled}
           title="Ajouter une sous-tâche"
         >
-          <Plus size={12} />
+          <Plus size={9} />
           <span>Sous-tâche</span>
         </button>
       </div>
 
       {task.sub_tasks && task.sub_tasks.length > 0 && (
-        <div className="mt-4 border-t border-gray-800/50 pt-3">
+        <div className="mt-1.5 border-t border-gray-800/30 pt-1.5">
           <button
             onClick={handleToggleSubtasks}
-            className="subtask-toggle w-full flex items-center justify-between text-xs text-gray-400 hover:text-gray-300 transition-colors p-1 rounded"
+            className="subtask-toggle w-full flex items-center justify-between text-[10px] text-gray-400 hover:text-gray-300 transition-colors p-0.5 rounded"
             disabled={isDragDisabled}
           >
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-1">
               {showSubtasks ? (
-                <ChevronDown size={12} />
+                <ChevronDown size={9} />
               ) : (
-                <ChevronRight size={12} />
+                <ChevronRight size={9} />
               )}
               <span>{task.sub_tasks.length} sous-tâche(s)</span>
             </div>
             {loadingSubtasks && (
-              <div className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+              <div className="w-2 h-2 border-1.5 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
             )}
           </button>
 
-          {/* CORRECTION: Ajouter la classe subtask-card au conteneur */}
           {showSubtasks && !loadingSubtasks && (
-            <div className="subtask-card mt-2 space-y-1">
+            <div className="subtask-card mt-1 space-y-0.5">
               {subtasks.map((subtask) => (
                 <SubtaskCard
                   key={subtask._id}
@@ -349,13 +326,13 @@ export default function TaskCard({
       )}
 
       {task.project_id && (
-        <div className="mt-3">
+        <div className="mt-1.5">
           <span
-            className="px-2 py-1 text-xs bg-blue-900/30 text-blue-300 rounded inline-flex items-center gap-1"
+            className="px-1 py-0.5 text-[10px] bg-blue-900/20 text-blue-300 rounded inline-flex items-center gap-0.5"
             title={`Projet: ${task.project_id.name}`}
           >
             <svg
-              className="w-3 h-3"
+              className="w-2 h-2"
               fill="none"
               stroke="currentColor"
               viewBox="0 0 24 24"
@@ -373,7 +350,7 @@ export default function TaskCard({
       )}
 
       {isDragging && (
-        <div className="absolute inset-0 border-2 border-purple-500 rounded-lg pointer-events-none"></div>
+        <div className="absolute inset-0 border-1 border-purple-500/50 rounded-lg pointer-events-none"></div>
       )}
     </div>
   );

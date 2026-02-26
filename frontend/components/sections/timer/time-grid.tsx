@@ -1,6 +1,6 @@
 export const HOURS = Array.from({ length: 24 }, (_, i) => i);
 export const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
-export const PIXELS_PER_HOUR = 64;
+export const PIXELS_PER_HOUR = 48;
 
 interface TimeGridProps {
   onCellClick: (dayIndex: number, hour: number) => void;
@@ -20,8 +20,8 @@ export function TimeGrid({ onCellClick, pixelsPerHour }: TimeGridProps) {
   return (
     <>
       {HOURS.map((hour) => (
-        <div key={hour} className="grid grid-cols-[80px_repeat(7,1fr)] h-16 border-b border-[#313442]">
-          <div className="text-xs text-gray-400 px-2">{hour.toString().padStart(2, '0')}:00</div>
+        <div key={hour} className="grid grid-cols-[60px_repeat(7,1fr)] h-12 border-b border-[#313442]">
+          <div className="text-[10px] text-gray-400 px-1">{hour.toString().padStart(2, '0')}:00</div>
           {DAYS.map((_, dayIndex) => (
             <div
               key={dayIndex}

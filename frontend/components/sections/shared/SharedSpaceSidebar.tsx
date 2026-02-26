@@ -247,29 +247,29 @@ export default function EspacesPartageSection() {
   return (
     <div className="min-h-screen bg-[#0f0f10] text-gray-100 flex">
       {/* Sidebar des espaces */}
-      <div className="w-80 bg-[#1a1a1d] border-r border-gray-800 flex flex-col h-screen">
+      <div className="w-50 bg-[#1a1a1d] border-r border-gray-800 flex flex-col h-screen">
         <div className="p-4 border-b border-gray-800">
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-lg font-semibold">Espaces Partagés</h2>
+            <h2 className="text-sm font-semibold">Espaces Partagés</h2>
             {isAdminOrManager && (
               <button
                 onClick={() => setShowSpaceForm(true)}
                 className="p-2 hover:bg-gray-800 rounded-lg transition"
                 title="Créer un espace"
               >
-                <Plus size={20} />
+                <Plus size={18} />
               </button>
             )}
           </div>
           
           <div className="relative">
-            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={16} />
+            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" size={15} />
             <input
               type="text"
               placeholder="Rechercher un espace..."
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 bg-[#2a2a2d] border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500"
+              className="w-full pl-7 pr-2 py-1.5 bg-[#2a2a2d] border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 text-xs"
             />
           </div>
         </div>
@@ -293,7 +293,7 @@ export default function EspacesPartageSection() {
               {filteredSpaces.map((space) => (
                 <div
                   key={space._id}
-                  className={`relative w-full text-left p-3 rounded-lg transition flex items-center justify-between ${
+                  className={`relative w-full text-left p-1.5 rounded-lg transition flex items-center justify-between ${
                     selectedSpace?._id === space._id
                       ? "bg-[#6C4EA8] text-white"
                       : "hover:bg-gray-800"
@@ -305,7 +305,7 @@ export default function EspacesPartageSection() {
                     className="flex items-center gap-3 flex-1 min-w-0"
                   >
                     {/* Photo ou initiales */}
-                    <div className={`w-10 h-10 rounded flex items-center justify-center overflow-hidden flex-shrink-0 ${
+                    <div className={`w-8 h-8 rounded flex items-center justify-center overflow-hidden flex-shrink-0 ${
                       space.photo ? 'bg-transparent' : space.isActive ? "bg-purple-900" : "bg-gray-500/20"
                     }`}>
                       {space.photo ? (
@@ -315,7 +315,7 @@ export default function EspacesPartageSection() {
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className={`font-semibold text-sm ${
+                        <span className={`font-semibold text-xs ${
                           space.isActive ? "text-white" : "text-gray-400"
                         }`}>
                           {getSpaceInitials(space.name)}
@@ -323,10 +323,7 @@ export default function EspacesPartageSection() {
                       )}
                     </div>
                     <div className="overflow-hidden">
-                      <div className="font-medium truncate">{space.name}</div>
-                      <div className="text-xs text-gray-400 truncate">
-                        {/* Par {space.createdBy.prenoms} {space.createdBy.nom} */}
-                      </div>
+                      <div className="font-medium truncate text-sm">{space.name}</div>
                     </div>
                   </button>
 
@@ -340,24 +337,24 @@ export default function EspacesPartageSection() {
                         }}
                         className="p-1 hover:bg-gray-700 rounded transition"
                       >
-                        <MoreVertical size={18} />
+                        <MoreVertical size={16} />
                       </button>
 
                       {/* Menu déroulant */}
                       {openMenuId === space._id && (
-                        <div className="absolute right-0 top-full mt-1 bg-[#2a2a2d] border border-gray-700 rounded-lg shadow-xl z-50 min-w-[160px]">
+                        <div className="absolute right-0 top-full mt-1 bg-[#2a2a2d] border border-gray-700 rounded-lg shadow-xl z-50 text-xs">
                           <button
                             onClick={() => openEditModal(space)}
-                            className="w-full flex items-center gap-3 px-4 py-2 hover:bg-gray-700 transition text-left"
+                            className="w-full flex items-center gap-1.5 px-4 py-2 hover:bg-gray-700 transition text-left"
                           >
-                            <Edit size={16} />
+                            <Edit size={14} />
                             <span>Modifier</span>
                           </button>
                           <button
                             onClick={() => openDeleteModal(space)}
-                            className="w-full flex items-center gap-3 px-4 py-2 hover:bg-red-500/20 text-red-400 transition text-left"
+                            className="w-full flex items-center gap-1.5 px-4 py-2 hover:bg-red-500/20 text-red-400 transition text-left"
                           >
-                            <Trash2 size={16} />
+                            <Trash2 size={14} />
                             <span>Supprimer</span>
                           </button>
                         </div>
@@ -369,27 +366,6 @@ export default function EspacesPartageSection() {
             </div>
           )}
         </div>
-
-        {/* <div className="p-4 border-t border-gray-800">
-          <div className="flex items-center gap-3">
-            <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
-              <span className="font-semibold">
-                {userData.prenoms?.charAt(0) || ''}{userData.nom?.charAt(0) || ''}
-              </span>
-            </div>
-            <div>
-              <div className="font-medium">
-                {userData.prenoms || ''} {userData.nom || ''}
-              </div>
-              <div className="text-xs text-gray-400 capitalize">
-                {userData.role || 'utilisateur'}
-                {isAdminOrManager && (
-                  <span className="ml-2 text-purple-400">(Voir tous)</span>
-                )}
-              </div>
-            </div>
-          </div>
-        </div> */}
       </div>
 
       {/* Contenu principal */}

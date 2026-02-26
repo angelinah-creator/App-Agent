@@ -8,7 +8,6 @@ import { Input } from "@/components/ui/input"
 import { Card, CardContent } from "@/components/ui/card"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { Contract } from "@/lib/contract-service"
-// import type { UserData } from "@/lib/types"
 import type { Agent } from "@/lib/users-service"
 
 interface ContractsAdminProps {
@@ -68,19 +67,20 @@ export function ContractsSectionAdmin({
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête */}
-      <div className="flex items-center justify-between">
         <div>
+          <h1 className="text-white font-extrabold text-2xl">
+            Gestion des contrats
+          </h1>
           <p className="text-slate-600 mt-1">
             {filteredContracts.length} contrat{filteredContracts.length > 1 ? "s" : ""} trouvé{filteredContracts.length > 1 ? "s" : ""}
           </p>
         </div>
-      </div>
 
       {/* Filtres */}
-      <Card className="bg-[#1F2128] text-white border border-[#313442]">
-        <CardContent className="pt-6">
+      <div className="bg-[#1F2128] text-white border border-[#313442] p-3 rounded-lg">
+        <div className="">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
@@ -118,8 +118,8 @@ export function ContractsSectionAdmin({
               </SelectContent>
             </Select>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
       {/* Liste des contrats */}
       {isLoading ? (
@@ -136,7 +136,7 @@ export function ContractsSectionAdmin({
       ) : (
         <div className="grid grid-cols-1 gap-4">
           {filteredContracts.map((contract) => (
-            <Card key={contract._id} className="hover:shadow-lg transition-shadow bg-[#1F2128] border border-[#313442]">
+            <div key={contract._id} className="hover:shadow-lg transition-shadow bg-[#1F2128] border border-[#313442] rounded-lg">
               <CardContent className="p-6">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
@@ -144,7 +144,7 @@ export function ContractsSectionAdmin({
                       <FileText className="w-6 h-6 text-violet-600" />
                     </div>
                     
-                    <div className="flex-1 space-y-2">
+                    <div className="flex-1 space-y-1">
                       <div className="flex items-center gap-3">
                         <h3 className="font-semibold text-lg text-white">
                           {getAgentInfo(contract.userId)}
@@ -161,12 +161,12 @@ export function ContractsSectionAdmin({
                       </div>
 
                       <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                        <div>
+                        {/* <div>
                           <span className="text-slate-500">Date création:</span>
                           <span className="ml-2 font-medium text-white">
                             {formatDate(contract.createdAt)}
                           </span>
-                        </div>
+                        </div> */}
                         {contract.expiresAt && (
                           <div>
                             <span className="text-slate-500">Date expiration:</span>
@@ -180,15 +180,6 @@ export function ContractsSectionAdmin({
                   </div>
 
                   <div className="flex gap-2 ml-4">
-                    {/* <Button
-                      variant="outline"
-                      size="sm"
-                      onClick={() => onView(contract)}
-                      className="border-violet-300 hover:bg-violet-300"
-                    >
-                      <Eye className="w-4 h-4" />
-                      Détails
-                    </Button> */}
                     <Button
                       variant="outline"
                       size="sm"
@@ -213,7 +204,7 @@ export function ContractsSectionAdmin({
                   </div>
                 </div>
               </CardContent>
-            </Card>
+            </div>
           ))}
         </div>
       )}

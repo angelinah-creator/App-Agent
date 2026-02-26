@@ -30,13 +30,9 @@ export default function CollaboratorKanban({
   loading,
   onLoadSubtasks,
 }: CollaboratorKanbanProps) {
-  const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>(
-    {}
-  );
+  const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>({});
   const [subtasksMap, setSubtasksMap] = useState<Record<string, Task[]>>({});
-  const [loadingSubtasks, setLoadingSubtasks] = useState<
-    Record<string, boolean>
-  >({});
+  const [loadingSubtasks, setLoadingSubtasks] = useState<Record<string, boolean>>({});
   const [projects, setProjects] = useState<Project[]>([]);
 
   useEffect(() => {
@@ -76,7 +72,6 @@ export default function CollaboratorKanban({
     }
   };
 
-  // Grouper les tâches par statut
   const groupedTasks = tasks.reduce((acc, task) => {
     const status = task.status;
     if (!acc[status]) acc[status] = [];
@@ -84,146 +79,89 @@ export default function CollaboratorKanban({
     return acc;
   }, {} as Record<TaskStatus, Task[]>);
 
-  // Colonnes Kanban
+  // Colonnes Kanban compactes
   const columns = [
     {
       id: TaskStatus.A_FAIRE,
       title: "À FAIRE",
-      color: "border-[#313442]",
-      bg: "bg-gray-900/30",
+      color: "border-gray-800",
+      bg: "bg-gray-900/20",
+      dot: "bg-gray-500"
     },
     {
       id: TaskStatus.EN_COURS,
       title: "EN COURS",
-      color: "border-[#313442]",
-      bg: "bg-[#6C4EA821]",
+      color: "border-gray-800",
+      bg: "bg-[#6C4EA815]",
+      dot: "bg-purple-500"
     },
     {
       id: TaskStatus.TERMINEE,
       title: "TERMINÉ",
-      color: "border-[#313442]",
-      bg: "bg-[#71D29121]",
+      color: "border-gray-800",
+      bg: "bg-[#71D29115]",
+      dot: "bg-green-500"
     },
     {
       id: TaskStatus.ANNULEE,
       title: "ANNULÉ",
-      color: "border-[#313442]",
-      bg: "bg-red-900/20",
+      color: "border-gray-800",
+      bg: "bg-red-900/10",
+      dot: "bg-red-500"
     },
   ];
 
   if (loading) {
     return (
-      <div className="flex-1 flex items-center justify-center">
+      <div className="flex-1 flex items-center justify-center py-12">
         <div className="text-center">
-          <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Chargement des tâches...</p>
+          <div className="w-8 h-8 border-2 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-3"></div>
+          <p className="text-sm text-gray-400">Chargement des tâches...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex-1 p-6 overflow-auto">
-      {/* En-tête du collaborateur */}
-      <div className="mb-8">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="w-16 h-16 bg-purple-600 rounded-full flex items-center justify-center">
-              <span className="text-xl font-semibold">
-                {collaborator.prenoms?.charAt(0)}
-                {collaborator.nom?.charAt(0)}
-              </span>
-            </div>
-            <div>
-              <h1 className="text-3xl font-extrabold">
-                {collaborator.prenoms} {collaborator.nom}
-              </h1>
-              <div className="flex items-center gap-4 mt-2 text-gray-400">
-                <div className="flex items-center gap-2">
-                  <Briefcase size={16} />
-                  <span>{collaborator.poste || "Aucun poste"}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <Users size={16} />
-                  <span className="capitalize">
-                    {collaborator.profile || collaborator.role}
-                  </span>
-                </div>
-                <div className="flex items-center gap-2 px-3 py-1 bg-gray-800 rounded-full">
-                  <Eye size={14} />
-                  <span className="text-sm">Mode consultation</span>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Statistiques */}
-        <div className="grid grid-cols-4 gap-4 mb-6">
-          {columns.map((column) => {
-            const count = groupedTasks[column.id]?.length || 0;
-            return (
-              <div
-                key={column.id}
-                className={`p-4 rounded-xl border ${column.color} ${column.bg}`}
-              >
-                <div className="text-2xl font-bold mb-1">{count}</div>
-                <div className="text-sm text-gray-300">{column.title}</div>
-              </div>
-            );
-          })}
-        </div>
-      </div>
-
-      {/* Tableau Kanban en lecture seule */}
-      <div className="flex gap-4 overflow-x-auto pb-4">
+    <div className="flex-1">
+      {/* Tableau Kanban compact */}
+      <div className="flex gap-3 overflow-x-auto pb-3 mt-20">
         {columns.map((column) => {
           const columnTasks = tasks.filter((task) => task.status === column.id);
 
           return (
             <div
               key={column.id}
-              className={`flex-shrink-0 w-80 rounded-xl border ${column.color}`}
+              className={`flex-shrink-0 w-64 rounded-lg border ${column.color}`}
             >
               {/* En-tête de colonne */}
-              <div className={`p-4 rounded-t-xl ${column.bg}`}>
+              <div className={`p-2 rounded-t-lg ${column.bg}`}>
                 <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className={`w-3 h-3 rounded-full ${
-                        column.id === TaskStatus.A_FAIRE
-                          ? "bg-gray-500"
-                          : column.id === TaskStatus.EN_COURS
-                          ? "bg-purple-500"
-                          : column.id === TaskStatus.TERMINEE
-                          ? "bg-green-500"
-                          : "bg-red-500"
-                      }`}
-                    />
-                    <h3 className="font-semibold">{column.title}</h3>
-                    <span className="px-2 py-1 text-xs bg-black/30 rounded-full">
+                  <div className="flex items-center gap-2">
+                    <div className={`w-2 h-2 rounded-full ${column.dot}`} />
+                    <h3 className="text-xs font-semibold">{column.title}</h3>
+                    <span className="px-1.5 py-0.5 text-xs bg-black/20 rounded">
                       {columnTasks.length}
                     </span>
                   </div>
-                  <Lock size={16} className="text-gray-400" />
+                  <Lock size={12} className="text-gray-400" />
                 </div>
               </div>
 
               {/* Liste des tâches */}
-              <div className="p-3 space-y-3 max-h-[calc(100vh-400px)] overflow-y-auto">
+              <div className="p-2 space-y-2 max-h-[calc(100vh-280px)] overflow-y-auto">
                 {columnTasks.map((task) => (
                   <div
                     key={task._id}
-                    className="bg-[#141416] border border-gray-800 rounded-lg p-4 opacity-90"
+                    className="bg-[#141416] border border-gray-800 rounded p-3 opacity-90"
                   >
-                    {/* En-tête */}
-                    <div className="mb-3">
-                      <h4 className="font-medium text-sm leading-tight">
+                    {/* Titre et description */}
+                    <div className="mb-2">
+                      <h4 className="text-xs font-medium leading-tight">
                         {task.title}
                       </h4>
                       {task.description && (
-                        <p className="text-xs text-gray-400 mt-1 line-clamp-2">
+                        <p className="text-xs text-gray-400 mt-1 line-clamp-1">
                           {task.description}
                         </p>
                       )}
@@ -231,10 +169,10 @@ export default function CollaboratorKanban({
 
                     {/* Métadonnées */}
                     <div className="flex items-center justify-between text-xs">
-                      <div className="flex items-center gap-2">
+                      <div className="flex items-center gap-1.5">
                         {/* Priorité */}
                         <div
-                          className={`flex items-center gap-1 border rounded px-1 ${
+                          className={`flex items-center gap-0.5 border rounded px-1 py-0.5 ${
                             task.priority === TaskPriority.URGENTE
                               ? "text-red-400 border-red-400"
                               : task.priority === TaskPriority.ELEVEE
@@ -244,8 +182,8 @@ export default function CollaboratorKanban({
                               : "text-gray-400 border-gray-400"
                           }`}
                         >
-                          <Flag size={10} />
-                          <span className="capitalize">{task.priority}</span>
+                          <Flag size={9} />
+                          <span className="text-[10px] capitalize">{task.priority}</span>
                         </div>
 
                         {/* Deadline */}
@@ -257,15 +195,12 @@ export default function CollaboratorKanban({
                                 : "text-gray-400"
                             }`}
                           >
-                            <Calendar size={10} />
+                            <Calendar size={9} />
                             <span>
-                              {format(new Date(task.end_date), "d MMMM", {
+                              {format(new Date(task.end_date), "d MMM", {
                                 locale: fr,
                               })}
                             </span>
-                            {new Date(task.end_date) < new Date() && (
-                              <Clock size={10} className="ml-1" />
-                            )}
                           </div>
                         )}
                       </div>
@@ -273,8 +208,8 @@ export default function CollaboratorKanban({
 
                     {/* Projet */}
                     {task.project_id && (
-                      <div className="mt-3">
-                        <span className="px-2 py-1 text-xs bg-blue-900/30 text-blue-300 rounded">
+                      <div className="mt-2">
+                        <span className="px-1.5 py-0.5 text-[10px] bg-blue-900/20 text-blue-300 rounded">
                           {task.project_id.name}
                         </span>
                       </div>
@@ -282,36 +217,36 @@ export default function CollaboratorKanban({
 
                     {/* Sous-tâches */}
                     {task.sub_tasks && task.sub_tasks.length > 0 && (
-                      <div className="mt-4 border-t border-gray-800/50 pt-3">
+                      <div className="mt-3 border-t border-gray-800/30 pt-2">
                         <button
                           onClick={() => handleToggleSubtasks(task._id)}
-                          className="w-full flex items-center justify-between text-xs text-gray-400 hover:text-gray-300 transition-colors p-1 rounded"
+                          className="w-full flex items-center justify-between text-[10px] text-gray-400 hover:text-gray-300 p-0.5 rounded"
                         >
-                          <div className="flex items-center gap-2">
+                          <div className="flex items-center gap-1.5">
                             {expandedTasks[task._id] ? (
-                              <ChevronDown size={12} />
+                              <ChevronDown size={10} />
                             ) : (
-                              <ChevronRight size={12} />
+                              <ChevronRight size={10} />
                             )}
                             <span>{task.sub_tasks.length} sous-tâche(s)</span>
                           </div>
                           {loadingSubtasks[task._id] && (
-                            <div className="w-3 h-3 border-2 border-gray-500 border-t-transparent rounded-full animate-spin"></div>
+                            <div className="w-2.5 h-2.5 border border-gray-500 border-t-transparent rounded-full animate-spin"></div>
                           )}
                         </button>
 
                         {expandedTasks[task._id] && subtasksMap[task._id] && (
-                          <div className="mt-2 space-y-1">
+                          <div className="mt-1.5 space-y-1">
                             {subtasksMap[task._id].map((subtask) => (
                               <div
                                 key={subtask._id}
-                                className="bg-[#1a1a1d] border border-gray-700/50 rounded p-2 text-xs"
+                                className="bg-[#1a1a1d] border border-gray-700/30 rounded p-1.5 text-xs"
                               >
                                 <div className="font-medium text-gray-300">
                                   {subtask.title}
                                 </div>
                                 {subtask.description && (
-                                  <div className="text-gray-500 mt-1">
+                                  <div className="text-gray-500 mt-0.5 text-xs">
                                     {subtask.description}
                                   </div>
                                 )}
@@ -331,13 +266,13 @@ export default function CollaboratorKanban({
 
       {/* Message si aucune tâche */}
       {tasks.length === 0 && (
-        <div className="text-center py-12">
-          <div className="w-20 h-20 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Eye className="w-10 h-10 text-gray-600" />
+        <div className="text-center py-8">
+          <div className="w-12 h-12 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-3">
+            <Eye className="w-6 h-6 text-gray-600" />
           </div>
-          <h3 className="text-lg font-medium mb-2">Aucune tâche trouvée</h3>
-          <p className="text-gray-400">
-            Ce collaborateur n'a pas encore de tâches dans son espace personnel.
+          <h3 className="text-sm font-medium mb-1">Aucune tâche trouvée</h3>
+          <p className="text-xs text-gray-400">
+            Ce collaborateur n'a pas encore de tâches.
           </p>
         </div>
       )}
