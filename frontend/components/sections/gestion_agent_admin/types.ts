@@ -34,7 +34,6 @@ export interface EditFormDataType {
   indemnite?: number;
   indemniteConnexion?: number;
   tjm?: number;
-  tarifJournalier?: number;
   dureeJournaliere?: number;
   [key: string]: any;
 }

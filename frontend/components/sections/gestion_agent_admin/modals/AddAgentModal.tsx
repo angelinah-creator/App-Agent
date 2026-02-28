@@ -428,19 +428,6 @@ export function AddAgentModal({ onClose, onSuccess }: AddAgentModalProps) {
                     required
                   />
                 </Field>
-                <Field label="Tarif journalier" htmlFor="tarifJournalier">
-                  <Inp
-                    id="tarifJournalier"
-                    type="number"
-                    value={formData.tarifJournalier || ""}
-                    onChange={(e: { target: { value: any } }) =>
-                      setFormData({
-                        ...formData,
-                        tarifJournalier: Number(e.target.value),
-                      })
-                    }
-                  />
-                </Field>
                 <Field label="Durée journalière (h)" htmlFor="dureeJournaliere">
                   <Inp
                     id="dureeJournaliere"

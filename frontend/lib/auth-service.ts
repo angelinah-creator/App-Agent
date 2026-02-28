@@ -75,7 +75,6 @@ export interface RegisterData {
   indemnite?: number
   indemniteConnexion?: number
   domainePrestation?: string
-  tarifJournalier?: number
   dureeJournaliere?: number
 }
 

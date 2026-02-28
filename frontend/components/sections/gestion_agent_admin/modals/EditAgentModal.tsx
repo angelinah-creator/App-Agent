@@ -208,8 +208,6 @@ export function EditAgentModal({
         d.indemniteConnexion = Number(agent.indemniteConnexion);
     } else if (agent.profile === "prestataire") {
       if (agent.tjm !== undefined) d.tjm = Number(agent.tjm);
-      if (agent.tarifJournalier !== undefined)
-        d.tarifJournalier = Number(agent.tarifJournalier);
       if (agent.dureeJournaliere !== undefined)
         d.dureeJournaliere = Number(agent.dureeJournaliere);
     }
@@ -436,19 +434,6 @@ export function EditAgentModal({
                       setFormData({ ...formData, tjm: Number(e.target.value) })
                     }
                     required
-                  />
-                </Field>
-                <Field label="Tarif journalier" htmlFor="edit-tarifJournalier">
-                  <Inp
-                    id="edit-tarifJournalier"
-                    type="number"
-                    value={formData.tarifJournalier || 0}
-                    onChange={(e: { target: { value: any } }) =>
-                      setFormData({
-                        ...formData,
-                        tarifJournalier: Number(e.target.value),
-                      })
-                    }
                   />
                 </Field>
                 <Field

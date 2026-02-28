@@ -22,7 +22,6 @@ export interface UserData {
   indemnite?: number;
   indemniteConnexion?: number;
   domainePrestation?: string;
-  tarifJournalier?: number;
   dureeJournaliere?: number;
   entreprise?: string;
   nif?: string;

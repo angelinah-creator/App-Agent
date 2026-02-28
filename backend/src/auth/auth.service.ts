@@ -83,7 +83,6 @@ export class AuthService {
         userData.indemniteConnexion = dto.indemniteConnexion;
       } else if (dto.profile === UserProfile.PRESTATAIRE) {
         userData.domainePrestation = dto.domainePrestation;
-        userData.tarifJournalier = dto.tarifJournalier;
         userData.dureeJournaliere = dto.dureeJournaliere;
       }
     }

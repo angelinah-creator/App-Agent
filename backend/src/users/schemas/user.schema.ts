@@ -130,9 +130,6 @@ export class User {
   domainePrestation?: string;
 
   @Prop()
-  tarifJournalier?: number;
-
-  @Prop()
   dureeJournaliere?: number;
 
   // Champs spécifiques aux clients

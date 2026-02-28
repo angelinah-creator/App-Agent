@@ -130,11 +130,6 @@ export class CreateUserDto {
   @ValidateIf(o => o.profile === UserProfile.PRESTATAIRE)
   @IsNumber()
   @IsNotEmpty()
-  tarifJournalier?: number;
-
-  @ValidateIf(o => o.profile === UserProfile.PRESTATAIRE)
-  @IsNumber()
-  @IsNotEmpty()
   dureeJournaliere?: number;
 
   // Champs spécifiques aux clients

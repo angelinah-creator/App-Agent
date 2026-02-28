@@ -70,7 +70,6 @@ export default function SignupPage() {
     confirmPassword: "",
     indemnite: 0,
     indemniteConnexion: 0,
-    tarifJournalier: 0,
     dureeJournaliere: 0,
     
     // Champs pour la photo de profil
@@ -143,7 +142,6 @@ export default function SignupPage() {
         }),
         ...(userProfile === "prestataire" && {
           domainePrestation: formData.domainePrestation,
-          tarifJournalier: formData.tarifJournalier,
           dureeJournaliere: formData.dureeJournaliere,
         }),
       };
@@ -953,29 +951,6 @@ export default function SignupPage() {
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="tarifJournalier"
-                          className="text-slate-700"
-                        >
-                          Tarif journalier (Ar) *
-                        </Label>
-                        <Input
-                          id="tarifJournalier"
-                          type="number"
-                          placeholder="100000"
-                          value={formData.tarifJournalier || ""}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "tarifJournalier",
-                              e.target.value === "" ? 0 : Number(e.target.value)
-                            )
-                          }
-                          required
-                          className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                        />
-                      </div>
-
                       <div className="space-y-2">
                         <Label
                           htmlFor="dureeJournaliere"

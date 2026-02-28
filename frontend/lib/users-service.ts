@@ -33,7 +33,6 @@ export interface Agent {
   indemnite?: number;
   indemniteConnexion?: number;
   domainePrestation?: string;
-  tarifJournalier?: number;
   dureeJournaliere?: number;
   profilePhoto?: { url: string; publicId: string; _id: string };
 
@@ -62,7 +61,6 @@ export interface CreateAgentDto {
   indemnite?: number;
   indemniteConnexion?: number;
   domainePrestation?: string;
-  tarifJournalier?: number;
   dureeJournaliere?: number;
 }
 
