@@ -27,7 +27,13 @@ type UserRole = "collaborateur" | "manager";
 type UserProfile = "stagiaire" | "prestataire";
 
 // ─── Step configs ────────────────────────────────────────────────────────────
-const STAGIAIRE_STEPS = [
+// Steps common to all flows: role → profile → ...form steps
+const COMMON_STEPS = [
+  { id: "role-select", label: "Rôle" },
+  { id: "profile-select", label: "Profil" },
+];
+
+const STAGIAIRE_FORM_STEPS = [
   { id: "info-perso", label: "Infos perso." },
   { id: "info-pro", label: "Infos pro." },
   { id: "coordonnees", label: "Coordonnées" },
@@ -35,7 +41,7 @@ const STAGIAIRE_STEPS = [
   { id: "signature", label: "Signature" },
 ];
 
-const PRESTATAIRE_STEPS = [
+const PRESTATAIRE_FORM_STEPS = [
   { id: "info-perso", label: "Infos perso." },
   { id: "info-pro", label: "Infos pro." },
   { id: "prestation", label: "Prestation" },
@@ -127,23 +133,64 @@ function Select({
   );
 }
 
+// ─── Role/Profile Card ────────────────────────────────────────────────────────
+function SelectionCard({
+  icon,
+  label,
+  desc,
+  color,
+  selected,
+  onClick,
+}: {
+  icon: React.ReactNode;
+  label: string;
+  desc?: string;
+  color: string;
+  selected?: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={`flex flex-col items-center justify-center gap-3 p-5 rounded-sm border transition-all duration-200 group ${
+        selected
+          ? "border-[#8254ff] bg-[#8254ff]/10"
+          : "border-[#2a2a2a] bg-[#0a0a0a] hover:border-[#8254ff] hover:bg-[#0d0d0d]"
+      }`}
+    >
+      <div
+        className="w-12 h-12 rounded-sm flex items-center justify-center transition-colors"
+        style={{ background: `${color}15` }}
+      >
+        {icon}
+      </div>
+      <div className="text-center">
+        <div className="text-sm font-semibold text-white">{label}</div>
+        {desc && <div className="text-xs text-gray-600 mt-0.5">{desc}</div>}
+      </div>
+      {selected && (
+        <div className="w-5 h-5 rounded-full bg-[#8254ff] flex items-center justify-center">
+          <Check size={11} />
+        </div>
+      )}
+    </button>
+  );
+}
+
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function SignupPage() {
   const router = useRouter();
   const fileInputRef = useRef<HTMLInputElement>(null);
   const signatureInputRef = useRef<HTMLInputElement>(null);
 
-  // Screens: "role-select" | "profile-select" | "form"
-  const [screen, setScreen] = useState<"role-select" | "profile-select" | "form">("role-select");
-  const [userRole, setUserRole] = useState<UserRole | null>(null);
-  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-
-  // Step state
   const [currentStep, setCurrentStep] = useState(0);
   const [animDir, setAnimDir] = useState<"left" | "right">("right");
   const [isAnimating, setIsAnimating] = useState(false);
 
-  // Form
+  const [userRole, setUserRole] = useState<UserRole | null>(null);
+  const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
+
   const [form, setForm] = useState(initialForm);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [showPassword, setShowPassword] = useState(false);
@@ -151,8 +198,18 @@ export default function SignupPage() {
   const [isLoading, setIsLoading] = useState(false);
   const [loadingMsg, setLoadingMsg] = useState("");
 
-  const steps = userProfile === "stagiaire" ? STAGIAIRE_STEPS : PRESTATAIRE_STEPS;
+  // Build the full steps array dynamically
+  const formSteps =
+    userProfile === "stagiaire"
+      ? STAGIAIRE_FORM_STEPS
+      : userProfile === "prestataire"
+      ? PRESTATAIRE_FORM_STEPS
+      : STAGIAIRE_FORM_STEPS; // fallback before profile chosen
+
+  const steps = [...COMMON_STEPS, ...formSteps];
   const totalSteps = steps.length;
+  const stepId = steps[currentStep]?.id;
+  const isLastStep = currentStep === totalSteps - 1;
 
   // ── Helpers ──
   const setField = (key: keyof typeof form, val: unknown) => {
@@ -176,9 +233,16 @@ export default function SignupPage() {
   // ── Validation per step ──
   const validateStep = (): boolean => {
     const e: Record<string, string> = {};
-    const step = steps[currentStep].id;
 
-    if (step === "info-perso") {
+    if (stepId === "role-select") {
+      if (!userRole) e.role = "Veuillez sélectionner un rôle";
+    }
+
+    if (stepId === "profile-select") {
+      if (!userProfile) e.profile = "Veuillez sélectionner un profil";
+    }
+
+    if (stepId === "info-perso") {
       if (!form.nom.trim()) e.nom = "Requis";
       if (!form.prenoms.trim()) e.prenoms = "Requis";
       if (!form.dateNaissance) e.dateNaissance = "Requis";
@@ -188,7 +252,7 @@ export default function SignupPage() {
       if (!form.cin.trim()) e.cin = "Requis";
     }
 
-    if (step === "info-pro") {
+    if (stepId === "info-pro") {
       if (!form.poste.trim()) e.poste = "Requis";
       if (!form.dateDebut) e.dateDebut = "Requis";
       if (!form.dateFinIndeterminee && !form.dateFin) e.dateFin = "Requis ou cochez indéterminée";
@@ -202,7 +266,7 @@ export default function SignupPage() {
       }
     }
 
-    if (step === "prestation") {
+    if (stepId === "prestation") {
       if (!form.domainePrestation.trim()) e.domainePrestation = "Requis";
       if (!form.typeContrat) e.typeContrat = "Requis";
       if (!form.joursSemaine) e.joursSemaine = "Requis";
@@ -210,13 +274,13 @@ export default function SignupPage() {
       if (!form.tarifsHoraire) e.tarifsHoraire = "Requis";
     }
 
-    if (step === "coordonnees") {
+    if (stepId === "coordonnees") {
       if (!form.telephone.trim()) e.telephone = "Requis";
       if (!form.email.trim()) e.email = "Requis";
       else if (!/\S+@\S+\.\S+/.test(form.email)) e.email = "Email invalide";
     }
 
-    if (step === "securite") {
+    if (stepId === "securite") {
       if (!form.password) e.password = "Requis";
       else if (form.password.length < 6) e.password = "6 caractères minimum";
       if (!form.confirmPassword) e.confirmPassword = "Requis";
@@ -224,7 +288,7 @@ export default function SignupPage() {
         e.confirmPassword = "Les mots de passe ne correspondent pas";
     }
 
-    if (step === "signature") {
+    if (stepId === "signature") {
       if (!form.signature) e.signature = "La signature est obligatoire";
     }
 
@@ -235,6 +299,7 @@ export default function SignupPage() {
   const goNext = () => {
     if (!validateStep()) return;
     if (currentStep < totalSteps - 1) {
+      // When moving from profile-select, recompute totalSteps for the newly chosen profile
       transition("right", () => setCurrentStep((s) => s + 1));
     }
   };
@@ -313,7 +378,6 @@ export default function SignupPage() {
       const userId = user._id;
       const authHeaders = { Authorization: `Bearer ${token}` };
 
-      // Upload signature first
       setLoadingMsg("Upload de la signature...");
       if (form.signature) {
         const fd = new FormData();
@@ -328,7 +392,6 @@ export default function SignupPage() {
         }
       }
 
-      // Upload photo
       if (form.profilePhoto) {
         setLoadingMsg("Upload de la photo...");
         const fd = new FormData();
@@ -343,14 +406,12 @@ export default function SignupPage() {
         }
       }
 
-      // Generate contract
       setLoadingMsg("Génération du contrat...");
       await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/contracts/generate-after-signup/${userId}`,
         { method: "POST", headers: { ...authHeaders, "Content-Type": "application/json" } }
       );
 
-      // Generate NDA
       setLoadingMsg("Génération du NDA...");
       await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/ndas/generate/${userId}`,
@@ -366,97 +427,7 @@ export default function SignupPage() {
     }
   };
 
-  // ─── Render screens ───────────────────────────────────────────────────────
-
-  // Role select screen
-  if (screen === "role-select") {
-    return (
-      <PageShell>
-        <ScreenHeader
-          title="Créer un compte"
-          subtitle="Sélectionnez votre rôle dans l'organisation"
-        />
-        <div className="grid grid-cols-2 gap-3 mt-8">
-          {[
-            { role: "collaborateur" as UserRole, icon: Users, label: "Collaborateur", color: "#3b82f6" },
-            { role: "manager" as UserRole, icon: Shield, label: "Manager", color: "#8254ff" },
-          ].map(({ role, icon: Icon, label, color }) => (
-            <RoleCard
-              key={role}
-              icon={<Icon size={28} color={color} />}
-              label={label}
-              color={color}
-              onClick={() => {
-                setUserRole(role);
-                setScreen("profile-select");
-              }}
-            />
-          ))}
-        </div>
-        <div className="mt-6 text-center text-sm text-gray-500">
-          Déjà un compte ?{" "}
-          <Link href="/login" className="text-[#8254ff] hover:text-purple-300">
-            Se connecter
-          </Link>
-        </div>
-      </PageShell>
-    );
-  }
-
-  // Profile select screen
-  if (screen === "profile-select") {
-    return (
-      <PageShell>
-        <button
-          onClick={() => setScreen("role-select")}
-          className="flex items-center gap-1 text-gray-500 hover:text-gray-300 text-sm mb-6 transition-colors"
-        >
-          <ChevronLeft size={16} />
-          Retour
-        </button>
-        <ScreenHeader
-          title="Votre profil"
-          subtitle={`Rôle : ${userRole === "collaborateur" ? "Collaborateur" : "Manager"}`}
-        />
-        <div className="grid grid-cols-2 gap-3 mt-8">
-          {[
-            {
-              profile: "stagiaire" as UserProfile,
-              icon: GraduationCap,
-              label: "Stagiaire",
-              desc: "Stage avec indemnités",
-              color: "#3b82f6",
-            },
-            {
-              profile: "prestataire" as UserProfile,
-              icon: Briefcase,
-              label: "Prestataire",
-              desc: "Prestation de service",
-              color: "#8254ff",
-            },
-          ].map(({ profile, icon: Icon, label, desc, color }) => (
-            <RoleCard
-              key={profile}
-              icon={<Icon size={28} color={color} />}
-              label={label}
-              desc={desc}
-              color={color}
-              onClick={() => {
-                setUserProfile(profile);
-                setCurrentStep(0);
-                setScreen("form");
-              }}
-            />
-          ))}
-        </div>
-      </PageShell>
-    );
-  }
-
-  // Multi-step form screen
-  const stepId = steps[currentStep].id;
-  const isLastStep = currentStep === totalSteps - 1;
-
+  // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex items-center justify-center relative bg-[#110521] px-4 py-8">
       {/* Background noise */}
@@ -489,10 +460,18 @@ export default function SignupPage() {
           <div className="flex items-center gap-2">
             {userProfile === "stagiaire" ? (
               <GraduationCap size={16} className="text-blue-400" />
-            ) : (
+            ) : userProfile === "prestataire" ? (
               <Briefcase size={16} className="text-purple-400" />
-            )}
-            <span className="text-xs text-gray-400 capitalize">{userProfile}</span>
+            ) : userRole ? (
+              userRole === "manager" ? (
+                <Shield size={16} className="text-purple-400" />
+              ) : (
+                <Users size={16} className="text-blue-400" />
+              )
+            ) : null}
+            <span className="text-xs text-gray-400 capitalize">
+              {userProfile ?? userRole ?? "Inscription"}
+            </span>
           </div>
         </div>
 
@@ -521,7 +500,6 @@ export default function SignupPage() {
 
         {/* Card */}
         <div className="bg-black rounded-xl py-7 px-8 overflow-hidden relative min-h-[420px] flex flex-col">
-          {/* Animated step content */}
           <style>{`
             @keyframes slideInRight {
               from { transform: translateX(60px); opacity: 0; }
@@ -545,7 +523,68 @@ export default function SignupPage() {
                 : ""
             }`}
           >
-            {/* Step: Info Perso */}
+            {/* ── Step 1: Role select ── */}
+            {stepId === "role-select" && (
+              <StepWrapper title="Quel est votre rôle ?">
+                <p className="text-xs text-gray-500 mb-6 -mt-3">
+                  Sélectionnez votre rôle dans l'organisation
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <SelectionCard
+                    icon={<Users size={28} color="#3b82f6" />}
+                    label="Collaborateur"
+                    color="#3b82f6"
+                    selected={userRole === "collaborateur"}
+                    onClick={() => setUserRole("collaborateur")}
+                  />
+                  <SelectionCard
+                    icon={<Shield size={28} color="#8254ff" />}
+                    label="Manager"
+                    color="#8254ff"
+                    selected={userRole === "manager"}
+                    onClick={() => setUserRole("manager")}
+                  />
+                </div>
+                {errors.role && (
+                  <p className="text-xs text-red-400 mt-3">{errors.role}</p>
+                )}
+              </StepWrapper>
+            )}
+
+            {/* ── Step 2: Profile select ── */}
+            {stepId === "profile-select" && (
+              <StepWrapper title="Quel est votre profil ?">
+                <p className="text-xs text-gray-500 mb-6 -mt-3">
+                  Rôle sélectionné :{" "}
+                  <span className="text-[#8254ff] font-medium capitalize">
+                    {userRole === "collaborateur" ? "Collaborateur" : "Manager"}
+                  </span>
+                </p>
+                <div className="grid grid-cols-2 gap-3">
+                  <SelectionCard
+                    icon={<GraduationCap size={28} color="#3b82f6" />}
+                    label="Stagiaire"
+                    desc="Stage avec indemnités"
+                    color="#3b82f6"
+                    selected={userProfile === "stagiaire"}
+                    onClick={() => setUserProfile("stagiaire")}
+                  />
+                  <SelectionCard
+                    icon={<Briefcase size={28} color="#8254ff" />}
+                    label="Prestataire"
+                    desc="Prestation de service"
+                    color="#8254ff"
+                    selected={userProfile === "prestataire"}
+                    onClick={() => setUserProfile("prestataire")}
+                  />
+                </div>
+                {errors.profile && (
+                  <p className="text-xs text-red-400 mt-3">{errors.profile}</p>
+                )}
+              </StepWrapper>
+            )}
+
+            {/* ── Step: Info Perso ── */}
             {stepId === "info-perso" && (
               <StepWrapper title="Informations personnelles">
                 {/* Photo upload */}
@@ -621,9 +660,9 @@ export default function SignupPage() {
               </StepWrapper>
             )}
 
-            {/* Step: Info Pro */}
+            {/* ── Step: Info Pro ── */}
             {stepId === "info-pro" && (
-              <StepWrapper title={userProfile === "stagiaire" ? "Informations professionnelles" : "Informations professionnelles"}>
+              <StepWrapper title="Informations professionnelles">
                 <Field label="Poste" required error={errors.poste}>
                   <Input
                     placeholder={userProfile === "stagiaire" ? "Stagiaire développeur" : "Consultant IT"}
@@ -686,7 +725,7 @@ export default function SignupPage() {
               </StepWrapper>
             )}
 
-            {/* Step: Prestation (prestataire only) */}
+            {/* ── Step: Prestation (prestataire only) ── */}
             {stepId === "prestation" && (
               <StepWrapper title="Informations de prestation">
                 <Field label="Domaine de prestation" required error={errors.domainePrestation}>
@@ -741,7 +780,7 @@ export default function SignupPage() {
               </StepWrapper>
             )}
 
-            {/* Step: Coordonnées */}
+            {/* ── Step: Coordonnées ── */}
             {stepId === "coordonnees" && (
               <StepWrapper title="Coordonnées">
                 <div className="space-y-4">
@@ -768,7 +807,7 @@ export default function SignupPage() {
               </StepWrapper>
             )}
 
-            {/* Step: Sécurité */}
+            {/* ── Step: Sécurité ── */}
             {stepId === "securite" && (
               <StepWrapper title="Sécurité du compte">
                 <div className="space-y-4">
@@ -829,7 +868,7 @@ export default function SignupPage() {
               </StepWrapper>
             )}
 
-            {/* Step: Signature */}
+            {/* ── Step: Signature ── */}
             {stepId === "signature" && (
               <StepWrapper title="Signature électronique">
                 <p className="text-xs text-gray-500 mb-5 leading-relaxed">
@@ -838,7 +877,6 @@ export default function SignupPage() {
                 </p>
 
                 <div className="flex flex-col items-center gap-4">
-                  {/* Preview zone */}
                   <div
                     onClick={() => signatureInputRef.current?.click()}
                     className={`w-full h-32 rounded-sm border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
@@ -906,16 +944,7 @@ export default function SignupPage() {
                 <ChevronLeft size={15} />
                 Retour
               </button>
-            ) : (
-              <button
-                type="button"
-                onClick={() => setScreen("profile-select")}
-                className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-gray-400 border border-[#2a2a2a] rounded-sm hover:border-gray-500 hover:text-gray-200 transition-colors"
-              >
-                <ChevronLeft size={15} />
-                Retour
-              </button>
-            )}
+            ) : null}
 
             {isLastStep ? (
               <button
@@ -949,7 +978,7 @@ export default function SignupPage() {
           </div>
         </div>
 
-        {/* Step indicator bottom-right */}
+        {/* Bottom row */}
         <div className="mt-4 flex items-center justify-between px-1">
           <span className="text-xs text-gray-600">
             Déjà un compte ?{" "}
@@ -969,70 +998,6 @@ export default function SignupPage() {
 }
 
 // ─── Sub-components ───────────────────────────────────────────────────────────
-
-function PageShell({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="min-h-screen flex items-center justify-center relative bg-[#110521] px-4">
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        }}
-      />
-      <div className="relative z-10 w-full max-w-sm bg-black rounded-xl py-8 px-8">
-        <div className="flex items-center gap-3 mb-8">
-          <Image src="/images/logo2.png" width={32} height={32} alt="Logo" />
-          <span className="text-white font-semibold text-sm tracking-wide">
-            OPSIDE — CODE TALENT
-          </span>
-        </div>
-        {children}
-      </div>
-    </div>
-  );
-}
-
-function ScreenHeader({ title, subtitle }: { title: string; subtitle: string }) {
-  return (
-    <div>
-      <h1 className="text-xl font-bold text-white">{title}</h1>
-      <p className="text-sm text-gray-500 mt-1">{subtitle}</p>
-    </div>
-  );
-}
-
-function RoleCard({
-  icon,
-  label,
-  desc,
-  color,
-  onClick,
-}: {
-  icon: React.ReactNode;
-  label: string;
-  desc?: string;
-  color: string;
-  onClick: () => void;
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="flex flex-col items-center justify-center gap-3 p-5 rounded-sm border border-[#2a2a2a] bg-[#0a0a0a] hover:border-[#8254ff] hover:bg-[#0d0d0d] transition-all duration-200 group"
-    >
-      <div
-        className="w-12 h-12 rounded-sm flex items-center justify-center transition-colors"
-        style={{ background: `${color}15` }}
-      >
-        {icon}
-      </div>
-      <div className="text-center">
-        <div className="text-sm font-semibold text-white">{label}</div>
-        {desc && <div className="text-xs text-gray-600 mt-0.5">{desc}</div>}
-      </div>
-    </button>
-  );
-}
 
 function StepWrapper({
   title,
