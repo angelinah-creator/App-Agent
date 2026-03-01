@@ -445,7 +445,7 @@ export default function SignupPage() {
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
             <Image src="/images/logo2.png" width={52} height={52} alt="Logo" />
-            <span className="text-white font-semibold text-xl tracking-wide">
+            <span className="text-white font-bold text-xl tracking-wide">
               OPSIDE - CODE TALENT
             </span>
           </div>
@@ -947,16 +947,11 @@ export default function SignupPage() {
 
         {/* Bottom row */}
         <div className="mt-4 flex items-center justify-between px-1">
-          <span className="text-xs text-gray-600">
+          <span className="text-sm text-gray-600">
             Déjà un compte ?{" "}
             <Link href="/login" className="text-[#8254ff] hover:text-purple-300">
               Se connecter
             </Link>
-          </span>
-          <span className="text-xs text-gray-600 tabular-nums">
-            Étape{" "}
-            <span className="text-[#8254ff] font-semibold">{currentStep + 1}</span>
-            /{totalSteps}
           </span>
         </div>
       </div>
