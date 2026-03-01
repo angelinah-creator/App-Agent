@@ -33,22 +33,32 @@ import {
   ArrowLeft,
   X,
   FileSignature,
+  Loader2,
 } from "lucide-react";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 
 type UserRole = "collaborateur" | "manager";
 type UserProfile = "stagiaire" | "prestataire";
 
+// Étapes de chargement affichées à l'utilisateur
+const LOADING_STEPS = [
+  "Création du compte...",
+  "Upload de la signature...",
+  "Upload de la photo...",
+  "Génération du contrat...",
+  "Génération du NDA...",
+  "Finalisation...",
+];
+
 export default function SignupPage() {
   const router = useRouter();
   const [step, setStep] = useState<"role" | "profile" | "form">("role");
   const [userRole, setUserRole] = useState<UserRole | null>(null);
   const [userProfile, setUserProfile] = useState<UserProfile | null>(null);
-  
-  // Refs pour les inputs file
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const signatureInputRef = useRef<HTMLInputElement>(null);
-  
+
   const [formData, setFormData] = useState({
     nom: "",
     prenoms: "",
@@ -71,17 +81,14 @@ export default function SignupPage() {
     indemnite: 0,
     indemniteConnexion: 0,
     dureeJournaliere: 0,
-    
-    // Champs pour la photo de profil
     profilePhoto: null as File | null,
     profilePhotoPreview: "",
-    
-    // AJOUT : Champs pour la signature
     signature: null as File | null,
     signaturePreview: "",
   });
-  
+
   const [isLoading, setIsLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
   const { confirm, dialog } = useConfirmDialog();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -97,11 +104,11 @@ export default function SignupPage() {
       return;
     }
 
-    // AJOUT : Validation signature obligatoire
     if (!formData.signature) {
       confirm({
         title: "Signature requise",
-        description: "Veuillez uploader votre signature avant de continuer. Elle sera utilisée pour générer votre contrat.",
+        description:
+          "Veuillez uploader votre signature avant de continuer. Elle sera utilisée pour générer votre contrat.",
         confirmText: "OK",
         onConfirm: () => {},
       });
@@ -114,6 +121,7 @@ export default function SignupPage() {
     }
 
     setIsLoading(true);
+    setLoadingStep(0);
 
     try {
       const adresse = `${formData.adresseLot}, ${formData.adresseFokontany}`;
@@ -146,68 +154,139 @@ export default function SignupPage() {
         }),
       };
 
+      // ✅ ÉTAPE 1 : Créer le compte
+      setLoadingStep(0);
       const response = await authService.register(registerData);
+      const { token, user } = response;
+      const userId = user._id;
 
-      // Stocker le token et les données utilisateur
-      localStorage.setItem("authToken", response.token);
-      localStorage.setItem("userData", JSON.stringify(response.user));
+      // Stocker le token immédiatement
+      localStorage.setItem("authToken", token);
+      localStorage.setItem("userData", JSON.stringify(user));
 
-      // Si l'utilisateur a sélectionné une photo, l'uploader maintenant
-      if (formData.profilePhoto && response.user._id) {
+      const authHeaders = {
+        Authorization: `Bearer ${token}`,
+      };
+
+      // ✅ ÉTAPE 2 : Uploader la signature EN PREMIER (obligatoire pour le contrat)
+      setLoadingStep(1);
+      let updatedUserAfterSignature = user;
+      try {
+        const formDataSignature = new FormData();
+        formDataSignature.append("signature", formData.signature);
+
+        const signatureResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/signature`,
+          {
+            method: "POST",
+            headers: authHeaders,
+            body: formDataSignature,
+          }
+        );
+
+        if (signatureResponse.ok) {
+          updatedUserAfterSignature = await signatureResponse.json();
+          localStorage.setItem(
+            "userData",
+            JSON.stringify(updatedUserAfterSignature)
+          );
+          console.log("✅ Signature uploadée avec succès");
+        } else {
+          const errorBody = await signatureResponse.text();
+          console.error("❌ Erreur upload signature:", errorBody);
+          // On continue quand même, mais le contrat n'aura pas de signature
+        }
+      } catch (uploadError) {
+        console.error("❌ Erreur upload signature:", uploadError);
+      }
+
+      // ✅ ÉTAPE 3 : Uploader la photo de profil (optionnel)
+      setLoadingStep(2);
+      if (formData.profilePhoto) {
         try {
           const formDataPhoto = new FormData();
-          formDataPhoto.append('photo', formData.profilePhoto);
-          
-          const uploadResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${response.user._id}/profile-photo`, {
-            method: 'POST',
-            headers: {
-              'Authorization': `Bearer ${response.token}`,
-            },
-            body: formDataPhoto
-          });
-          
+          formDataPhoto.append("photo", formData.profilePhoto);
+
+          const uploadResponse = await fetch(
+            `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/profile-photo`,
+            {
+              method: "POST",
+              headers: authHeaders,
+              body: formDataPhoto,
+            }
+          );
+
           if (uploadResponse.ok) {
-            console.log("✅ Photo uploadée avec succès");
             const updatedUser = await uploadResponse.json();
             localStorage.setItem("userData", JSON.stringify(updatedUser));
+            console.log("✅ Photo uploadée avec succès");
+          } else {
+            console.error("❌ Erreur upload photo");
           }
         } catch (uploadError) {
           console.error("❌ Erreur upload photo:", uploadError);
         }
       }
 
-      // AJOUT : Upload de la signature (OBLIGATOIRE)
-      if (formData.signature && response.user._id) {
-        try {
-          const formDataSignature = new FormData();
-          formDataSignature.append('signature', formData.signature);
-          
-          const signatureResponse = await fetch(`${process.env.NEXT_PUBLIC_API_URL}/users/${response.user._id}/signature`, {
-            method: 'POST',
+      // ✅ ÉTAPE 4 : Générer le contrat (maintenant que la signature est uploadée)
+      setLoadingStep(3);
+      try {
+        const contractResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/contracts/generate-after-signup/${userId}`,
+          {
+            method: "POST",
             headers: {
-              'Authorization': `Bearer ${response.token}`,
+              ...authHeaders,
+              "Content-Type": "application/json",
             },
-            body: formDataSignature
-          });
-          
-          if (signatureResponse.ok) {
-            console.log("✅ Signature uploadée avec succès");
-            const updatedUser = await signatureResponse.json();
-            localStorage.setItem("userData", JSON.stringify(updatedUser));
-          } else {
-            console.error("❌ Erreur lors de l'upload de la signature");
           }
-        } catch (uploadError) {
-          console.error("❌ Erreur upload signature:", uploadError);
+        );
+
+        if (contractResponse.ok) {
+          const contract = await contractResponse.json();
+          console.log("✅ Contrat généré avec succès:", contract.contractNumber);
+        } else {
+          const errorBody = await contractResponse.text();
+          console.error("❌ Erreur génération contrat:", errorBody);
         }
+      } catch (error) {
+        console.error("❌ Erreur génération contrat:", error);
       }
 
+      // ✅ ÉTAPE 5 : Générer le NDA (maintenant que la signature est uploadée)
+      setLoadingStep(4);
+      try {
+        const ndaResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_API_URL}/ndas/generate/${userId}`,
+          {
+            method: "POST",
+            headers: {
+              ...authHeaders,
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (ndaResponse.ok) {
+          const nda = await ndaResponse.json();
+          console.log("✅ NDA généré avec succès:", nda.ndaNumber);
+        } else {
+          const errorBody = await ndaResponse.text();
+          console.error("❌ Erreur génération NDA:", errorBody);
+        }
+      } catch (error) {
+        console.error("❌ Erreur génération NDA:", error);
+      }
+
+      // ✅ ÉTAPE 6 : Redirection
+      setLoadingStep(5);
       router.push("/home");
     } catch (error: any) {
       console.error("Erreur inscription:", error);
       alert(error.response?.data?.message || "Erreur lors de l'inscription");
     } finally {
       setIsLoading(false);
+      setLoadingStep(0);
     }
   };
 
@@ -218,22 +297,16 @@ export default function SignupPage() {
         alert("L'image ne doit pas dépasser 5MB");
         return;
       }
-      
       if (!file.type.startsWith("image/")) {
         alert("Le fichier doit être une image");
         return;
       }
-      
-      setFormData(prev => ({
-        ...prev,
-        profilePhoto: file
-      }));
-      
+      setFormData((prev) => ({ ...prev, profilePhoto: file }));
       const reader = new FileReader();
       reader.onload = (e) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          profilePhotoPreview: e.target?.result as string
+          profilePhotoPreview: e.target?.result as string,
         }));
       };
       reader.readAsDataURL(file);
@@ -241,18 +314,14 @@ export default function SignupPage() {
   };
 
   const handleRemovePhoto = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       profilePhoto: null,
-      profilePhotoPreview: ""
+      profilePhotoPreview: "",
     }));
-    
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
+    if (fileInputRef.current) fileInputRef.current.value = "";
   };
 
-  // AJOUT : Fonctions de gestion de signature
   const handleSignatureSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
@@ -260,22 +329,16 @@ export default function SignupPage() {
         alert("L'image ne doit pas dépasser 2MB");
         return;
       }
-      
       if (!file.type.startsWith("image/")) {
         alert("Le fichier doit être une image");
         return;
       }
-      
-      setFormData(prev => ({
-        ...prev,
-        signature: file
-      }));
-      
+      setFormData((prev) => ({ ...prev, signature: file }));
       const reader = new FileReader();
       reader.onload = (e) => {
-        setFormData(prev => ({
+        setFormData((prev) => ({
           ...prev,
-          signaturePreview: e.target?.result as string
+          signaturePreview: e.target?.result as string,
         }));
       };
       reader.readAsDataURL(file);
@@ -283,15 +346,12 @@ export default function SignupPage() {
   };
 
   const handleRemoveSignature = () => {
-    setFormData(prev => ({
+    setFormData((prev) => ({
       ...prev,
       signature: null,
-      signaturePreview: ""
+      signaturePreview: "",
     }));
-    
-    if (signatureInputRef.current) {
-      signatureInputRef.current.value = "";
-    }
+    if (signatureInputRef.current) signatureInputRef.current.value = "";
   };
 
   const handleRoleSelect = (role: UserRole) => {
@@ -317,10 +377,7 @@ export default function SignupPage() {
     field: string,
     value: string | number | boolean
   ) => {
-    setFormData((prev) => ({
-      ...prev,
-      [field]: value,
-    }));
+    setFormData((prev) => ({ ...prev, [field]: value }));
   };
 
   const getProfileDescription = (profile: UserProfile) => {
@@ -334,16 +391,57 @@ export default function SignupPage() {
   return (
     <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-white to-purple-50 p-4 relative overflow-hidden">
       {dialog}
-      
+
       {/* Animated gradient orbs */}
       <div className="absolute top-0 right-0 w-[30rem] h-[30rem] bg-gradient-to-bl from-indigo-200/40 via-purple-200/40 to-pink-200/40 rounded-full blur-3xl animate-pulse" />
       <div className="absolute bottom-0 left-0 w-96 h-96 bg-gradient-to-tr from-teal-200/40 via-emerald-200/40 to-green-200/40 rounded-full blur-3xl animate-pulse delay-700" />
       <div className="absolute top-1/3 right-1/4 w-[35rem] h-[35rem] bg-gradient-to-l from-rose-200/30 via-orange-200/30 to-amber-200/30 rounded-full blur-3xl animate-pulse delay-1000" />
-
-      {/* Luxury grid pattern overlay */}
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#8080801a_1px,transparent_1px),linear-gradient(to_bottom,#8080801a_1px,transparent_1px)] bg-[size:32px_32px]" />
 
-      {/* Content */}
+      {/* Loading overlay avec étapes */}
+      {isLoading && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+          <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-sm w-full mx-4">
+            <div className="flex flex-col items-center gap-4">
+              <Loader2 className="w-12 h-12 text-purple-600 animate-spin" />
+              <h3 className="text-lg font-semibold text-slate-800">
+                Création en cours...
+              </h3>
+              <div className="w-full space-y-2">
+                {LOADING_STEPS.map((stepLabel, index) => (
+                  <div
+                    key={index}
+                    className={`flex items-center gap-3 p-2 rounded-lg transition-all duration-300 ${
+                      index === loadingStep
+                        ? "bg-purple-50 text-purple-700"
+                        : index < loadingStep
+                        ? "text-green-600"
+                        : "text-slate-400"
+                    }`}
+                  >
+                    <div
+                      className={`w-5 h-5 rounded-full flex items-center justify-center text-xs font-bold flex-shrink-0 ${
+                        index === loadingStep
+                          ? "bg-purple-600 text-white"
+                          : index < loadingStep
+                          ? "bg-green-500 text-white"
+                          : "bg-slate-200 text-slate-400"
+                      }`}
+                    >
+                      {index < loadingStep ? "✓" : index + 1}
+                    </div>
+                    <span className="text-sm font-medium">{stepLabel}</span>
+                    {index === loadingStep && (
+                      <Loader2 className="w-4 h-4 animate-spin ml-auto" />
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
       <div className="w-full max-w-2xl animate-in fade-in slide-in-from-bottom-4 duration-500 relative z-10">
         <div className="text-center mb-8">
           <h1 className="text-5xl font-bold mb-3 text-balance bg-gradient-to-r from-slate-800 via-purple-900 to-indigo-900 bg-clip-text text-transparent">
@@ -362,7 +460,8 @@ export default function SignupPage() {
             <CardDescription className="text-slate-600">
               {step === "role" && "Sélectionnez votre rôle dans l'organisation"}
               {step === "profile" && "Choisissez votre type de contrat"}
-              {step === "form" && `Remplissez vos informations - ${userRole} ${userProfile}`}
+              {step === "form" &&
+                `Remplissez vos informations - ${userRole} ${userProfile}`}
             </CardDescription>
           </CardHeader>
           <CardContent>
@@ -429,7 +528,6 @@ export default function SignupPage() {
                     </span>
                   </div>
                 </div>
-
                 <div className="text-center mb-6">
                   <h3 className="text-lg font-semibold mb-2 text-slate-800">
                     Quel est votre profil ?
@@ -438,7 +536,6 @@ export default function SignupPage() {
                     Choisissez votre type de contrat
                   </p>
                 </div>
-
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <Button
                     type="button"
@@ -476,13 +573,13 @@ export default function SignupPage() {
               </div>
             )}
 
-            {/* Étape 3: Formulaire d'inscription */}
+            {/* Étape 3: Formulaire */}
             {step === "form" && (
               <form
                 onSubmit={handleSubmit}
                 className="space-y-4 animate-in fade-in slide-in-from-bottom-2 duration-300"
               >
-                {/* En-tête avec rôle et profil */}
+                {/* En-tête rôle/profil */}
                 <div className="flex items-center justify-between mb-4 pb-4 border-b border-slate-200">
                   <div className="flex items-center gap-4">
                     <div className="flex items-center gap-2">
@@ -518,8 +615,12 @@ export default function SignupPage() {
                 <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-slate-200">
                   <div className="flex items-center justify-between mb-3">
                     <div>
-                      <h3 className="font-semibold text-slate-800">Photo de profil</h3>
-                      <p className="text-sm text-slate-600">Optionnel - Taille max: 5MB</p>
+                      <h3 className="font-semibold text-slate-800">
+                        Photo de profil
+                      </h3>
+                      <p className="text-sm text-slate-600">
+                        Optionnel - Taille max: 5MB
+                      </p>
                     </div>
                     {formData.profilePhotoPreview && (
                       <Button
@@ -534,13 +635,12 @@ export default function SignupPage() {
                       </Button>
                     )}
                   </div>
-                  
                   <div className="flex items-center gap-6">
                     <div className="relative">
                       {formData.profilePhotoPreview ? (
                         <div className="w-24 h-24 rounded-full overflow-hidden border-3 border-white shadow-lg">
-                          <img 
-                            src={formData.profilePhotoPreview} 
+                          <img
+                            src={formData.profilePhotoPreview}
                             alt="Preview photo"
                             className="w-full h-full object-cover"
                           />
@@ -565,7 +665,6 @@ export default function SignupPage() {
                         className="hidden"
                       />
                     </div>
-                    
                     <div className="flex-1">
                       <Button
                         type="button"
@@ -574,19 +673,18 @@ export default function SignupPage() {
                         className="border-slate-200 hover:border-blue-400 text-slate-700 hover:text-blue-600 hover:bg-blue-50 transition-all duration-300"
                       >
                         <Camera className="w-4 h-4 mr-2" />
-                        {formData.profilePhotoPreview ? "Changer la photo" : "Ajouter une photo"}
+                        {formData.profilePhotoPreview
+                          ? "Changer la photo"
+                          : "Ajouter une photo"}
                       </Button>
                       <p className="text-xs text-slate-500 mt-2">
                         Formats acceptés: JPG, PNG, WebP
-                      </p>
-                      <p className="text-xs text-slate-500">
-                        Votre photo apparaîtra dans votre profil et dans le header
                       </p>
                     </div>
                   </div>
                 </div>
 
-                {/* AJOUT : Section Signature électronique */}
+                {/* Section Signature électronique */}
                 <div className="mb-6 p-4 bg-gradient-to-r from-purple-50 to-pink-50 rounded-xl border border-slate-200">
                   <div className="flex items-center justify-between mb-3">
                     <div>
@@ -594,7 +692,9 @@ export default function SignupPage() {
                         <FileSignature className="w-5 h-5 text-purple-600" />
                         Signature électronique *
                       </h3>
-                      <p className="text-sm text-slate-600">Requis - Utilisée pour générer votre contrat</p>
+                      <p className="text-sm text-slate-600">
+                        Requis - Utilisée pour générer votre contrat
+                      </p>
                     </div>
                     {formData.signaturePreview && (
                       <Button
@@ -609,13 +709,12 @@ export default function SignupPage() {
                       </Button>
                     )}
                   </div>
-                  
                   <div className="flex items-center gap-6">
                     <div className="relative">
                       {formData.signaturePreview ? (
                         <div className="w-48 h-24 rounded-lg overflow-hidden border-2 border-slate-200 bg-white shadow-sm">
-                          <img 
-                            src={formData.signaturePreview} 
+                          <img
+                            src={formData.signaturePreview}
                             alt="Preview signature"
                             className="w-full h-full object-contain p-2"
                           />
@@ -640,7 +739,6 @@ export default function SignupPage() {
                         className="hidden"
                       />
                     </div>
-                    
                     <div className="flex-1">
                       <Button
                         type="button"
@@ -649,7 +747,9 @@ export default function SignupPage() {
                         className="border-slate-200 hover:border-purple-400 text-slate-700 hover:text-purple-600 hover:bg-purple-50 transition-all duration-300"
                       >
                         <Camera className="w-4 h-4 mr-2" />
-                        {formData.signaturePreview ? "Changer la signature" : "Ajouter une signature"}
+                        {formData.signaturePreview
+                          ? "Changer la signature"
+                          : "Ajouter une signature"}
                       </Button>
                       <p className="text-xs text-slate-500 mt-2">
                         Formats acceptés: JPG, PNG - Taille max: 2MB
@@ -661,7 +761,7 @@ export default function SignupPage() {
                   </div>
                 </div>
 
-                {/* Common fields */}
+                {/* Champs communs */}
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="space-y-2">
                     <Label htmlFor="nom" className="text-slate-700">
@@ -677,7 +777,6 @@ export default function SignupPage() {
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="prenoms" className="text-slate-700">
                       Prénom(s) *
@@ -712,7 +811,6 @@ export default function SignupPage() {
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="genre" className="text-slate-700">
                       Genre *
@@ -751,7 +849,6 @@ export default function SignupPage() {
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label
                       htmlFor="adresseFokontany"
@@ -801,7 +898,9 @@ export default function SignupPage() {
                         : "Consultant IT"
                     }
                     value={formData.poste}
-                    onChange={(e) => handleInputChange("poste", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("poste", e.target.value)
+                    }
                     required
                     className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                   />
@@ -823,10 +922,10 @@ export default function SignupPage() {
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="dateFin" className="text-slate-700">
-                      Date de fin {userProfile === "prestataire" && "(optionnel)"}
+                      Date de fin{" "}
+                      {userProfile === "prestataire" && "(optionnel)"}
                     </Label>
                     <Input
                       id="dateFin"
@@ -860,7 +959,7 @@ export default function SignupPage() {
                   />
                 </div>
 
-                {/* Stagiaire specific fields */}
+                {/* Champs stagiaire */}
                 {userProfile === "stagiaire" && (
                   <>
                     <div className="space-y-2">
@@ -879,7 +978,6 @@ export default function SignupPage() {
                         className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                       />
                     </div>
-
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div className="space-y-2">
                         <Label htmlFor="indemnite" className="text-slate-700">
@@ -900,7 +998,6 @@ export default function SignupPage() {
                           className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                         />
                       </div>
-
                       <div className="space-y-2">
                         <Label
                           htmlFor="indemniteConnexion"
@@ -927,7 +1024,7 @@ export default function SignupPage() {
                   </>
                 )}
 
-                {/* Prestataire specific fields */}
+                {/* Champs prestataire */}
                 {userProfile === "prestataire" && (
                   <>
                     <div className="space-y-2">
@@ -949,30 +1046,29 @@ export default function SignupPage() {
                         className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                       />
                     </div>
-
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      <div className="space-y-2">
-                        <Label
-                          htmlFor="dureeJournaliere"
-                          className="text-slate-700"
-                        >
-                          Durée journalière (heures) *
-                        </Label>
-                        <Input
-                          id="dureeJournaliere"
-                          type="number"
-                          placeholder="8"
-                          value={formData.dureeJournaliere || ""}
-                          onChange={(e) =>
-                            handleInputChange(
-                              "dureeJournaliere",
-                              e.target.value === "" ? 0 : Number(e.target.value)
-                            )
-                          }
-                          required
-                          className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
-                        />
-                      </div>
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="dureeJournaliere"
+                        className="text-slate-700"
+                      >
+                        Durée journalière (heures) *
+                      </Label>
+                      <Input
+                        id="dureeJournaliere"
+                        type="number"
+                        placeholder="8"
+                        value={formData.dureeJournaliere || ""}
+                        onChange={(e) =>
+                          handleInputChange(
+                            "dureeJournaliere",
+                            e.target.value === ""
+                              ? 0
+                              : Number(e.target.value)
+                          )
+                        }
+                        required
+                        className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
+                      />
                     </div>
                   </>
                 )}
@@ -1003,7 +1099,9 @@ export default function SignupPage() {
                     type="email"
                     placeholder="votre@email.com"
                     value={formData.email}
-                    onChange={(e) => handleInputChange("email", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("email", e.target.value)
+                    }
                     required
                     className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                   />
@@ -1027,7 +1125,6 @@ export default function SignupPage() {
                       className="transition-all duration-300 focus:scale-[1.01] border-slate-200 focus:border-blue-400 bg-white"
                     />
                   </div>
-
                   <div className="space-y-2">
                     <Label htmlFor="confirmPassword" className="text-slate-700">
                       Confirmer mot de passe *
@@ -1072,8 +1169,8 @@ export default function SignupPage() {
                 >
                   {isLoading ? (
                     <span className="flex items-center gap-2">
-                      <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                      Création du compte...
+                      <Loader2 className="h-4 w-4 animate-spin" />
+                      {LOADING_STEPS[loadingStep]}
                     </span>
                   ) : (
                     "Créer mon compte"
