@@ -21,6 +21,11 @@ export enum Genre {
   FEMININ = 'Femme',
 }
 
+export enum Horaire {
+  TEMPS_PLEIN = 'temps plein',
+  TEMPS_PARTIEL = 'temps partiel',
+}
+
 @Schema({
   timestamps: true,
   collection: 'users',
@@ -131,6 +136,12 @@ export class User {
 
   @Prop()
   dureeJournaliere?: number;
+
+  @Prop()
+  nombreJour?: number;
+
+  @Prop({ enum: Horaire })
+  horaire?: string;
 
   // Champs spécifiques aux clients
   @Prop()

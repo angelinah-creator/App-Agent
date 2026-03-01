@@ -132,6 +132,15 @@ export class CreateUserDto {
   @IsNotEmpty()
   dureeJournaliere?: number;
 
+  @ValidateIf((o) => o.profile === UserProfile.PRESTATAIRE)
+  @IsNumber()
+  @IsNotEmpty()
+  nombreJour?: number;
+
+  @ValidateIf((o) => o.profile === UserProfile.PRESTATAIRE)
+  @IsNotEmpty()
+  horaire?: string;
+
   // Champs spécifiques aux clients
   @ValidateIf(o => o.role === UserRole.CLIENT)
   @IsString()

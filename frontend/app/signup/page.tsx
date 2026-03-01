@@ -57,13 +57,12 @@ const initialForm = {
   dateNaissance: "",
   genre: "" as "Homme" | "Femme" | "",
   adresseLot: "",
-  adresseFokontany: "",
   cin: "",
   poste: "",
   mission: "",
   domainePrestation: "",
-  typeContrat: "" as "temps_plein" | "temps_partiel" | "",
-  joursSemaine: "" as string,
+  horaire: "" as "temps plein" | "temps partiel" | "",
+  nombreJour: "" as string,
   dateDebut: "",
   dateFin: "",
   dateFinIndeterminee: false,
@@ -203,8 +202,8 @@ export default function SignupPage() {
     userProfile === "stagiaire"
       ? STAGIAIRE_FORM_STEPS
       : userProfile === "prestataire"
-      ? PRESTATAIRE_FORM_STEPS
-      : STAGIAIRE_FORM_STEPS; // fallback before profile chosen
+        ? PRESTATAIRE_FORM_STEPS
+        : STAGIAIRE_FORM_STEPS; // fallback before profile chosen
 
   const steps = [...COMMON_STEPS, ...formSteps];
   const totalSteps = steps.length;
@@ -227,7 +226,7 @@ export default function SignupPage() {
         setIsAnimating(false);
       }, 320);
     },
-    [isAnimating]
+    [isAnimating],
   );
 
   // ── Validation per step ──
@@ -248,14 +247,14 @@ export default function SignupPage() {
       if (!form.dateNaissance) e.dateNaissance = "Requis";
       if (!form.genre) e.genre = "Requis";
       if (!form.adresseLot.trim()) e.adresseLot = "Requis";
-      if (!form.adresseFokontany.trim()) e.adresseFokontany = "Requis";
       if (!form.cin.trim()) e.cin = "Requis";
     }
 
     if (stepId === "info-pro") {
       if (!form.poste.trim()) e.poste = "Requis";
       if (!form.dateDebut) e.dateDebut = "Requis";
-      if (!form.dateFinIndeterminee && !form.dateFin) e.dateFin = "Requis ou cochez indéterminée";
+      if (!form.dateFinIndeterminee && !form.dateFin)
+        e.dateFin = "Requis ou cochez indéterminée";
       if (userProfile === "stagiaire") {
         if (!form.mission.trim()) e.mission = "Requis";
         if (!form.indemnite) e.indemnite = "Requis";
@@ -268,8 +267,8 @@ export default function SignupPage() {
 
     if (stepId === "prestation") {
       if (!form.domainePrestation.trim()) e.domainePrestation = "Requis";
-      if (!form.typeContrat) e.typeContrat = "Requis";
-      if (!form.joursSemaine) e.joursSemaine = "Requis";
+      if (!form.horaire) e.horaire = "Requis";
+      if (!form.nombreJour) e.nombreJour = "Requis";
       if (!form.dureeJournaliere) e.dureeJournaliere = "Requis";
       if (!form.tarifsHoraire) e.tarifsHoraire = "Requis";
     }
@@ -314,22 +313,36 @@ export default function SignupPage() {
   const handlePhoto = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { alert("Max 5MB"); return; }
-    if (!file.type.startsWith("image/")) { alert("Image requise"); return; }
+    if (file.size > 5 * 1024 * 1024) {
+      alert("Max 5MB");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      alert("Image requise");
+      return;
+    }
     setField("profilePhoto", file);
     const reader = new FileReader();
-    reader.onload = (ev) => setField("profilePhotoPreview", ev.target?.result as string);
+    reader.onload = (ev) =>
+      setField("profilePhotoPreview", ev.target?.result as string);
     reader.readAsDataURL(file);
   };
 
   const handleSignature = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 2 * 1024 * 1024) { alert("Max 2MB"); return; }
-    if (!file.type.startsWith("image/")) { alert("Image requise"); return; }
+    if (file.size > 2 * 1024 * 1024) {
+      alert("Max 2MB");
+      return;
+    }
+    if (!file.type.startsWith("image/")) {
+      alert("Image requise");
+      return;
+    }
     setField("signature", file);
     const reader = new FileReader();
-    reader.onload = (ev) => setField("signaturePreview", ev.target?.result as string);
+    reader.onload = (ev) =>
+      setField("signaturePreview", ev.target?.result as string);
     reader.readAsDataURL(file);
   };
 
@@ -340,8 +353,6 @@ export default function SignupPage() {
 
     setIsLoading(true);
     try {
-      const adresse = `${form.adresseLot}, ${form.adresseFokontany}`;
-
       const registerData: RegisterData = {
         role: userRole,
         profile: userProfile,
@@ -349,7 +360,7 @@ export default function SignupPage() {
         prenoms: form.prenoms,
         dateNaissance: form.dateNaissance,
         genre: form.genre as "Homme" | "Femme",
-        adresse,
+        adresse: form.adresseLot,
         cin: form.cin,
         poste: form.poste,
         dateDebut: form.dateDebut,
@@ -367,6 +378,8 @@ export default function SignupPage() {
         ...(userProfile === "prestataire" && {
           domainePrestation: form.domainePrestation,
           dureeJournaliere: Number(form.dureeJournaliere),
+          horaire: form.horaire as "temps plein" | "temps partiel",
+          nombreJour: Number(form.nombreJour),
         }),
       };
 
@@ -384,7 +397,7 @@ export default function SignupPage() {
         fd.append("signature", form.signature);
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/signature`,
-          { method: "POST", headers: authHeaders, body: fd }
+          { method: "POST", headers: authHeaders, body: fd },
         );
         if (res.ok) {
           const updated = await res.json();
@@ -398,7 +411,7 @@ export default function SignupPage() {
         fd.append("photo", form.profilePhoto);
         const res = await fetch(
           `${process.env.NEXT_PUBLIC_API_URL}/users/${userId}/profile-photo`,
-          { method: "POST", headers: authHeaders, body: fd }
+          { method: "POST", headers: authHeaders, body: fd },
         );
         if (res.ok) {
           const updated = await res.json();
@@ -409,13 +422,19 @@ export default function SignupPage() {
       setLoadingMsg("Génération du contrat...");
       await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/contracts/generate-after-signup/${userId}`,
-        { method: "POST", headers: { ...authHeaders, "Content-Type": "application/json" } }
+        {
+          method: "POST",
+          headers: { ...authHeaders, "Content-Type": "application/json" },
+        },
       );
 
       setLoadingMsg("Génération du NDA...");
       await fetch(
         `${process.env.NEXT_PUBLIC_API_URL}/ndas/generate/${userId}`,
-        { method: "POST", headers: { ...authHeaders, "Content-Type": "application/json" } }
+        {
+          method: "POST",
+          headers: { ...authHeaders, "Content-Type": "application/json" },
+        },
       );
 
       router.push("/home");
@@ -486,7 +505,7 @@ export default function SignupPage() {
             {steps[currentStep].label}
           </span>
           <span className="text-sm text-white">
-           Étape {currentStep + 1}/{totalSteps}
+            Étape {currentStep + 1}/{totalSteps}
           </span>
         </div>
 
@@ -577,10 +596,16 @@ export default function SignupPage() {
                 {/* Photo upload */}
                 <div className="flex items-center gap-4 mb-5">
                   <div className="relative flex-shrink-0 cursor-pointer">
-                    <div className="w-26 h-26 rounded-full bg-[#111] border border-[#2a2a2a] overflow-hidden flex items-center justify-center"
-                    onClick={() => fileInputRef.current?.click()}>
+                    <div
+                      className="w-26 h-26 rounded-full bg-[#111] border border-[#2a2a2a] overflow-hidden flex items-center justify-center"
+                      onClick={() => fileInputRef.current?.click()}
+                    >
                       {form.profilePhotoPreview ? (
-                        <img src={form.profilePhotoPreview} alt="" className="w-full h-full object-cover" />
+                        <img
+                          src={form.profilePhotoPreview}
+                          alt=""
+                          className="w-full h-full object-cover"
+                        />
                       ) : (
                         <User size={38} className="text-gray-600" />
                       )}
@@ -592,15 +617,28 @@ export default function SignupPage() {
                     >
                       <Camera size={12} />
                     </button>
-                    <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
+                    <input
+                      ref={fileInputRef}
+                      type="file"
+                      accept="image/*"
+                      onChange={handlePhoto}
+                      className="hidden"
+                    />
                   </div>
                   <div>
-                    <p className="text-xs text-white font-medium">Photo de profil</p>
-                    <p className="text-xs text-gray-600 mt-0.5">Optionnel · Max 5MB</p>
+                    <p className="text-xs text-white font-medium">
+                      Photo de profil
+                    </p>
+                    <p className="text-xs text-gray-600 mt-0.5">
+                      Optionnel · Max 5MB
+                    </p>
                     {form.profilePhotoPreview && (
                       <button
                         type="button"
-                        onClick={() => { setField("profilePhoto", null); setField("profilePhotoPreview", ""); }}
+                        onClick={() => {
+                          setField("profilePhoto", null);
+                          setField("profilePhotoPreview", "");
+                        }}
                         className="text-xs text-red-500 hover:text-red-400 mt-1 flex items-center gap-1"
                       >
                         <X size={10} /> Supprimer
@@ -611,19 +649,40 @@ export default function SignupPage() {
 
                 <div className="grid grid-cols-2 gap-3">
                   <Field label="Nom" required error={errors.nom}>
-                    <Input placeholder="Rakoto" value={form.nom} onChange={(e) => setField("nom", e.target.value)} />
+                    <Input
+                      placeholder="Rakoto"
+                      value={form.nom}
+                      onChange={(e) => setField("nom", e.target.value)}
+                    />
                   </Field>
                   <Field label="Prénom(s)" required error={errors.prenoms}>
-                    <Input placeholder="Jean" value={form.prenoms} onChange={(e) => setField("prenoms", e.target.value)} />
+                    <Input
+                      placeholder="Jean"
+                      value={form.prenoms}
+                      onChange={(e) => setField("prenoms", e.target.value)}
+                    />
                   </Field>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-3">
-                  <Field label="Date de naissance" required error={errors.dateNaissance}>
-                    <Input type="date" value={form.dateNaissance} onChange={(e) => setField("dateNaissance", e.target.value)} />
+                  <Field
+                    label="Date de naissance"
+                    required
+                    error={errors.dateNaissance}
+                  >
+                    <Input
+                      type="date"
+                      value={form.dateNaissance}
+                      onChange={(e) =>
+                        setField("dateNaissance", e.target.value)
+                      }
+                    />
                   </Field>
                   <Field label="Genre" required error={errors.genre}>
-                    <Select value={form.genre} onChange={(e) => setField("genre", e.target.value)}>
+                    <Select
+                      value={form.genre}
+                      onChange={(e) => setField("genre", e.target.value)}
+                    >
                       <option value="">Sélectionner</option>
                       <option value="Homme">Homme</option>
                       <option value="Femme">Femme</option>
@@ -632,17 +691,26 @@ export default function SignupPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-3">
-                  <Field label="Lot / Numéro" required error={errors.adresseLot}>
-                    <Input placeholder="Lot II M 45" value={form.adresseLot} onChange={(e) => setField("adresseLot", e.target.value)} />
-                  </Field>
-                  <Field label="Fokontany" required error={errors.adresseFokontany}>
-                    <Input placeholder="Ambohipo" value={form.adresseFokontany} onChange={(e) => setField("adresseFokontany", e.target.value)} />
+                  <Field
+                    label="Lot / Numéro"
+                    required
+                    error={errors.adresseLot}
+                  >
+                    <Input
+                      placeholder="Lot II M 45"
+                      value={form.adresseLot}
+                      onChange={(e) => setField("adresseLot", e.target.value)}
+                    />
                   </Field>
                 </div>
 
                 <div className="mt-3">
                   <Field label="N° CIN" required error={errors.cin}>
-                    <Input placeholder="101 234 567 890" value={form.cin} onChange={(e) => setField("cin", e.target.value)} />
+                    <Input
+                      placeholder="101 234 567 890"
+                      value={form.cin}
+                      onChange={(e) => setField("cin", e.target.value)}
+                    />
                   </Field>
                 </div>
               </StepWrapper>
@@ -653,15 +721,27 @@ export default function SignupPage() {
               <StepWrapper title="">
                 <Field label="Poste" required error={errors.poste}>
                   <Input
-                    placeholder={userProfile === "stagiaire" ? "Stagiaire développeur" : "Consultant IT"}
+                    placeholder={
+                      userProfile === "stagiaire"
+                        ? "Stagiaire développeur"
+                        : "Consultant IT"
+                    }
                     value={form.poste}
                     onChange={(e) => setField("poste", e.target.value)}
                   />
                 </Field>
 
                 <div className="grid grid-cols-2 gap-3 mt-3">
-                  <Field label="Date de début" required error={errors.dateDebut}>
-                    <Input type="date" value={form.dateDebut} onChange={(e) => setField("dateDebut", e.target.value)} />
+                  <Field
+                    label="Date de début"
+                    required
+                    error={errors.dateDebut}
+                  >
+                    <Input
+                      type="date"
+                      value={form.dateDebut}
+                      onChange={(e) => setField("dateDebut", e.target.value)}
+                    />
                   </Field>
                   <Field label="Date de fin" error={errors.dateFin}>
                     <Input
@@ -675,29 +755,61 @@ export default function SignupPage() {
 
                 <label className="flex items-center gap-2 mt-3 cursor-pointer">
                   <div
-                    onClick={() => setField("dateFinIndeterminee", !form.dateFinIndeterminee)}
+                    onClick={() =>
+                      setField("dateFinIndeterminee", !form.dateFinIndeterminee)
+                    }
                     className={`w-4 h-4 rounded-sm border flex items-center justify-center transition-colors ${
-                      form.dateFinIndeterminee ? "bg-[#8254ff] border-[#8254ff]" : "border-[#2a2a2a]"
+                      form.dateFinIndeterminee
+                        ? "bg-[#8254ff] border-[#8254ff]"
+                        : "border-[#2a2a2a]"
                     }`}
                   >
                     {form.dateFinIndeterminee && <Check size={10} />}
                   </div>
-                  <span className="text-xs text-gray-400">Date de fin indéterminée</span>
+                  <span className="text-xs text-gray-400">
+                    Date de fin indéterminée
+                  </span>
                 </label>
 
                 {userProfile === "stagiaire" && (
                   <>
                     <div className="mt-3">
                       <Field label="Mission" required error={errors.mission}>
-                        <Input placeholder="Développement application web" value={form.mission} onChange={(e) => setField("mission", e.target.value)} />
+                        <Input
+                          placeholder="Développement application web"
+                          value={form.mission}
+                          onChange={(e) => setField("mission", e.target.value)}
+                        />
                       </Field>
                     </div>
                     <div className="grid grid-cols-2 gap-3 mt-3">
-                      <Field label="Indemnité (Ar)" required error={errors.indemnite}>
-                        <Input type="number" placeholder="200 000" value={form.indemnite} onChange={(e) => setField("indemnite", e.target.value)} />
+                      <Field
+                        label="Indemnité (Ar)"
+                        required
+                        error={errors.indemnite}
+                      >
+                        <Input
+                          type="number"
+                          placeholder="200 000"
+                          value={form.indemnite}
+                          onChange={(e) =>
+                            setField("indemnite", e.target.value)
+                          }
+                        />
                       </Field>
-                      <Field label="Indemn. connexion (Ar)" required error={errors.indemniteConnexion}>
-                        <Input type="number" placeholder="50 000" value={form.indemniteConnexion} onChange={(e) => setField("indemniteConnexion", e.target.value)} />
+                      <Field
+                        label="Indemn. connexion (Ar)"
+                        required
+                        error={errors.indemniteConnexion}
+                      >
+                        <Input
+                          type="number"
+                          placeholder="50 000"
+                          value={form.indemniteConnexion}
+                          onChange={(e) =>
+                            setField("indemniteConnexion", e.target.value)
+                          }
+                        />
                       </Field>
                     </div>
                   </>
@@ -705,8 +817,17 @@ export default function SignupPage() {
 
                 {userProfile === "prestataire" && (
                   <div className="mt-3">
-                    <Field label="TJM — Taux Journalier (Ar)" required error={errors.tjm}>
-                      <Input type="number" placeholder="50 000" value={form.tjm} onChange={(e) => setField("tjm", e.target.value)} />
+                    <Field
+                      label="TJM — Taux Journalier (Ar)"
+                      required
+                      error={errors.tjm}
+                    >
+                      <Input
+                        type="number"
+                        placeholder="50 000"
+                        value={form.tjm}
+                        onChange={(e) => setField("tjm", e.target.value)}
+                      />
                     </Field>
                   </div>
                 )}
@@ -716,52 +837,86 @@ export default function SignupPage() {
             {/* ── Step: Prestation (prestataire only) ── */}
             {stepId === "prestation" && (
               <StepWrapper title="">
-                <Field label="Domaine de prestation" required error={errors.domainePrestation}>
+                <Field
+                  label="Domaine de prestation"
+                  required
+                  error={errors.domainePrestation}
+                >
                   <Input
                     placeholder="Développement web, Design, Consulting..."
                     value={form.domainePrestation}
-                    onChange={(e) => setField("domainePrestation", e.target.value)}
+                    onChange={(e) =>
+                      setField("domainePrestation", e.target.value)
+                    }
                   />
                 </Field>
 
                 <div className="mt-3">
-                  <Field label="Type de travail" required error={errors.typeContrat}>
-                    <Select value={form.typeContrat} onChange={(e) => setField("typeContrat", e.target.value)}>
+                  <Field
+                    label="Type de travail"
+                    required
+                    error={errors.horaire}
+                  >
+                    <Select
+                      value={form.horaire}
+                      onChange={(e) => setField("horaire", e.target.value)}
+                    >
                       <option value="">Sélectionner</option>
-                      <option value="temps_plein">Temps plein</option>
-                      <option value="temps_partiel">Temps partiel</option>
+                      <option value="temps plein">temps plein</option>
+                      <option value="temps partiel">temps partiel</option>
                     </Select>
                   </Field>
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-3">
-                  <Field label="Nombre de jours de travail par semaine" required error={errors.joursSemaine}>
-                    <Select value={form.joursSemaine} onChange={(e) => setField("joursSemaine", e.target.value)}>
+                  <Field
+                    label="Nombre de jours de travail par semaine"
+                    required
+                    error={errors.nombreJour}
+                  >
+                    <Select
+                      value={form.nombreJour}
+                      onChange={(e) => setField("nombreJour", e.target.value)}
+                    >
                       <option value="">Sélectionner</option>
                       {[1, 2, 3, 4, 5, 6, 7].map((n) => (
-                        <option key={n} value={n}>{n} jour{n > 1 ? "s" : ""}</option>
+                        <option key={n} value={n}>
+                          {n} jour{n > 1 ? "s" : ""}
+                        </option>
                       ))}
                     </Select>
                   </Field>
-                  <Field label="Durée journalière (h)" required error={errors.dureeJournaliere}>
+                  <Field
+                    label="Durée journalière (h)"
+                    required
+                    error={errors.dureeJournaliere}
+                  >
                     <Input
                       type="number"
                       placeholder="8"
                       min="1"
                       max="24"
                       value={form.dureeJournaliere}
-                      onChange={(e) => setField("dureeJournaliere", e.target.value)}
+                      onChange={(e) =>
+                        setField("dureeJournaliere", e.target.value)
+                      }
                     />
                   </Field>
                 </div>
 
                 <div className="mt-3">
-                  <Field label="Tarif horaire (Ar)" required error={errors.tarifsHoraire}>
+                  <Field
+                    label="Tarif horaire (Ar)"
+                    required
+                    error={errors.tarifsHoraire}
+                  >
                     <Input
                       type="number"
                       placeholder="6 250"
                       value={form.tarifsHoraire}
-                      onChange={(e) => setField("tarifsHoraire", e.target.value)}
+                      onChange={(e) =>
+                        setField("tarifsHoraire", e.target.value)
+                      }
                     />
                   </Field>
                 </div>
@@ -772,7 +927,11 @@ export default function SignupPage() {
             {stepId === "coordonnees" && (
               <StepWrapper title="Coordonnées">
                 <div className="space-y-4">
-                  <Field label="Numéro de téléphone" required error={errors.telephone}>
+                  <Field
+                    label="Numéro de téléphone"
+                    required
+                    error={errors.telephone}
+                  >
                     <Input
                       type="tel"
                       placeholder="+261 34 12 345 67"
@@ -790,7 +949,8 @@ export default function SignupPage() {
                   </Field>
                 </div>
                 <p className="text-xs text-gray-600 mt-4 leading-relaxed">
-                  Ces informations seront utilisées pour vous contacter et accéder à votre espace.
+                  Ces informations seront utilisées pour vous contacter et
+                  accéder à votre espace.
                 </p>
               </StepWrapper>
             )}
@@ -813,17 +973,27 @@ export default function SignupPage() {
                         onClick={() => setShowPassword((p) => !p)}
                         className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500 hover:text-gray-300"
                       >
-                        {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
+                        {showPassword ? (
+                          <EyeOff size={16} />
+                        ) : (
+                          <Eye size={16} />
+                        )}
                       </button>
                     </div>
                   </Field>
-                  <Field label="Confirmer le mot de passe" required error={errors.confirmPassword}>
+                  <Field
+                    label="Confirmer le mot de passe"
+                    required
+                    error={errors.confirmPassword}
+                  >
                     <div className="relative">
                       <Input
                         type={showConfirm ? "text" : "password"}
                         placeholder="••••••••"
                         value={form.confirmPassword}
-                        onChange={(e) => setField("confirmPassword", e.target.value)}
+                        onChange={(e) =>
+                          setField("confirmPassword", e.target.value)
+                        }
                         className="pr-10"
                       />
                       <button
@@ -854,11 +1024,17 @@ export default function SignupPage() {
                   <div
                     onClick={() => signatureInputRef.current?.click()}
                     className={`w-full h-32 rounded-sm border-2 border-dashed flex items-center justify-center cursor-pointer transition-colors ${
-                      errors.signature ? "border-red-500" : "border-[#2a2a2a] hover:border-[#8254ff]"
+                      errors.signature
+                        ? "border-red-500"
+                        : "border-[#2a2a2a] hover:border-[#8254ff]"
                     } bg-[#0a0a0a]`}
                   >
                     {form.signaturePreview ? (
-                      <img src={form.signaturePreview} alt="Signature" className="max-h-28 max-w-full object-contain p-2" />
+                      <img
+                        src={form.signaturePreview}
+                        alt="Signature"
+                        className="max-h-28 max-w-full object-contain p-2"
+                      />
                     ) : (
                       <div className="flex flex-col items-center gap-2 text-gray-600">
                         <FileSignature size={28} />
@@ -866,7 +1042,13 @@ export default function SignupPage() {
                       </div>
                     )}
                   </div>
-                  <input ref={signatureInputRef} type="file" accept="image/*" onChange={handleSignature} className="hidden" />
+                  <input
+                    ref={signatureInputRef}
+                    type="file"
+                    accept="image/*"
+                    onChange={handleSignature}
+                    className="hidden"
+                  />
 
                   {form.signaturePreview ? (
                     <div className="flex items-center gap-3 w-full">
@@ -879,7 +1061,10 @@ export default function SignupPage() {
                       </button>
                       <button
                         type="button"
-                        onClick={() => { setField("signature", null); setField("signaturePreview", ""); }}
+                        onClick={() => {
+                          setField("signature", null);
+                          setField("signaturePreview", "");
+                        }}
                         className="flex-1 py-2 text-xs border border-red-900 rounded-sm text-red-500 hover:bg-red-950 transition-colors"
                       >
                         Supprimer
@@ -890,7 +1075,9 @@ export default function SignupPage() {
                   )}
 
                   {errors.signature && (
-                    <p className="text-xs text-red-400 self-start">{errors.signature}</p>
+                    <p className="text-xs text-red-400 self-start">
+                      {errors.signature}
+                    </p>
                   )}
                 </div>
 
@@ -949,7 +1136,10 @@ export default function SignupPage() {
         <div className="mt-4 flex items-center justify-between px-1">
           <span className="text-sm text-gray-600">
             Déjà un compte ?{" "}
-            <Link href="/login" className="text-[#8254ff] hover:text-purple-300">
+            <Link
+              href="/login"
+              className="text-[#8254ff] hover:text-purple-300"
+            >
               Se connecter
             </Link>
           </span>

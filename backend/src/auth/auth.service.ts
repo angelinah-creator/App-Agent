@@ -76,6 +76,8 @@ export class AuthService {
       } else if (dto.profile === UserProfile.PRESTATAIRE) {
         userData.domainePrestation = dto.domainePrestation;
         userData.dureeJournaliere = dto.dureeJournaliere;
+        userData.nombreJour = dto.nombreJour;
+        userData.horaire = dto.horaire;
       }
     }
 

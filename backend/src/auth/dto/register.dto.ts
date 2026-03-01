@@ -14,6 +14,10 @@ import {
 } from 'class-validator';
 import { UserRole, UserProfile, Genre } from 'src/users/schemas/user.schema';
 
+export enum Horaire {
+  TEMPS_PLEIN = 'temps plein',
+  TEMPS_PARTIEL = 'temps partiel',
+}
 
 export class RegisterDto {
   @IsEnum(UserRole)
@@ -125,4 +129,14 @@ export class RegisterDto {
   @IsNumber()
   @IsNotEmpty()
   dureeJournaliere?: number;
+
+  @ValidateIf((o) => o.profile === UserProfile.PRESTATAIRE)
+  @IsNumber()
+  @IsNotEmpty()
+  nombreJour?: number;
+
+  @ValidateIf((o) => o.profile === UserProfile.PRESTATAIRE)
+  @IsNotEmpty()
+  @IsEnum(Horaire)
+  horaire?: string;
 }

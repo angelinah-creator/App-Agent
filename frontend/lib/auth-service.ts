@@ -76,6 +76,8 @@ export interface RegisterData {
   indemniteConnexion?: number
   domainePrestation?: string
   dureeJournaliere?: number
+  nombreJour?: number
+  horaire?: "temps plein" | "temps partiel";
 }
 
 export interface GoogleLoginResponse {
