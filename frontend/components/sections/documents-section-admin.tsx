@@ -109,16 +109,16 @@ export function DocumentsSectionAdmin({
       </div>
 
       {/* Sélection de l'agent */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="bg-[#1F2128] border-[#313442] border">
+        <CardContent className="">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <Select value={selectedAgent} onValueChange={setSelectedAgent}>
-              <SelectTrigger>
-                <User className="w-4 h-4 mr-2" />
-                <SelectValue placeholder="Sélectionner un agent" />
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
+                <User className="w-4 h-4 mr-2 text-white" />
+                <SelectValue placeholder="Sélectionner un agent"/>
               </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">Sélectionner un agent...</SelectItem>
+              <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
+                <SelectItem value="all" className="text-white">Sélectionner un agent...</SelectItem>
                 {agents.map((agent) => (
                   <SelectItem key={agent._id} value={agent._id}>
                     {agent.nom} {agent.prenoms} - {agent.profile}
@@ -129,21 +129,21 @@ export function DocumentsSectionAdmin({
 
             {selectedAgent !== "all" && (
               <>
-                <div className="relative">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+                <div className="relative text-white">
+                  <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
                   <Input
                     placeholder="Rechercher un document..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10"
+                    className="pl-10 bg-[#2C2E3A] border border-[#2C2E3A]"
                   />
                 </div>
 
                 <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger>
+                  <SelectTrigger className="bg-[#2C2E3A] border border-[#2C2E3A] text-white">
                     <SelectValue placeholder="Type de document" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                     <SelectItem value="all">Tous les types</SelectItem>
                     <SelectItem value="cin_recto">CIN Recto</SelectItem>
                     <SelectItem value="cin_verso">CIN Verso</SelectItem>
@@ -161,17 +161,17 @@ export function DocumentsSectionAdmin({
 
       {/* Informations de l'agent sélectionné */}
       {selectedAgent !== "all" && selectedAgentData && (
-        <Card className="bg-gradient-to-br from-blue-50 to-indigo-50 border-blue-200">
-          <CardContent className="pt-6">
+        <Card className="bg-[#1F2128] border border-[#313442] text-white">
+          <CardContent className="">
             <div className="flex items-center gap-4">
-              <div className="w-16 h-16 rounded-full bg-gradient-to-br from-blue-500 to-indigo-600 flex items-center justify-center text-white font-bold text-2xl">
+              <div className="w-16 h-16 rounded-full bg-[#6C4EA8] flex items-center justify-center text-white font-bold text-2xl">
                 {selectedAgentData.prenoms[0]}{selectedAgentData.nom[0]}
               </div>
               <div className="flex-1">
-                <h3 className="text-xl font-semibold text-slate-800">
+                <h3 className="text-xl font-semibold text-white">
                   {selectedAgentData.nom} {selectedAgentData.prenoms}
                 </h3>
-                <div className="flex gap-4 text-sm text-slate-600 mt-1">
+                <div className="flex gap-4 text-sm text-white mt-1">
                   <span className="flex items-center gap-1">
                     <Mail className="w-4 h-4" />
                     {selectedAgentData.email}
@@ -200,7 +200,7 @@ export function DocumentsSectionAdmin({
 
       {/* Liste des documents */}
       {selectedAgent === "all" ? (
-        <Card>
+        <Card className="bg-[#1F2128] border border-[#313442]">
           <CardContent className="py-16 text-center">
             <User className="w-20 h-20 text-slate-300 mx-auto mb-4" />
             <p className="text-lg text-slate-600 font-medium">Sélectionnez un agent</p>
@@ -214,7 +214,7 @@ export function DocumentsSectionAdmin({
           <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600"></div>
         </div>
       ) : filteredDocuments.length === 0 ? (
-        <Card>
+        <Card className="bg-[#1F2128] border border-[#313442]">
           <CardContent className="py-12 text-center">
             <FileText className="w-16 h-16 text-slate-300 mx-auto mb-4" />
             <p className="text-slate-600">Aucun document trouvé pour cet agent</p>
@@ -223,49 +223,32 @@ export function DocumentsSectionAdmin({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {filteredDocuments.map((doc) => (
-            <Card key={doc._id} className="hover:shadow-lg transition-shadow">
+            <Card key={doc._id} className="hover:shadow-lg transition-shadow bg-[#1F2128] border border-[#313442]">
               <CardContent className="p-5">
                 <div className="flex items-start gap-3">
-                  <div className="p-3 bg-gradient-to-br from-blue-100 to-indigo-100 rounded-xl">
-                    <FileText className="w-6 h-6 text-blue-600" />
+                  <div className="p-3 bg-gray-400/20 rounded-xl">
+                    <FileText className="w-6 h-6 text-gray-400" />
                   </div>
                   
                   <div className="flex-1 space-y-2 min-w-0">
                     <div className="flex items-center gap-2">
-                      <span className="text-xs px-2 py-1 rounded-full font-medium bg-indigo-100 text-indigo-700">
+                      <span className="text-xs px-2 py-1 rounded-full font-medium text-white">
                         {getDocumentTypeLabel(doc.type)}
                       </span>
                     </div>
 
-                    <h4 className="font-semibold text-slate-800 truncate text-sm">
+                    <h4 className="font-semibold text-white truncate text-sm">
                       {doc.originalName}
                     </h4>
-
-                    <div className="space-y-1 text-xs text-slate-600">
-                      <p className="flex items-center gap-1">
-                        <File className="w-3 h-3" />
-                        {formatFileSize(doc.fileSize)}
-                      </p>
-                      <p className="flex items-center gap-1">
-                        <Calendar className="w-3 h-3" />
-                        {formatDate(doc.createdAt)}
-                      </p>
-                      {doc.description && (
-                        <p className="truncate flex items-center gap-1" title={doc.description}>
-                          <Info className="w-3 h-3" />
-                          {doc.description}
-                        </p>
-                      )}
-                    </div>
                   </div>
                 </div>
 
-                <div className="flex gap-2 mt-4 pt-4 border-t border-slate-100">
+                <div className="flex gap-2 mt-4 pt-4 border-t border-[#313442]">
                   <Button
                     variant="outline"
                     size="sm"
                     onClick={() => onDownload(doc)}
-                    className="hover:bg-blue-600 hover:border-green-300 text-xs"
+                    className="text-xs text-blue-500 bg-transparent border-1 border-blue-500"
                   >
                     <Download className="w-3 h-3" />
                     Telecharger
@@ -277,7 +260,7 @@ export function DocumentsSectionAdmin({
                       onDelete(doc._id)
                     }}
                     disabled={deleteDocumentPending}
-                    className="hover:bg-red-600 hover:border-red-300 text-red-600 text-xs"
+                    className="text-red-400 text-xs border border-red-400 bg-transparent hover:bg-red-400 hover:text-white"
                   >
                     <Trash2 className="w-3 h-3" />
                     Supprimer
