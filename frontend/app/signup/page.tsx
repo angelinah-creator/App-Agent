@@ -34,17 +34,17 @@ const COMMON_STEPS = [
 ];
 
 const STAGIAIRE_FORM_STEPS = [
-  { id: "info-perso", label: "Infos perso." },
-  { id: "info-pro", label: "Infos pro." },
+  { id: "info-perso", label: "Informations personnelles" },
+  { id: "info-pro", label: "Informations professionnelles" },
   { id: "coordonnees", label: "Coordonnées" },
   { id: "securite", label: "Sécurité" },
   { id: "signature", label: "Signature" },
 ];
 
 const PRESTATAIRE_FORM_STEPS = [
-  { id: "info-perso", label: "Infos perso." },
-  { id: "info-pro", label: "Infos pro." },
-  { id: "prestation", label: "Prestation" },
+  { id: "info-perso", label: "Informations personnelles" },
+  { id: "info-pro", label: "Informations professionnelles" },
+  { id: "prestation", label: "Information de Prestation" },
   { id: "coordonnees", label: "Coordonnées" },
   { id: "securite", label: "Sécurité" },
   { id: "signature", label: "Signature" },
@@ -96,7 +96,7 @@ function Field({
 }) {
   return (
     <div className="space-y-1.5">
-      <label className="text-xs font-medium tracking-wider text-gray-400 uppercase">
+      <label className="text-xs tracking-wider text-white">
         {label}
         {required && <span className="text-[#8254ff] ml-1">*</span>}
       </label>
@@ -153,9 +153,9 @@ function SelectionCard({
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center justify-center gap-3 p-5 rounded-sm border transition-all duration-200 group ${
+      className={`flex flex-col items-center justify-center gap-3 p-5 rounded-sm border transition-all duration-200 group w-sm ${
         selected
-          ? "border-[#8254ff] bg-[#8254ff]/10"
+          ? "border-white bg-[#8254ff]/10"
           : "border-[#2a2a2a] bg-[#0a0a0a] hover:border-[#8254ff] hover:bg-[#0d0d0d]"
       }`}
     >
@@ -169,11 +169,11 @@ function SelectionCard({
         <div className="text-sm font-semibold text-white">{label}</div>
         {desc && <div className="text-xs text-gray-600 mt-0.5">{desc}</div>}
       </div>
-      {selected && (
+      {/* {selected && (
         <div className="w-5 h-5 rounded-full bg-[#8254ff] flex items-center justify-center">
           <Check size={11} />
         </div>
-      )}
+      )} */}
     </button>
   );
 }
@@ -430,14 +430,6 @@ export default function SignupPage() {
   // ─── Render ───────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen flex items-center justify-center relative bg-[#110521] px-4 py-8">
-      {/* Background noise */}
-      <div
-        className="absolute inset-0 opacity-[0.03]"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 256 256' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)'/%3E%3C/svg%3E")`,
-        }}
-      />
-
       {/* Loading overlay */}
       {isLoading && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm">
@@ -448,28 +440,28 @@ export default function SignupPage() {
         </div>
       )}
 
-      <div className="relative z-10 w-full max-w-md">
+      <div className="relative z-10 w-full max-w-7xl">
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
-          <div className="flex items-center gap-3">
-            <Image src="/images/logo2.png" width={32} height={32} alt="Logo" />
-            <span className="text-white font-semibold text-sm tracking-wide">
-              CODE TALENT
+          <div className="flex items-center gap-4">
+            <Image src="/images/logo2.png" width={52} height={52} alt="Logo" />
+            <span className="text-white font-semibold text-xl tracking-wide">
+              OPSIDE - CODE TALENT
             </span>
           </div>
           <div className="flex items-center gap-2">
             {userProfile === "stagiaire" ? (
-              <GraduationCap size={16} className="text-blue-400" />
+              <GraduationCap size={20} className="text-white" />
             ) : userProfile === "prestataire" ? (
-              <Briefcase size={16} className="text-purple-400" />
+              <Briefcase size={20} className="text-white" />
             ) : userRole ? (
               userRole === "manager" ? (
-                <Shield size={16} className="text-purple-400" />
+                <Shield size={20} className="text-white" />
               ) : (
-                <Users size={16} className="text-blue-400" />
+                <Users size={20} className="text-white" />
               )
             ) : null}
-            <span className="text-xs text-gray-400 capitalize">
+            <span className="text-sm text-white capitalize">
               {userProfile ?? userRole ?? "Inscription"}
             </span>
           </div>
@@ -480,7 +472,7 @@ export default function SignupPage() {
           {steps.map((s, i) => (
             <div
               key={s.id}
-              className="h-0.5 flex-1 rounded-full overflow-hidden bg-[#2a2a2a]"
+              className="h-1 flex-1 rounded-full overflow-hidden bg-[#2a2a2a]"
             >
               <div
                 className="h-full bg-[#8254ff] transition-all duration-500 ease-out"
@@ -490,11 +482,11 @@ export default function SignupPage() {
           ))}
         </div>
         <div className="flex items-center justify-between mb-6">
-          <span className="text-xs text-gray-500 uppercase tracking-wider">
+          <span className="text-sm text-white font-bold uppercase tracking-wider">
             {steps[currentStep].label}
           </span>
-          <span className="text-xs text-gray-600">
-            {currentStep + 1} / {totalSteps}
+          <span className="text-sm text-white">
+           Étape {currentStep + 1}/{totalSteps}
           </span>
         </div>
 
@@ -525,22 +517,19 @@ export default function SignupPage() {
           >
             {/* ── Step 1: Role select ── */}
             {stepId === "role-select" && (
-              <StepWrapper title="Quel est votre rôle ?">
-                <p className="text-xs text-gray-500 mb-6 -mt-3">
-                  Sélectionnez votre rôle dans l'organisation
-                </p>
-                <div className="grid grid-cols-2 gap-3">
+              <StepWrapper title="Sélectionnez votre rôle chez code talent">
+                <div className="flex justify-center gap-3 mt-10">
                   <SelectionCard
-                    icon={<Users size={28} color="#3b82f6" />}
+                    icon={<Users size={28} color="white" />}
                     label="Collaborateur"
                     color="#3b82f6"
                     selected={userRole === "collaborateur"}
                     onClick={() => setUserRole("collaborateur")}
                   />
                   <SelectionCard
-                    icon={<Shield size={28} color="#8254ff" />}
+                    icon={<Shield size={28} color="white" />}
                     label="Manager"
-                    color="#8254ff"
+                    color="#3b82f6"
                     selected={userRole === "manager"}
                     onClick={() => setUserRole("manager")}
                   />
@@ -554,26 +543,24 @@ export default function SignupPage() {
             {/* ── Step 2: Profile select ── */}
             {stepId === "profile-select" && (
               <StepWrapper title="Quel est votre profil ?">
-                <p className="text-xs text-gray-500 mb-6 -mt-3">
+                <p className="text-xs text-white mb-6 -mt-3">
                   Rôle sélectionné :{" "}
                   <span className="text-[#8254ff] font-medium capitalize">
                     {userRole === "collaborateur" ? "Collaborateur" : "Manager"}
                   </span>
                 </p>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="flex justify-center gap-3 mt-10">
                   <SelectionCard
-                    icon={<GraduationCap size={28} color="#3b82f6" />}
+                    icon={<GraduationCap size={28} color="white" />}
                     label="Stagiaire"
-                    desc="Stage avec indemnités"
                     color="#3b82f6"
                     selected={userProfile === "stagiaire"}
                     onClick={() => setUserProfile("stagiaire")}
                   />
                   <SelectionCard
-                    icon={<Briefcase size={28} color="#8254ff" />}
+                    icon={<Briefcase size={28} color="white" />}
                     label="Prestataire"
-                    desc="Prestation de service"
-                    color="#8254ff"
+                    color="#3b82f6"
                     selected={userProfile === "prestataire"}
                     onClick={() => setUserProfile("prestataire")}
                   />
@@ -586,28 +573,29 @@ export default function SignupPage() {
 
             {/* ── Step: Info Perso ── */}
             {stepId === "info-perso" && (
-              <StepWrapper title="Informations personnelles">
+              <StepWrapper title="">
                 {/* Photo upload */}
                 <div className="flex items-center gap-4 mb-5">
-                  <div className="relative flex-shrink-0">
-                    <div className="w-16 h-16 rounded-full bg-[#111] border border-[#2a2a2a] overflow-hidden flex items-center justify-center">
+                  <div className="relative flex-shrink-0 cursor-pointer">
+                    <div className="w-26 h-26 rounded-full bg-[#111] border border-[#2a2a2a] overflow-hidden flex items-center justify-center"
+                    onClick={() => fileInputRef.current?.click()}>
                       {form.profilePhotoPreview ? (
                         <img src={form.profilePhotoPreview} alt="" className="w-full h-full object-cover" />
                       ) : (
-                        <User size={24} className="text-gray-600" />
+                        <User size={38} className="text-gray-600" />
                       )}
                     </div>
                     <button
                       type="button"
                       onClick={() => fileInputRef.current?.click()}
-                      className="absolute -bottom-1 -right-1 w-6 h-6 bg-[#8254ff] rounded-full flex items-center justify-center hover:bg-[#6d46d9] transition-colors"
+                      className="absolute bottom-1 right-1 w-6 h-6 bg-[#8254ff] rounded-full flex items-center justify-center hover:bg-[#6d46d9] transition-colors cursor-pointer"
                     >
                       <Camera size={12} />
                     </button>
                     <input ref={fileInputRef} type="file" accept="image/*" onChange={handlePhoto} className="hidden" />
                   </div>
                   <div>
-                    <p className="text-xs text-gray-400 font-medium">Photo de profil</p>
+                    <p className="text-xs text-white font-medium">Photo de profil</p>
                     <p className="text-xs text-gray-600 mt-0.5">Optionnel · Max 5MB</p>
                     {form.profilePhotoPreview && (
                       <button
@@ -662,7 +650,7 @@ export default function SignupPage() {
 
             {/* ── Step: Info Pro ── */}
             {stepId === "info-pro" && (
-              <StepWrapper title="Informations professionnelles">
+              <StepWrapper title="">
                 <Field label="Poste" required error={errors.poste}>
                   <Input
                     placeholder={userProfile === "stagiaire" ? "Stagiaire développeur" : "Consultant IT"}
@@ -727,7 +715,7 @@ export default function SignupPage() {
 
             {/* ── Step: Prestation (prestataire only) ── */}
             {stepId === "prestation" && (
-              <StepWrapper title="Informations de prestation">
+              <StepWrapper title="">
                 <Field label="Domaine de prestation" required error={errors.domainePrestation}>
                   <Input
                     placeholder="Développement web, Design, Consulting..."
@@ -747,7 +735,7 @@ export default function SignupPage() {
                 </div>
 
                 <div className="grid grid-cols-2 gap-3 mt-3">
-                  <Field label="Jours / semaine" required error={errors.joursSemaine}>
+                  <Field label="Nombre de jours de travail par semaine" required error={errors.joursSemaine}>
                     <Select value={form.joursSemaine} onChange={(e) => setField("joursSemaine", e.target.value)}>
                       <option value="">Sélectionner</option>
                       {[1, 2, 3, 4, 5, 6, 7].map((n) => (
@@ -850,20 +838,6 @@ export default function SignupPage() {
                 </div>
                 <div className="mt-4 p-3 rounded-sm bg-[#111] border border-[#2a2a2a]">
                   <p className="text-xs text-gray-500">Minimum 6 caractères</p>
-                  {form.password && (
-                    <div className="mt-2 flex gap-1">
-                      {[
-                        form.password.length >= 6,
-                        /[A-Z]/.test(form.password),
-                        /[0-9]/.test(form.password),
-                      ].map((ok, i) => (
-                        <div
-                          key={i}
-                          className={`h-0.5 flex-1 rounded-full transition-colors duration-300 ${ok ? "bg-[#8254ff]" : "bg-[#2a2a2a]"}`}
-                        />
-                      ))}
-                    </div>
-                  )}
                 </div>
               </StepWrapper>
             )}
@@ -912,13 +886,7 @@ export default function SignupPage() {
                       </button>
                     </div>
                   ) : (
-                    <button
-                      type="button"
-                      onClick={() => signatureInputRef.current?.click()}
-                      className="w-full py-2.5 text-sm bg-[#8254ff]/10 border border-[#8254ff]/30 text-[#8254ff] rounded-sm hover:bg-[#8254ff]/20 transition-colors"
-                    >
-                      Uploader ma signature
-                    </button>
+                    <div></div>
                   )}
 
                   {errors.signature && (
@@ -969,10 +937,9 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={goNext}
-                className="flex-1 flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium bg-[#8254ff] hover:bg-[#6d46d9] text-white rounded-sm transition-colors"
+                className="flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium bg-[#8254ff] hover:bg-[#6d46d9] text-white rounded-sm transition-colors px-10"
               >
                 Continuer
-                <ChevronRight size={15} />
               </button>
             )}
           </div>
