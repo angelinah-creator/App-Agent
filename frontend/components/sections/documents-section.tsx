@@ -94,9 +94,9 @@ export function DocumentsSection({
 
   return (
     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8">
-      {/* <div className="flex justify-around"> */}
+      <div className="flex space-x-4">
         {/* Contrats Section */}
-        <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
+        <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-semibold text-[#F1F1F1]">
               Mon Contrat
@@ -106,7 +106,7 @@ export function DocumentsSection({
               disabled={generateContractPending}
               className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white"
             >
-              <Plus className="w-4 h-4 mr-2" />
+              <FileText className="w-4 h-4 mr-2" />
               {generateContractPending ? "Génération..." : "Générer un Contrat"}
             </Button>
           </div>
@@ -132,7 +132,7 @@ export function DocumentsSection({
           ) : (
             <div className="overflow-x-auto rounded-xl border border-[#313442]">
               <table className="w-full">
-                <thead className="bg-[#1F2128]">
+                {/* <thead className="bg-[#1F2128]">
                   <tr className="border-b border-[#313442]">
                     <th className="text-left py-2 px-2 text-xs font-semibold text-white">
                       Nom du fichier
@@ -144,7 +144,7 @@ export function DocumentsSection({
                       Actions
                     </th>
                   </tr>
-                </thead>
+                </thead> */}
                 <tbody>
                   {contracts.map((contract: Contract) => (
                     <tr
@@ -154,9 +154,9 @@ export function DocumentsSection({
                       <td className="py-2 px-2 text-[#F1F1F1] font-medium text-sm">
                         {contract.fileName}
                       </td>
-                      <td className="py-2 px-2 text-[#F1F1F1] capitalize text-sm">
+                      {/* <td className="py-2 px-2 text-[#F1F1F1] capitalize text-sm">
                         {contract.type}
-                      </td>
+                      </td> */}
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-1">
                           <Button
@@ -164,7 +164,7 @@ export function DocumentsSection({
                             variant="ghost"
                             onClick={() => onDownloadContract(contract)}
                             disabled={deleteContractPending}
-                            className="text-[#F1F1F1] hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                            className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                           >
                             <Download className="w-4 h-4 mr-1" />
                             Télécharger
@@ -174,7 +174,7 @@ export function DocumentsSection({
                             variant="ghost"
                             onClick={() => onDeleteContract(contract._id)}
                             disabled={deleteContractPending}
-                            className="text-[#F1F1F1] hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                            className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                           >
                             <Trash2 className="w-4 h-4" />
                             Supprimer
@@ -190,7 +190,7 @@ export function DocumentsSection({
         </div>
 
         {/* Nda Section */}
-        <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
+        <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-semibold text-[#F1F1F1] flex items-center gap-2">
               Mon NDA (Non-Disclosure Agreement)
@@ -226,7 +226,7 @@ export function DocumentsSection({
           ) : (
             <div className="overflow-x-auto rounded-xl border border-[#313442]">
               <table className="w-full">
-                <thead className="bg-[#1F2128]">
+                {/* <thead className="bg-[#1F2128]">
                   <tr className="border-b border-[#313442]">
                     <th className="text-left py-2 px-2 text-xs font-semibold text-white">
                       Nom du fichier
@@ -235,7 +235,7 @@ export function DocumentsSection({
                       Actions
                     </th>
                   </tr>
-                </thead>
+                </thead> */}
                 <tbody>
                   {ndas.map((nda) => (
                     <tr
@@ -252,7 +252,7 @@ export function DocumentsSection({
                             variant="ghost"
                             onClick={() => onDownloadNda(nda)}
                             disabled={deleteNdaPending}
-                            className="text-[#F1F1F1] hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
+                            className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                           >
                             <Download className="w-4 h-4 mr-1" />
                             Télécharger
@@ -262,7 +262,7 @@ export function DocumentsSection({
                             variant="ghost"
                             onClick={() => onDeleteNda(nda._id)}
                             disabled={deleteNdaPending}
-                            className="text-[#F1F1F1] hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                            className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                           >
                             <Trash2 className="w-4 h-4" />
                             Supprimer
@@ -275,6 +275,7 @@ export function DocumentsSection({
               </table>
             </div>
           )}
+        </div>
         </div>
       
 
@@ -318,34 +319,34 @@ export function DocumentsSection({
               >
                 <CardContent className="p-3">
                   <div className="flex items-start gap-2">
-                    <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-blue-100 to-indigo-100 flex items-center justify-center flex-shrink-0 shadow-sm">
-                      <FileText className="w-4 h-4 text-blue-600" />
+                    <div className="w-10 h-10 rounded-sm bg-gray-500/10 flex items-center justify-center flex-shrink-0 shadow-sm">
+                      <FileText className="w-8 h-8 text-[#6C4EA8]" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-white truncate">
                         {doc.originalName}
                       </h4>
-                      <p className="text-sm text-[#F1F1F1]">
+                      {/* <p className="text-sm text-[#F1F1F1]">
                         {getDocumentTypeLabel(doc.type)} •{" "}
                         {(doc.fileSize / (1024 * 1024)).toFixed(2)} MB
-                      </p>
+                      </p> */}
                       <p className="text-xs text-[#F1F1F1] mt-1">
                         {new Date(doc.createdAt).toLocaleDateString("fr-FR")}
                       </p>
-                      {doc.description && (
+                      {/* {doc.description && (
                         <p className="text-xs text-[#F1F1F1] mt-1 truncate">
                           {doc.description}
                         </p>
-                      )}
+                      )} */}
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100">
+                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#313442]">
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => onDownloadDocument(doc)}
                       disabled={deleteDocumentPending}
-                      className="flex-1 text-[#F1F1F1] hover:text-green-600 hover:bg-green-50 transition-all duration-200"
+                      className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                     >
                       <Download className="w-4 h-4 mr-1" />
                       Télécharger
@@ -355,9 +356,10 @@ export function DocumentsSection({
                       variant="ghost"
                       onClick={() => onDeleteDocument(doc._id)}
                       disabled={deleteDocumentPending}
-                      className="text-[#F1F1F1] hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                      className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                     >
                       <Trash2 className="w-4 h-4" />
+                      Supprimer
                     </Button>
                   </div>
                 </CardContent>
@@ -369,10 +371,10 @@ export function DocumentsSection({
 
       {/* KPI Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Card className="border-[#313442] hover:shadow-xl hover:shadow-indigo-200/50 transition-all duration-300 hover:scale-105 bg-gradient-to-br bg-[#1F2128] backdrop-blur-sm">
+        <Card className="border-[#313442] bg-gradient-to-br bg-[#1F2128] backdrop-blur-sm">
           <CardContent className="p-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
                 <Upload className="w-5 h-5 text-white" />
               </div>
               <div>
