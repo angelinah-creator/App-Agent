@@ -40,7 +40,7 @@ interface FacturesSectionAdminProps {
       paymentDate: string;
       transferReference: string;
       status: string;
-    }
+    },
   ) => void;
   deleteInvoicePending: boolean;
   validateInvoicePending?: boolean;
@@ -48,7 +48,7 @@ interface FacturesSectionAdminProps {
 
 // Fonction utilitaire pour vérifier si agentId est un objet peuplé
 const isPopulatedAgent = (
-  agent: any
+  agent: any,
 ): agent is {
   _id: string;
   nom: string;
@@ -128,7 +128,7 @@ export function FacturesSectionAdmin({
   // Générer les années disponibles (5 dernières années)
   const currentYear = new Date().getFullYear();
   const availableYears = Array.from({ length: 6 }, (_, i) =>
-    (currentYear - i).toString()
+    (currentYear - i).toString(),
   );
 
   // Générer les mois
@@ -180,7 +180,7 @@ export function FacturesSectionAdmin({
     })
     .sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     ); // Tri du plus récent au plus ancien
 
   const getProcessedByInfo = (processedBy: any): string => {
@@ -256,9 +256,9 @@ export function FacturesSectionAdmin({
   };
 
   const formatAmount = (amount?: number) => {
-  if (!amount) return "Non défini";
-  return amount.toLocaleString("fr-FR") + " Ariary";
-};
+    if (!amount) return "Non défini";
+    return amount.toLocaleString("fr-FR") + " Ariary";
+  };
 
   const handleValidate = (invoice: any) => {
     setSelectedInvoice(invoice);
@@ -271,15 +271,20 @@ export function FacturesSectionAdmin({
   const unpaidCount = invoices.filter((i) => i.status === "unpaid").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête avec statistiques */}
-      <div className="flex items-center justify-between">
+      <div className="flex justify-between">
         <div>
-          <p className="text-slate-600 mt-1">
-            {filteredInvoices.length} facture
-            {filteredInvoices.length > 1 ? "s" : ""} trouvée
-            {filteredInvoices.length > 1 ? "s" : ""}
-          </p>
+          <h1 className="text-white font-extrabold text-2xl">
+            Gestion des Factures
+          </h1>
+          <div>
+            <p className="text-slate-600 mt-1">
+              {filteredInvoices.length} facture
+              {filteredInvoices.length > 1 ? "s" : ""} trouvée
+              {filteredInvoices.length > 1 ? "s" : ""}
+            </p>
+          </div>
         </div>
         <div className="flex gap-6">
           <div className="text-center">
@@ -298,25 +303,25 @@ export function FacturesSectionAdmin({
       </div>
 
       {/* Filtres */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="bg-[#1F2128] border-[#313442]">
+        <CardContent className="">
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
               <Input
                 placeholder="Rechercher une facture ou un agent..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-[#2C2E3A] border border-[#2C2E3A]"
               />
             </div>
 
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger>
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectItem value="all">Tous les statuts</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="paid">Payées</SelectItem>
@@ -325,11 +330,11 @@ export function FacturesSectionAdmin({
             </Select>
 
             <Select value={filterAgent} onValueChange={setFilterAgent}>
-              <SelectTrigger>
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <User className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Agent" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectItem value="all">Tous les agents</SelectItem>
                 {agents.map((agent) => (
                   <SelectItem key={agent._id} value={agent._id}>
@@ -340,10 +345,10 @@ export function FacturesSectionAdmin({
             </Select>
 
             <Select value={filterMonth} onValueChange={setFilterMonth}>
-              <SelectTrigger>
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectValue placeholder="Mois" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectItem value="all">Tous les mois</SelectItem>
                 {availableMonths.map((month) => (
                   <SelectItem key={month.value} value={month.value}>
@@ -354,10 +359,10 @@ export function FacturesSectionAdmin({
             </Select>
 
             <Select value={filterYear} onValueChange={setFilterYear}>
-              <SelectTrigger>
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectValue placeholder="Année" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectItem value="all">Toutes les années</SelectItem>
                 {availableYears.map((year) => (
                   <SelectItem key={year} value={year}>
@@ -390,20 +395,20 @@ export function FacturesSectionAdmin({
             return (
               <Card
                 key={invoice._id}
-                className="hover:shadow-lg transition-shadow"
+                className="hover:shadow-lg transition-shadow text-white bg-[#1F2128] border-[#313442]"
               >
-                <CardContent className="p-6">
+                <CardContent className="p-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
-                      <div className="p-3 bg-gradient-to-br from-violet-100 to-purple-100 rounded-xl">
+                      <div className="p-3 bg-gray-500/30 rounded-xl">
                         <Receipt className="w-6 h-6 text-violet-600" />
                       </div>
 
                       <div className="flex-1 space-y-3">
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-2">
-                            <User className="w-4 h-4 text-slate-500" />
-                            <h3 className="font-semibold text-lg text-slate-800">
+                            <User className="w-4 h-4 text-white" />
+                            <h3 className="font-semibold text-lg text-white">
                               {agentDetails.name}
                             </h3>
                           </div>
@@ -412,67 +417,61 @@ export function FacturesSectionAdmin({
 
                         <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                           <div>
-                            <span className="text-slate-500">Référence:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="text-white">Référence:</span>
+                            <span className="ml-2 font-medium text-white">
                               {invoice.reference || "N/A"}
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-500">Période:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="text-white">Période:</span>
+                            <span className="ml-2 font-medium text-white">
                               {getMonthName(invoice.month)} {invoice.year}
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-500">Email:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="text-white">Email:</span>
+                            <span className="ml-2 font-medium text-white">
                               {agentDetails.email}
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-500">Profil:</span>
-                            <span className="ml-2 font-medium text-slate-800 capitalize">
+                            <span className="text-white">Profil:</span>
+                            <span className="ml-2 font-medium text-white capitalize">
                               {agentDetails.profile}
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-500">Montant:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="text-white">Montant:</span>
+                            <span className="ml-2 font-medium text-white">
                               {formatAmount(invoice.amount)}
                             </span>
                           </div>
                           <div>
-                            <span className="text-slate-500">
+                            <span className="text-white">
                               Date de paiement:
                             </span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="ml-2 font-medium text-white">
                               {formatDate(invoice.paymentDate)}
                             </span>
                           </div>
                           {invoice.transferReference && (
                             <div className="col-span-2">
-                              <span className="text-slate-500">
-                                Réf. virement:
-                              </span>
-                              <span className="ml-2 font-medium text-slate-800">
+                              <span className="text-white">Réf. virement:</span>
+                              <span className="ml-2 font-medium text-white">
                                 {invoice.transferReference}
                               </span>
                             </div>
                           )}
                           <div>
-                            <span className="text-slate-500">
-                              Date création:
-                            </span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="text-white">Date création:</span>
+                            <span className="ml-2 font-medium text-white">
                               {formatDate(invoice.createdAt)}
                             </span>
                           </div>
                           {invoice.processedBy && (
                             <div>
-                              <span className="text-slate-500">
-                                Traité par:
-                              </span>
-                              <span className="ml-2 font-medium text-slate-800">
+                              <span className="text-white">Traité par:</span>
+                              <span className="ml-2 font-medium text-white">
                                 {getProcessedByInfo(invoice.processedBy)}
                               </span>
                             </div>
@@ -487,25 +486,17 @@ export function FacturesSectionAdmin({
                           variant="outline"
                           size="sm"
                           onClick={() => handleValidate(invoice)}
-                          className="hover:bg-green-50 hover:border-green-300 text-green-600"
+                          className="border border-green-500/40 bg-transparent hover:bg-green-500 hover:border-green-600 text-green-400 hover:text-white focus:ring-green-500"
                         >
                           <CheckCircle className="w-4 h-4 mr-1" />
                           Valider
                         </Button>
                       )}
-                      {/* <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onView(invoice)}
-                        className="hover:bg-blue-50 hover:border-blue-300"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button> */}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => onDownload(invoice)}
-                        className="hover:bg-blue-600 hover:border-indigo-300"
+                        className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                       >
                         <Download className="w-4 h-4" />
                         Telecharger
@@ -514,10 +505,10 @@ export function FacturesSectionAdmin({
                         variant="outline"
                         size="sm"
                         onClick={() => {
-                           onDelete(invoice._id);
+                          onDelete(invoice._id);
                         }}
                         disabled={deleteInvoicePending}
-                        className="hover:bg-red-600 hover:border-red-300 text-red-600"
+                        className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                       >
                         <Trash2 className="w-4 h-4" />
                         Supprimer

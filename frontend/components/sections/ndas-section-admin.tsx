@@ -150,7 +150,7 @@ export function NdasSectionAdmin({
                         variant="outline"
                         size="sm"
                         onClick={() => onDownload(nda)}
-                        className="border-blue-500/50 text-blue-400 hover:bg-blue-600 hover:text-white"
+                        className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                       >
                         <Download className="w-4 h-4 mr-1" />
                         Télécharger
@@ -161,7 +161,7 @@ export function NdasSectionAdmin({
                         size="sm"
                         onClick={() => onDelete(nda._id)}
                         disabled={deleteNdaPending}
-                        className="border-red-500/50 text-red-400 hover:bg-red-600 hover:text-white"
+                        className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                       >
                         <Trash2 className="w-4 h-4 mr-1" />
                         Supprimer

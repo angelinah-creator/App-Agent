@@ -175,10 +175,13 @@ export function KPIsSectionAdmin({
     .filter((item) => item.count > 0);
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête avec statistiques */}
       <div className="flex items-center justify-between">
         <div>
+          <h1 className="text-white font-extrabold text-2xl">
+            Gestion des KPIs
+         </h1>
           <p className="text-slate-600 mt-1">
             {totalKPIs} rapport{totalKPIs > 1 ? "s" : ""} trouvé
             {totalKPIs > 1 ? "s" : ""}
@@ -212,25 +215,25 @@ export function KPIsSectionAdmin({
       </div>
 
       {/* Filtres */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="bg-[#1F2128] border-[#313442]">
+        <CardContent className="">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
               <Input
                 placeholder="Rechercher un rapport ou un agent..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-[#2C2E3A] border border-[#2C2E3A]"
               />
             </div>
 
             <Select value={filterAgent} onValueChange={setFilterAgent}>
-              <SelectTrigger>
+              <SelectTrigger  className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <User className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Agent" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectItem value="all">Tous les agents</SelectItem>
                 {agents.map((agent) => (
                   <SelectItem key={agent._id} value={agent._id}>
@@ -241,11 +244,11 @@ export function KPIsSectionAdmin({
             </Select>
 
             <Select value={filterMonth} onValueChange={setFilterMonth}>
-              <SelectTrigger>
+              <SelectTrigger  className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <Calendar className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Mois" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectItem value="all">Tous les mois</SelectItem>
                 {availableMonths.map((month) => (
                   <SelectItem key={month.value} value={month.value}>
@@ -256,10 +259,10 @@ export function KPIsSectionAdmin({
             </Select>
 
             <Select value={filterYear} onValueChange={setFilterYear}>
-              <SelectTrigger>
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectValue placeholder="Année" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectItem value="all">Toutes les années</SelectItem>
                 {availableYears.map((year) => (
                   <SelectItem key={year} value={year}>
@@ -271,30 +274,6 @@ export function KPIsSectionAdmin({
           </div>
         </CardContent>
       </Card>
-
-      {/* Statistiques par agent */}
-      {/* {filterAgent === "all" && kpisByAgent.length > 0 && (
-        <Card>
-          <CardContent className="pt-6">
-            <h3 className="text-sm font-semibold text-slate-700 mb-4">
-              Rapports par Agent
-            </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              {kpisByAgent.map(({ agent, count }) => (
-                <div
-                  key={agent._id}
-                  className="p-3 bg-gradient-to-br from-violet-50 to-purple-50 rounded-lg border border-violet-200"
-                >
-                  <p className="text-xs text-slate-600 truncate">
-                    {agent.nom} {agent.prenoms}
-                  </p>
-                  <p className="text-2xl font-bold text-violet-600">{count}</p>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      )} */}
 
       {/* Liste des KPIs */}
       {isLoading ? (
@@ -314,17 +293,17 @@ export function KPIsSectionAdmin({
             const agentInfo = getAgentInfo(kpi);
 
             return (
-              <Card key={kpi._id} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
+              <Card key={kpi._id} className="hover:shadow-lg transition-shadow text-white bg-[#1F2128] border-[#313442]">
+                <CardContent className="p-3">
                   <div className="flex items-start justify-between">
                     <div className="flex items-start gap-4 flex-1">
-                      <div className="p-3 bg-gradient-to-br from-violet-100 to-purple-100 rounded-xl">
+                      <div className="p-3 bg-gray-500/30 rounded-xl">
                         <BarChart3 className="w-6 h-6 text-violet-600" />
                       </div>
 
                       <div className="flex-1 space-y-2">
                         <div className="flex items-center gap-3">
-                          <h3 className="font-semibold text-lg text-slate-800">
+                          <h3 className="font-semibold text-lg text-white">
                             {agentInfo.name}
                           </h3>
                           <span className="text-xs px-2 py-1 rounded-full font-medium bg-purple-100 text-purple-700">
@@ -335,31 +314,31 @@ export function KPIsSectionAdmin({
                         <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                           <div>
                             <span className="text-slate-500">Email:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="ml-2 font-medium text-white">
                               {agentInfo.email}
                             </span>
                           </div>
                           <div>
                             <span className="text-slate-500">Profil:</span>
-                            <span className="ml-2 font-medium text-slate-800 capitalize">
+                            <span className="ml-2 font-medium text-white capitalize">
                               {agentInfo.profile}
                             </span>
                           </div>
                           <div>
                             <span className="text-slate-500">Fichier:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="ml-2 font-medium text-white">
                               {kpi.originalName}
                             </span>
                           </div>
                           <div>
                             <span className="text-slate-500">Taille:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="ml-2 font-medium text-white">
                               {formatFileSize(kpi.fileSize)}
                             </span>
                           </div>
                           <div>
                             <span className="text-slate-500">Période:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="ml-2 font-medium text-white">
                               {formatPeriode(kpi.periode)}
                             </span>
                           </div>
@@ -367,7 +346,7 @@ export function KPIsSectionAdmin({
                             <span className="text-slate-500">
                               Date d'ajout:
                             </span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="ml-2 font-medium text-white">
                               {formatDate(kpi.createdAt)}
                             </span>
                           </div>
@@ -376,7 +355,7 @@ export function KPIsSectionAdmin({
                               <span className="text-slate-500">
                                 Description:
                               </span>
-                              <span className="ml-2 font-medium text-slate-800">
+                              <span className="ml-2 font-medium text-white">
                                 {kpi.description}
                               </span>
                             </div>
@@ -386,19 +365,11 @@ export function KPIsSectionAdmin({
                     </div>
 
                     <div className="flex gap-2 ml-4">
-                      {/* <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => onView(kpi)}
-                        className="hover:bg-violet-50 hover:border-violet-300"
-                      >
-                        <Eye className="w-4 h-4" />
-                      </Button> */}
                       <Button
                         variant="outline"
                         size="sm"
                         onClick={() => onDownload(kpi)}
-                        className="hover:bg-green-50 hover:border-green-300"
+                        className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                       >
                         <Download className="w-4 h-4" />
                         Telecharger

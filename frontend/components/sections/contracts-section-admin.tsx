@@ -161,12 +161,6 @@ export function ContractsSectionAdmin({
                       </div>
 
                       <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
-                        {/* <div>
-                          <span className="text-slate-500">Date création:</span>
-                          <span className="ml-2 font-medium text-white">
-                            {formatDate(contract.createdAt)}
-                          </span>
-                        </div> */}
                         {contract.expiresAt && (
                           <div>
                             <span className="text-slate-500">Date expiration:</span>
@@ -184,7 +178,7 @@ export function ContractsSectionAdmin({
                       variant="outline"
                       size="sm"
                       onClick={() => onDownload(contract)}
-                      className="border-blue-300 hover:bg-blue-600 hover:text-white"
+                      className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                     >
                       <Download className="w-4 h-4" />
                       Télécharger
@@ -196,7 +190,7 @@ export function ContractsSectionAdmin({
                         onDelete(contract._id)
                       }}
                       disabled={deleteContractPending}
-                      className="border-red-300 hover:bg-red-600 hover:text-white"
+                      className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                     >
                       <Trash2 className="w-4 h-4" />
                       Supprimer

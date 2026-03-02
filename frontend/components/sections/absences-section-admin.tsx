@@ -53,7 +53,7 @@ export function AbsencesSectionAdmin() {
       console.error("Erreur validation absence:", error);
       alert(
         error.response?.data?.message ||
-          "Erreur lors de la validation de l'absence"
+          "Erreur lors de la validation de l'absence",
       );
     },
   });
@@ -77,7 +77,7 @@ export function AbsencesSectionAdmin() {
     })
     .sort(
       (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
 
   const getAgentName = (absence: Absence) => {
@@ -165,10 +165,13 @@ export function AbsencesSectionAdmin() {
   const rejectedCount = absences.filter((a) => a.status === "rejected").length;
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête avec statistiques */}
       <div className="flex items-center justify-between">
         <div>
+          <h1 className="text-white font-extrabold text-2xl">
+            Gestion des abscences
+          </h1>
           <p className="text-slate-600 mt-1">
             {filteredAbsences.length} demande
             {filteredAbsences.length > 1 ? "s" : ""} trouvée
@@ -192,25 +195,25 @@ export function AbsencesSectionAdmin() {
       </div>
 
       {/* Filtres */}
-      <Card>
-        <CardContent className="pt-6">
+      <Card className="bg-[#1F2128] border-[#313442]">
+        <CardContent className="">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
               <Input
                 placeholder="Rechercher par agent ou raison..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-10 bg-[#2C2E3A] border border-[#2C2E3A]"
               />
             </div>
 
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger>
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <SelectItem value="all">Tous les statuts</SelectItem>
                 <SelectItem value="pending">En attente</SelectItem>
                 <SelectItem value="approved">Approuvées</SelectItem>
@@ -238,27 +241,19 @@ export function AbsencesSectionAdmin() {
           {filteredAbsences.map((absence) => (
             <Card
               key={absence._id}
-              className="hover:shadow-lg transition-shadow"
+              className="hover:shadow-lg transition-shadow text-white bg-[#1F2128] border-[#313442]"
             >
-              <CardContent className="p-6">
+              <CardContent className="p-3">
                 <div className="flex items-start justify-between">
                   <div className="flex items-start gap-4 flex-1">
-                    <div
-                      className={`p-3 rounded-xl ${
-                        absence.status === "pending"
-                          ? "bg-gradient-to-br from-amber-100 to-orange-100"
-                          : absence.status === "approved"
-                          ? "bg-gradient-to-br from-green-100 to-emerald-100"
-                          : "bg-gradient-to-br from-red-100 to-rose-100"
-                      }`}
-                    >
+                    <div className={`p-3 rounded-xl bg-gray-500/30`}>
                       <Calendar
                         className={`w-6 h-6 ${
                           absence.status === "pending"
                             ? "text-amber-600"
                             : absence.status === "approved"
-                            ? "text-green-600"
-                            : "text-red-600"
+                              ? "text-green-600"
+                              : "text-red-600"
                         }`}
                       />
                     </div>
@@ -267,7 +262,7 @@ export function AbsencesSectionAdmin() {
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4 text-slate-500" />
-                          <h3 className="font-semibold text-lg text-slate-800">
+                          <h3 className="font-semibold text-lg text-white">
                             {getAgentName(absence)}
                           </h3>
                         </div>
@@ -277,34 +272,34 @@ export function AbsencesSectionAdmin() {
                       <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                         <div>
                           <span className="text-slate-500">Email:</span>
-                          <span className="ml-2 font-medium text-slate-800">
+                          <span className="ml-2 font-medium text-white">
                             {getAgentEmail(absence)}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-500">Durée:</span>
-                          <span className="ml-2 font-medium text-slate-800">
+                          <span className="ml-2 font-medium text-white">
                             {calculateDuration(
                               absence.startDate,
-                              absence.endDate
+                              absence.endDate,
                             )}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-500">Du:</span>
-                          <span className="ml-2 font-medium text-slate-800">
+                          <span className="ml-2 font-medium text-white">
                             {formatDate(absence.startDate)}
                           </span>
                         </div>
                         <div>
                           <span className="text-slate-500">Au:</span>
-                          <span className="ml-2 font-medium text-slate-800">
+                          <span className="ml-2 font-medium text-white">
                             {formatDate(absence.endDate)}
                           </span>
                         </div>
                         <div className="col-span-2">
                           <span className="text-slate-500">Raison:</span>
-                          <p className="mt-1 font-medium text-slate-800">
+                          <p className="mt-1 font-medium text-white">
                             {absence.reason}
                           </p>
                         </div>
@@ -312,7 +307,7 @@ export function AbsencesSectionAdmin() {
                           <span className="text-slate-500">
                             Personne de backup:
                           </span>
-                          <span className="ml-2 font-medium text-slate-800">
+                          <span className="ml-2 font-medium text-white">
                             {absence.backupPerson}
                           </span>
                         </div>
@@ -338,7 +333,7 @@ export function AbsencesSectionAdmin() {
                         {absence.validatedAt && (
                           <div>
                             <span className="text-slate-500">Validée le:</span>
-                            <span className="ml-2 font-medium text-slate-800">
+                            <span className="ml-2 font-medium text-white">
                               {formatDate(absence.validatedAt)}
                             </span>
                           </div>
@@ -354,7 +349,7 @@ export function AbsencesSectionAdmin() {
                         size="sm"
                         onClick={() => handleValidate(absence, "approve")}
                         disabled={validateMutation.isPending}
-                        className="hover:bg-green-50 hover:border-green-300 text-green-600"
+                        className="border border-green-500/40 bg-transparent hover:bg-green-500 hover:border-green-600 text-green-400 hover:text-white focus:ring-green-500"
                       >
                         <CheckCircle className="w-4 h-4 mr-1" />
                         Approuver
@@ -364,7 +359,7 @@ export function AbsencesSectionAdmin() {
                         size="sm"
                         onClick={() => handleValidate(absence, "reject")}
                         disabled={validateMutation.isPending}
-                        className="hover:bg-red-50 hover:border-red-300 text-red-600"
+                        className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                       >
                         <XCircle className="w-4 h-4 mr-1" />
                         Rejeter
@@ -398,7 +393,7 @@ export function AbsencesSectionAdmin() {
                   setSelectedAbsence(null);
                   setValidateAction(null);
                 },
-              }
+              },
             );
           }}
           isLoading={validateMutation.isPending}

@@ -78,7 +78,7 @@ export default function CollaboratorSpace() {
 
       <div className="mb-6 flex justify-between items-center fixed -mt-15">
         <div>
-          <h1 className="text-2xl font-bold text-white">Espace Collaborateur</h1>
+          <h1 className="text-2xl font-extrabold text-white">Espace Collaborateur</h1>
           <p className="text-gray-400 mt-1">Visionnez les tâches de vos collaborateurs</p>
         </div>
       </div>

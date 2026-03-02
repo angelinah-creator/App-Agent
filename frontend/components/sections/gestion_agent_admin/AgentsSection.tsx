@@ -301,12 +301,12 @@ export function AgentsSection({
                 : ""}
             </p>
           </div>
-          {!showArchived && (
+          {/* {!showArchived && (
             <Btn onClick={() => setShowAddModal(true)}>
               <Plus size={14} />
               Ajouter
             </Btn>
-          )}
+          )} */}
         </div>
 
         {agentsLoading ? (

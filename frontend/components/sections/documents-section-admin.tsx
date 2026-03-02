@@ -95,9 +95,12 @@ export function DocumentsSectionAdmin({
   const selectedAgentData = agents.find(a => a._id === selectedAgent)
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête */}
-      <div className="flex items-center justify-between">
+      <div>
+        <h1 className="text-white font-extrabold text-2xl">
+            Gestion des documents
+        </h1>
         <div>
           <p className="text-slate-600 mt-1">
             {selectedAgent === "all" 
@@ -175,14 +178,6 @@ export function DocumentsSectionAdmin({
                   <span className="flex items-center gap-1">
                     <Mail className="w-4 h-4" />
                     {selectedAgentData.email}
-                  </span>
-                  <span className="flex items-center gap-1">
-                    <Phone className="w-4 h-4" />
-                    {selectedAgentData.telephone}
-                  </span>
-                  <span className="flex items-center gap-1 capitalize">
-                    <User className="w-4 h-4" />
-                    {selectedAgentData.profile}
                   </span>
                 </div>
               </div>

@@ -266,13 +266,13 @@ export function DetailsModal({
                   </p>
                   <p className="text-sm text-white mt-0.5">{agent.tjm} Ar</p>
                 </div>
-                {agent.tarifJournalier && (
+                {agent.tjm && (
                   <div>
                     <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">
                       Tarif journalier
                     </p>
                     <p className="text-sm text-white mt-0.5">
-                      {agent.tarifJournalier} Ar
+                      {agent.tjm} Ar
                     </p>
                   </div>
                 )}
