@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Calendar, Download } from "lucide-react";
+import { ChevronLeft, ChevronRight, Calendar, Download, Filter, X } from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -62,7 +62,134 @@ function formatDuration(hours: number): string {
   return `${h}h${m.toString().padStart(2, "0")}m`;
 }
 
-// Composant PeriodSelector réduit
+// ─── Composant ProjectFilter ───────────────────────────────────────────────────
+function ProjectFilter({
+  projects,
+  selectedProjectIds,
+  onChange,
+}: {
+  projects: { projectId: string | null; projectName: string }[];
+  selectedProjectIds: Set<string>;
+  onChange: (ids: Set<string>) => void;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) {
+        setIsOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  const allSelected = selectedProjectIds.size === 0;
+  const activeCount = selectedProjectIds.size;
+
+  const toggle = (id: string) => {
+    const next = new Set(selectedProjectIds);
+    if (next.has(id)) {
+      next.delete(id);
+    } else {
+      next.add(id);
+    }
+    onChange(next);
+  };
+
+  const clearAll = () => onChange(new Set());
+
+  return (
+    <div className="relative" ref={ref}>
+      <button
+        onClick={() => setIsOpen((o) => !o)}
+        className={`flex items-center gap-1.5 px-3 py-1 rounded border transition text-xs ${
+          activeCount > 0
+            ? "bg-purple-500/20 border-purple-500/50 text-purple-300"
+            : "bg-[#0F0F12] border-[#313442] text-gray-300 hover:text-white"
+        }`}
+      >
+        <Filter size={12} />
+        <span>
+          {activeCount > 0 ? `${activeCount} projet${activeCount > 1 ? "s" : ""}` : "Projets"}
+        </span>
+        {activeCount > 0 && (
+          <span
+            onClick={(e) => {
+              e.stopPropagation();
+              clearAll();
+            }}
+            className="ml-0.5 hover:text-white cursor-pointer"
+          >
+            <X size={10} />
+          </span>
+        )}
+      </button>
+
+      {isOpen && (
+        <div className="absolute right-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 min-w-[200px] overflow-hidden">
+          <div className="p-1.5 border-b border-[#313442]">
+            <button
+              onClick={clearAll}
+              className={`w-full text-left px-2 py-1.5 rounded text-xs transition ${
+                allSelected
+                  ? "bg-purple-500/20 text-white"
+                  : "text-gray-400 hover:bg-white/5 hover:text-white"
+              }`}
+            >
+              Tous les projets
+            </button>
+          </div>
+          <div className="p-1.5 max-h-60 overflow-y-auto space-y-0.5">
+            {projects.map((project) => {
+              const id = project.projectId ?? "no-project";
+              const checked = selectedProjectIds.has(id);
+              return (
+                <button
+                  key={id}
+                  onClick={() => toggle(id)}
+                  className={`w-full text-left px-2 py-1.5 rounded text-xs flex items-center gap-2 transition ${
+                    checked
+                      ? "bg-purple-500/20 text-white"
+                      : "text-gray-300 hover:bg-white/5"
+                  }`}
+                >
+                  <span
+                    className={`w-3 h-3 rounded-sm border flex items-center justify-center flex-shrink-0 transition ${
+                      checked
+                        ? "bg-purple-500 border-purple-500"
+                        : "border-[#5a5d70]"
+                    }`}
+                  >
+                    {checked && (
+                      <svg
+                        viewBox="0 0 8 8"
+                        fill="none"
+                        className="w-2 h-2"
+                      >
+                        <path
+                          d="M1 4l2 2 4-4"
+                          stroke="white"
+                          strokeWidth="1.5"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    )}
+                  </span>
+                  <span className="truncate">{project.projectName}</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Composant PeriodSelector ──────────────────────────────────────────────────
 function PeriodSelector({
   isOpen,
   onClose,
@@ -124,9 +251,7 @@ function PeriodSelector({
         onSelectPeriod("week");
         break;
       case "last_week":
-        const lastWeekStart = startOfWeek(addWeeks(now, -1), {
-          weekStartsOn: 1,
-        });
+        const lastWeekStart = startOfWeek(addWeeks(now, -1), { weekStartsOn: 1 });
         const lastWeekEnd = endOfWeek(addWeeks(now, -1), { weekStartsOn: 1 });
         onSelectPeriod("custom", lastWeekStart, lastWeekEnd);
         break;
@@ -203,10 +328,7 @@ function PeriodSelector({
 
         <div className="grid grid-cols-7 gap-0.5 mb-1 px-1">
           {["L", "M", "M", "J", "V", "S", "D"].map((day, idx) => (
-            <div
-              key={idx}
-              className="text-center text-[9px] text-gray-400 py-0.5"
-            >
+            <div key={idx} className="text-center text-[9px] text-gray-400 py-0.5">
               {day}
             </div>
           ))}
@@ -216,8 +338,7 @@ function PeriodSelector({
           {weeks.map((week, weekIdx) => (
             <div key={weekIdx} className="grid grid-cols-7 gap-0.5">
               {week.map((day, dayIdx) => {
-                const isCurrentMonth =
-                  day.getMonth() === currentMonth.getMonth();
+                const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
                 const inRange = isInRange(day);
                 const isStartDay = isStart(day);
                 const isEndDay = isEnd(day);
@@ -289,6 +410,7 @@ function PeriodSelector({
   );
 }
 
+// ─── Composant principal ───────────────────────────────────────────────────────
 export function RapportSection() {
   const [periodType, setPeriodType] = useState<PeriodType>("week");
   const [offset, setOffset] = useState(0);
@@ -296,9 +418,10 @@ export function RapportSection() {
   const [customEnd, setCustomEnd] = useState<Date | null>(null);
   const [isPeriodSelectorOpen, setIsPeriodSelectorOpen] = useState(false);
   const periodSelectorButtonRef = useRef<HTMLDivElement>(null);
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
-    new Set(),
-  );
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+
+  // ── Filtre projet ──────────────────────────────────────────────────────────
+  const [selectedProjectIds, setSelectedProjectIds] = useState<Set<string>>(new Set());
 
   const toggleProject = (projectId: string) => {
     setExpandedProjects((prev) => {
@@ -332,9 +455,7 @@ export function RapportSection() {
           displayText: format(day, "dd MMM yyyy", { locale: fr }),
         };
       case "week":
-        const weekStart = startOfWeek(addWeeks(now, offset), {
-          weekStartsOn: 1,
-        });
+        const weekStart = startOfWeek(addWeeks(now, offset), { weekStartsOn: 1 });
         const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
         return {
           periodStart: weekStart,
@@ -378,14 +499,57 @@ export function RapportSection() {
     refetchInterval: 1000,
   });
 
+  // ── Liste de projets disponibles (pour le filtre) ──────────────────────────
+  const availableProjects = useMemo(() => {
+    return (report?.byProject || []).map((p) => ({
+      projectId: p.projectId,
+      projectName: p.projectName,
+    }));
+  }, [report]);
+
+  // ── Données filtrées par projet sélectionné ────────────────────────────────
+  const filteredReport = useMemo(() => {
+    if (!report || selectedProjectIds.size === 0) return report;
+
+    const filteredEntries = report.entries.filter((e) => {
+      const id = e.projectId ?? "no-project";
+      return selectedProjectIds.has(id);
+    });
+
+    const filteredByProject = report.byProject.filter((p) => {
+      const id = p.projectId ?? "no-project";
+      return selectedProjectIds.has(id);
+    });
+
+    const totalSeconds = filteredEntries.reduce(
+      (sum, e) => sum + (e.duration || 0),
+      0,
+    );
+
+    // Recalcule les pourcentages
+    const totalHours = totalSeconds / 3600;
+    const byProjectRecalc = filteredByProject.map((p) => ({
+      ...p,
+      percentage: totalHours > 0 ? (p.hours / totalHours) * 100 : 0,
+    }));
+
+    return {
+      ...report,
+      entries: filteredEntries,
+      byProject: byProjectRecalc,
+      totalHours,
+      entriesCount: filteredEntries.length,
+    };
+  }, [report, selectedProjectIds]);
+
   const dailyData = useMemo(() => {
-    if (!report || !report.entries) return [];
+    if (!filteredReport || !filteredReport.entries) return [];
 
     const days = eachDayOfInterval({ start: periodStart, end: periodEnd });
 
     return days.map((day) => {
       const dayKey = format(day, "yyyy-MM-dd");
-      const dayEntries = report.entries.filter((entry) => {
+      const dayEntries = filteredReport.entries.filter((entry) => {
         const entryDate = format(new Date(entry.startTime), "yyyy-MM-dd");
         return entryDate === dayKey;
       });
@@ -399,23 +563,20 @@ export function RapportSection() {
       return {
         day: format(day, "EEE", { locale: fr }),
         date: format(day, "dd/MM"),
-        hours: hours,
+        hours,
         formattedTime: formatHours(hours),
       };
     });
-  }, [report, periodStart, periodEnd]);
+  }, [filteredReport, periodStart, periodEnd]);
 
   const taskData = useMemo(() => {
-    if (!report || !report.entries) return [];
+    if (!filteredReport || !filteredReport.entries) return [];
 
     const taskMap = new Map<string, { title: string; duration: number }>();
 
-    report.entries.forEach((entry) => {
+    filteredReport.entries.forEach((entry) => {
       const taskTitle = entry.taskTitle || "Sans tâche";
-      const current = taskMap.get(taskTitle) || {
-        title: taskTitle,
-        duration: 0,
-      };
+      const current = taskMap.get(taskTitle) || { title: taskTitle, duration: 0 };
       current.duration += entry.duration || 0;
       taskMap.set(taskTitle, current);
     });
@@ -430,7 +591,7 @@ export function RapportSection() {
       value: task.duration / 3600,
       percentage: totalDuration > 0 ? (task.duration / totalDuration) * 100 : 0,
     }));
-  }, [report]);
+  }, [filteredReport]);
 
   const handleSelectPeriod = (type: PeriodType, start?: Date, end?: Date) => {
     setPeriodType(type);
@@ -494,9 +655,7 @@ export function RapportSection() {
               className="flex items-center gap-1 bg-[#0F0F12] px-3 py-1 rounded cursor-pointer hover:bg-[#1a1a1f] transition"
             >
               <Calendar className="text-purple-400" size={14} />
-              <span className="text-white text-xs font-medium">
-                {displayText}
-              </span>
+              <span className="text-white text-xs font-medium">{displayText}</span>
             </div>
 
             <PeriodSelector
@@ -529,10 +688,19 @@ export function RapportSection() {
             </select>
           </div>
 
-          <button className="flex items-center gap-1 px-3 py-1 bg-purple-500 hover:bg-purple-600 rounded transition text-white">
-            <Download size={14} />
-            <span className="text-xs">Export PDF</span>
-          </button>
+          {/* DROITE : filtre projet + export */}
+          <div className="flex items-center gap-2">
+            <ProjectFilter
+              projects={availableProjects}
+              selectedProjectIds={selectedProjectIds}
+              onChange={setSelectedProjectIds}
+            />
+
+            <button className="flex items-center gap-1 px-3 py-1 bg-purple-500 hover:bg-purple-600 rounded transition text-white">
+              <Download size={14} />
+              <span className="text-xs">Export PDF</span>
+            </button>
+          </div>
         </div>
 
         {/* STATISTIQUES PRINCIPALES */}
@@ -540,7 +708,7 @@ export function RapportSection() {
           <div className="bg-[#0F0F12] rounded p-3 border border-[#313442]">
             <p className="text-gray-400 text-xs mb-0.5">Heures totales</p>
             <p className="text-white text-xl font-bold font-mono">
-              {formatHours(report?.totalHours || 0)}
+              {formatHours(filteredReport?.totalHours || 0)}
             </p>
           </div>
           <div className="bg-[#0F0F12] rounded p-3 border border-[#313442]">
@@ -556,9 +724,7 @@ export function RapportSection() {
       <div className="grid grid-cols-3 gap-4">
         {/* GRAPHIQUE EN BARRES */}
         <div className="col-span-2 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-          <h3 className="text-white font-semibold text-sm mb-3">
-            Durée par jour
-          </h3>
+          <h3 className="text-white font-semibold text-sm mb-3">Durée par jour</h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={dailyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#313442" />
@@ -583,9 +749,7 @@ export function RapportSection() {
 
         {/* GRAPHIQUE CIRCULAIRE */}
         <div className="col-span-1 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-          <h3 className="text-white font-semibold text-sm mb-3">
-            Temps par tâche
-          </h3>
+          <h3 className="text-white font-semibold text-sm mb-3">Temps par tâche</h3>
           <ResponsiveContainer width="100%" height={150}>
             <PieChart>
               <Pie
@@ -598,10 +762,7 @@ export function RapportSection() {
                 dataKey="value"
               >
                 {taskData.map((entry, index) => (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={COLORS[index % COLORS.length]}
-                  />
+                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                 ))}
               </Pie>
               <Tooltip
@@ -628,18 +789,13 @@ export function RapportSection() {
           </ResponsiveContainer>
           <div className="mt-3 space-y-1 max-h-[100px] overflow-y-auto">
             {taskData.map((item, index) => (
-              <div
-                key={index}
-                className="flex items-center justify-between text-xs"
-              >
+              <div key={index} className="flex items-center justify-between text-xs">
                 <div className="flex items-center gap-1 flex-1">
                   <div
                     className="w-2 h-2 rounded-sm"
                     style={{ backgroundColor: COLORS[index % COLORS.length] }}
                   />
-                  <span className="text-gray-300 truncate text-[10px]">
-                    {item.name}
-                  </span>
+                  <span className="text-gray-300 truncate text-[10px]">{item.name}</span>
                 </div>
                 <span className="text-white font-medium text-[10px]">
                   {item.percentage.toFixed(1)}%
@@ -652,9 +808,7 @@ export function RapportSection() {
 
       {/* TABLEAU DÉTAILLÉ */}
       <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-        <h3 className="text-white font-semibold text-sm mb-3">
-          Détails par projet
-        </h3>
+        <h3 className="text-white font-semibold text-sm mb-3">Détails par projet</h3>
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#313442]">
@@ -673,32 +827,24 @@ export function RapportSection() {
             </tr>
           </thead>
           <tbody>
-            {(report?.byProject || []).map((project, projectIndex) => {
-              const isExpanded = expandedProjects.has(
-                project.projectId || "no-project",
-              );
-              const projectEntries = (report?.entries || []).filter(
+            {(filteredReport?.byProject || []).map((project, projectIndex) => {
+              const isExpanded = expandedProjects.has(project.projectId || "no-project");
+              const projectEntries = (filteredReport?.entries || []).filter(
                 (e) => (e.projectId || null) === project.projectId,
               );
 
               return (
-                <React.Fragment
-                  key={project.projectId || `no-project-${projectIndex}`}
-                >
+                <React.Fragment key={project.projectId || `no-project-${projectIndex}`}>
                   <tr
                     className="border-b border-[#313442]/50 hover:bg-white/5 cursor-pointer"
-                    onClick={() =>
-                      toggleProject(project.projectId || "no-project")
-                    }
+                    onClick={() => toggleProject(project.projectId || "no-project")}
                   >
                     <td className="py-2 px-3 text-white flex items-center gap-1">
                       <ChevronRight
                         size={12}
                         className={`transform transition-transform ${isExpanded ? "rotate-90" : ""}`}
                       />
-                      <span className="text-xs font-medium">
-                        {project.projectName}
-                      </span>
+                      <span className="text-xs font-medium">{project.projectName}</span>
                       <span className="text-gray-400 text-[10px]">
                         ({project.entriesCount})
                       </span>
@@ -722,27 +868,19 @@ export function RapportSection() {
                       >
                         <td className="py-1 px-3 pl-8 text-gray-300 text-xs">
                           <div>
-                            {entry.taskTitle ||
-                              entry.description ||
-                              "Sans tâche"}
+                            {entry.taskTitle || entry.description || "Sans tâche"}
                           </div>
                           <div className="text-[10px] text-gray-500">
-                            {format(
-                              new Date(entry.startTime),
-                              "dd MMM • HH:mm",
-                              { locale: fr },
-                            )}
+                            {format(new Date(entry.startTime), "dd MMM • HH:mm", {
+                              locale: fr,
+                            })}
                           </div>
                         </td>
                         <td className="text-right py-1 px-3 text-gray-300 font-mono text-xs">
                           {formatHours(entry.duration / 3600)}
                         </td>
                         <td className="text-right py-1 px-3 text-gray-300 text-xs">
-                          {(
-                            (entry.duration / 3600 / project.hours) *
-                            100
-                          ).toFixed(1)}
-                          %
+                          {((entry.duration / 3600 / project.hours) * 100).toFixed(1)}%
                         </td>
                         <td className="text-right py-1 px-3 text-gray-300 text-xs">
                           1
@@ -755,13 +893,13 @@ export function RapportSection() {
             <tr className="border-t border-[#313442] bg-[#0F0F12]">
               <td className="py-2 px-3 text-white font-bold text-xs">TOTAL</td>
               <td className="text-right py-2 px-3 text-white font-mono font-bold text-xs">
-                {formatHours(report?.totalHours || 0)}
+                {formatHours(filteredReport?.totalHours || 0)}
               </td>
               <td className="text-right py-2 px-3 text-white font-bold text-xs">
                 100%
               </td>
               <td className="text-right py-2 px-3 text-white font-bold text-xs">
-                {report?.entriesCount || 0}
+                {filteredReport?.entriesCount || 0}
               </td>
             </tr>
           </tbody>
