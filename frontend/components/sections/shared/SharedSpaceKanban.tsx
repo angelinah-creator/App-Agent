@@ -177,7 +177,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
       }
 
       // 2. Le créateur de l'espace est toujours super_editor
-      if (space.createdBy._id === userId) {
+      if (space.createdBy?._id === userId) {
         console.log("Créateur de l'espace détecté");
         setUserPermission("super_editor");
         return;
@@ -186,8 +186,11 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
       // 3. Vérifier les permissions depuis l'API
       const permissions = await spaceService.getPermissions(space._id);
 
-      const userPerm = permissions.find((p: any) => {
-        const permUserId = p.userId._id || p.userId;
+      // Filtrer les permissions qui ont un userId valide
+      const validPermissions = permissions.filter((p: any) => p.userId && p.userId._id);
+      
+      const userPerm = validPermissions.find((p: any) => {
+        const permUserId = p.userId._id;
         return permUserId === userId;
       });
 
@@ -506,12 +509,12 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     }
   };
 
-  if (loading) {
+  if (loading || permissionsLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4"></div>
-          <p className="text-gray-400">Chargement des tâches...</p>
+          <p className="text-gray-400">Chargement...</p>
         </div>
       </div>
     );
@@ -557,23 +560,6 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
           </div>
 
           <div className="flex items-center gap-3">
-            {/* Indicateur de permission */}
-            {/* <div
-              className={`px-3 py-1 rounded-full text-xs ${
-                userPermission === "super_editor"
-                  ? "bg-purple-500/20 text-purple-300"
-                  : userPermission === "editor"
-                  ? "bg-blue-500/20 text-blue-300"
-                  : "bg-gray-500/20 text-gray-300"
-              }`}
-            >
-              {userPermission === "super_editor"
-                ? "Super Éditeur"
-                : userPermission === "editor"
-                ? "Éditeur"
-                : "Visionneur"}
-            </div> */}
-
             {/* Bouton inviter */}
             {canEdit && (
               <button
@@ -584,18 +570,6 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
                 Inviter
               </button>
             )}
-
-            {/* Bouton paramètres (seulement pour super_editors et admins) */}
-            {/* {(userPermission === "super_editor" ||
-              userData.role === "admin") && (
-              <button
-                onClick={() => setShowPermissions(true)}
-                className="p-2 hover:bg-gray-800 rounded-lg"
-                title="Paramètres de l'espace"
-              >
-                <Settings size={18} />
-              </button>
-            )} */}
           </div>
         </div>
 
@@ -604,7 +578,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
           <div className="flex items-center gap-2">
             <Users size={16} />
             <span>
-              Créé par {space.createdBy.prenoms} {space.createdBy.nom}
+              Créé par {space.createdBy?.prenoms || ''} {space.createdBy?.nom || ''}
             </span>
           </div>
           <div>
