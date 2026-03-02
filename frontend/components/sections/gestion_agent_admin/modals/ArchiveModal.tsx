@@ -8,7 +8,7 @@ import type { Agent } from "@/lib/users-service";
 // Constantes en dur
 const MODAL_HEADER_CLASSES = {
   default: "from-violet-600 to-fuchsia-600",
-  archive: "from-orange-600 to-amber-600",
+  archive: "from-orange-600 to-orange-600",
   edit: "from-blue-600 to-cyan-600",
   archived: "from-gray-600 to-gray-500"
 };
@@ -116,7 +116,7 @@ export function ArchiveModal({ agent, onClose, onConfirm, isPending }: ArchiveMo
           <Btn 
             onClick={handleConfirm} 
             disabled={isPending} 
-            className="flex-1 bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 border-0"
+            className="flex-1 bg-gradient-to-r from-orange-600 to-orange-600 hover:from-amber-500 hover:to-amber-500 border-0"
           >
             {isPending ? "Archivage…" : "Confirmer"}
           </Btn>

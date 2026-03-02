@@ -34,7 +34,6 @@ const AVATAR_SIZES = {
 function Modal({
   onClose,
   header,
-  headerClass = "from-violet-600 to-fuchsia-600",
   children,
   maxWidth = "max-w-3xl",
 }: any) {
@@ -44,7 +43,7 @@ function Modal({
         className={`bg-[#1a1c26] border border-[#2e3144] rounded-2xl shadow-2xl ${maxWidth} w-full max-h-[90vh] overflow-y-auto`}
       >
         <div
-          className={`sticky top-0 bg-gradient-to-r ${headerClass} text-white p-4 rounded-t-2xl flex items-center justify-between`}
+          className={`sticky top-0 bg-[#1a1c26] border-b border-[#2e3144] text-white p-4 rounded-t-2xl flex items-center justify-between`}
         >
           {header}
           <button
@@ -81,7 +80,7 @@ function Avatar({
           className="w-full h-full object-cover"
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center font-bold text-white">
+        <div className="w-full h-full flex items-center justify-center font-bold text-white bg-[#6C4EA8]">
           {getInitials(agent)}
         </div>
       )}
@@ -92,8 +91,8 @@ function Avatar({
 function SectionTitle({ icon: Icon, children }: any) {
   return (
     <div className="flex items-center gap-2 mb-3">
-      {Icon && <Icon size={15} className="text-violet-400" />}
-      <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      {Icon && <Icon size={15} className="text-[#6C4EA8]" />}
+      <span className="text-xs font-semibold tracking-widest text-white">
         {children}
       </span>
     </div>

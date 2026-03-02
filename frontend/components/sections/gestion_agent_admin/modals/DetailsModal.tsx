@@ -34,7 +34,6 @@ const AVATAR_SIZES = {
 function Modal({
   onClose,
   header,
-  headerClass = "from-violet-600 to-fuchsia-600",
   children,
   maxWidth = "max-w-3xl",
 }: any) {
@@ -44,7 +43,7 @@ function Modal({
         className={`bg-[#1a1c26] border border-[#2e3144] rounded-2xl shadow-2xl ${maxWidth} w-full max-h-[90vh] overflow-y-auto`}
       >
         <div
-          className={`sticky top-0 bg-gradient-to-r ${headerClass} text-white p-4 rounded-t-2xl flex items-center justify-between`}
+          className={`sticky top-0 bg-[#1a1c26] border-b border-[#2e3144] text-white p-4 rounded-t-2xl flex items-center justify-between`}
         >
           {header}
           <button
@@ -81,7 +80,7 @@ function Avatar({
           className="w-full h-full object-cover"
         />
       ) : (
-        <div className="w-full h-full flex items-center justify-center font-bold text-white">
+        <div className="w-full h-full flex items-center justify-center font-bold text-white bg-[#6C4EA8]">
           {getInitials(agent)}
         </div>
       )}
@@ -92,8 +91,8 @@ function Avatar({
 function SectionTitle({ icon: Icon, children }: any) {
   return (
     <div className="flex items-center gap-2 mb-3">
-      {Icon && <Icon size={15} className="text-violet-400" />}
-      <span className="text-xs font-semibold uppercase tracking-widest text-gray-400">
+      {Icon && <Icon size={15} className="text-[#6C4EA8]" />}
+      <span className="text-xs font-semibold text-white">
         {children}
       </span>
     </div>
@@ -206,10 +205,10 @@ export function DetailsModal({
               ["Adresse", agent.adresse],
             ].map(([label, val]) => (
               <div key={label}>
-                <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">
+                <p className="text-[10px] tracking-wider text-white font-semibold">
                   {label}
                 </p>
-                <p className="text-sm text-white mt-0.5 break-all">{val}</p>
+                <p className="text-sm text-gray-600 mt-0.5 break-all">{val}</p>
               </div>
             ))}
           </div>
@@ -227,10 +226,10 @@ export function DetailsModal({
                 : []),
             ].map(([label, val]) => (
               <div key={label}>
-                <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">
+                <p className="text-[10px] uppercase tracking-wider text-white font-semibold">
                   {label}
                 </p>
-                <p className="text-sm text-white mt-0.5">{val}</p>
+                <p className="text-sm text-gray-600 mt-0.5">{val}</p>
               </div>
             ))}
           </div>
@@ -242,18 +241,18 @@ export function DetailsModal({
             {agent.profile === "stagiaire" ? (
               <>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">
+                  <p className="text-[10px] uppercase tracking-wider text-white font-semibold">
                     Indemnité mensuelle
                   </p>
-                  <p className="text-sm text-white mt-0.5">
+                  <p className="text-sm text-gray-600 mt-0.5">
                     {agent.indemnite || 0} Ar
                   </p>
                 </div>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">
+                  <p className="text-[10px] uppercase tracking-wider text-white font-semibold">
                     Indemnité connexion
                   </p>
-                  <p className="text-sm text-white mt-0.5">
+                  <p className="text-sm text-gray-600 mt-0.5">
                     {agent.indemniteConnexion || 0} Ar
                   </p>
                 </div>
@@ -261,37 +260,37 @@ export function DetailsModal({
             ) : (
               <>
                 <div>
-                  <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">
+                  <p className="text-[10px] uppercase tracking-wider text-white font-semibold">
                     TJM
                   </p>
-                  <p className="text-sm text-white mt-0.5">{agent.tjm} Ar</p>
+                  <p className="text-sm text-gray-600 mt-0.5">{agent.tjm} Ar</p>
                 </div>
                 {agent.tjm && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">
+                    <p className="text-[10px] uppercase tracking-wider text-white font-semibold">
                       Tarif journalier
                     </p>
-                    <p className="text-sm text-white mt-0.5">
+                    <p className="text-sm text-gray-600 mt-0.5">
                       {agent.tjm} Ar
                     </p>
                   </div>
                 )}
                 {agent.dureeJournaliere && (
                   <div>
-                    <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">
+                    <p className="text-[10px] uppercase tracking-wider text-white font-semibold">
                       Durée journalière
                     </p>
-                    <p className="text-sm text-white mt-0.5">
+                    <p className="text-sm text-gray-600 mt-0.5">
                       {agent.dureeJournaliere}h
                     </p>
                   </div>
                 )}
                 {agent.domainePrestation && (
                   <div className="col-span-2">
-                    <p className="text-[10px] uppercase tracking-wider text-gray-600 font-semibold">
+                    <p className="text-[10px] uppercase tracking-wider text-white font-semibold">
                       Domaine
                     </p>
-                    <p className="text-sm text-white mt-0.5">
+                    <p className="text-sm text-gray-600 mt-0.5">
                       {agent.domainePrestation}
                     </p>
                   </div>
@@ -316,16 +315,6 @@ export function DetailsModal({
               >
                 <Edit size={13} />
                 Modifier
-              </Btn>
-              <Btn
-                variant="orange"
-                onClick={() => {
-                  onClose();
-                  onArchive(agent);
-                }}
-              >
-                <Archive size={13} />
-                Archiver
               </Btn>
             </>
           ) : (
