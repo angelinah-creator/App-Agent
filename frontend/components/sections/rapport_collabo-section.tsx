@@ -166,9 +166,9 @@ function PeriodSelector({
         </div>
 
         <div className="grid grid-cols-7 gap-0.5 mb-1 px-1">
-          {["L", "M", "M", "J", "V", "S", "D"].map((day) => (
-            <div key={day} className="text-center text-[9px] text-gray-400 py-0.5">
-              {day}
+          {["L", "M", "M", "J", "V", "S", "D"].map((day, idx) => (
+            <div key={idx} className="text-center text-[9px] text-gray-400 py-0.5">
+              {idx}
             </div>
           ))}
         </div>
@@ -223,7 +223,7 @@ function PeriodSelector({
     <div 
       ref={popupRef}
       className="absolute left-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 overflow-hidden"
-      style={{ width: "320px" }}
+      style={{ width: "400px" }}
     >
       <div className="flex" style={{ height: "280px" }}>
         <div className="w-40 border-r border-[#313442] p-2 overflow-y-auto">

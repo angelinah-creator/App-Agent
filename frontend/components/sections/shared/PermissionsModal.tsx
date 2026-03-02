@@ -33,8 +33,15 @@ export default function SpacePermissionsModal({
         usersService.searchUsers({})
       ]);
       setPermissions(permsData);
+      
+      // Filtrer les utilisateurs qui n'ont PAS déjà une permission
+      // et s'assurer que userId existe et n'est pas null
       setUsers(usersData.filter(user => 
-        !permsData.some(perm => perm.userId._id === user._id)
+        !permsData.some(perm => 
+          perm.userId && // Vérifier que userId n'est pas null
+          perm.userId._id && // Vérifier que _id existe
+          perm.userId._id === user._id
+        )
       ));
     } catch (error) {
       console.error("Erreur chargement permissions:", error);
@@ -141,53 +148,59 @@ export default function SpacePermissionsModal({
               </div>
             ) : (
               <div className="space-y-2">
-                {permissions.map(perm => (
-                  <div
-                    key={perm._id}
-                    className="flex items-center justify-between p-3 bg-[#2a2a2d] rounded-lg"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
-                        <span className="font-semibold">
-                          {perm.userId.prenoms?.charAt(0)}{perm.userId.nom?.charAt(0)}
-                        </span>
-                      </div>
-                      <div>
-                        <div className="font-medium">
-                          {perm.userId.prenoms} {perm.userId.nom}
-                          {perm.userId._id === space.createdBy._id && (
-                            <span className="ml-2 px-2 py-0.5 bg-purple-500/20 text-purple-300 text-xs rounded">
-                              Créateur
-                            </span>
-                          )}
+                {permissions.map(perm => {
+                  // Vérifier que perm.userId existe avant d'afficher
+                  if (!perm.userId) return null;
+                  
+                  return (
+                    <div
+                      key={perm._id}
+                      className="flex items-center justify-between p-3 bg-[#2a2a2d] rounded-lg"
+                    >
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 bg-purple-600 rounded-full flex items-center justify-center">
+                          <span className="font-semibold">
+                            {perm.userId.prenoms?.charAt(0) || '?'}
+                            {perm.userId.nom?.charAt(0) || ''}
+                          </span>
                         </div>
-                        <div className="text-sm text-gray-400">{perm.userId.email}</div>
+                        <div>
+                          <div className="font-medium">
+                            {perm.userId.prenoms || ''} {perm.userId.nom || ''}
+                            {perm.userId._id === space.createdBy?._id && (
+                              <span className="ml-2 px-2 py-0.5 bg-purple-500/20 text-purple-300 text-xs rounded">
+                                Créateur
+                              </span>
+                            )}
+                          </div>
+                          <div className="text-sm text-gray-400">{perm.userId.email || ''}</div>
+                        </div>
+                      </div>
+
+                      <div className="flex items-center gap-3">
+                        <select
+                          value={perm.permissionLevel}
+                          onChange={(e) => handleUpdatePermission(perm.userId._id, e.target.value)}
+                          className="bg-[#1a1a1d] border border-gray-700 rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-purple-500"
+                          disabled={perm.userId._id === space.createdBy?._id}
+                        >
+                          <option value="viewer">Visionneur</option>
+                          <option value="editor">Éditeur</option>
+                          {/* <option value="super_editor">Super Éditeur</option> */}
+                        </select>
+
+                        {perm.userId._id !== space.createdBy?._id && (
+                          <button
+                            onClick={() => handleRemoveUser(perm.userId._id)}
+                            className="p-2 hover:bg-red-900/30 text-red-400 rounded"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        )}
                       </div>
                     </div>
-
-                    <div className="flex items-center gap-3">
-                      <select
-                        value={perm.permissionLevel}
-                        onChange={(e) => handleUpdatePermission(perm.userId._id, e.target.value)}
-                        className="bg-[#1a1a1d] border border-gray-700 rounded-lg px-3 py-1 text-sm focus:outline-none focus:border-purple-500"
-                        disabled={perm.userId._id === space.createdBy._id}
-                      >
-                        <option value="viewer">Visionneur</option>
-                        <option value="editor">Éditeur</option>
-                        <option value="super_editor">Super Éditeur</option>
-                      </select>
-
-                      {perm.userId._id !== space.createdBy._id && (
-                        <button
-                          onClick={() => handleRemoveUser(perm.userId._id)}
-                          className="p-2 hover:bg-red-900/30 text-red-400 rounded"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      )}
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             )}
           </div>

@@ -2,13 +2,48 @@
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
 import { ChevronLeft, ChevronRight, Calendar, Download } from "lucide-react";
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, PieChart, Pie, Cell } from "recharts";
-import { addWeeks, addMonths, subMonths, addYears, format, startOfWeek, endOfWeek, startOfMonth, endOfMonth, startOfYear, endOfYear, eachDayOfInterval, isSameDay, isWithinInterval } from "date-fns";
+import {
+  BarChart,
+  Bar,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  Tooltip,
+  ResponsiveContainer,
+  PieChart,
+  Pie,
+  Cell,
+} from "recharts";
+import {
+  addWeeks,
+  addMonths,
+  subMonths,
+  addYears,
+  format,
+  startOfWeek,
+  endOfWeek,
+  startOfMonth,
+  endOfMonth,
+  startOfYear,
+  endOfYear,
+  eachDayOfInterval,
+  isSameDay,
+  isWithinInterval,
+} from "date-fns";
 import { fr } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { timerService, ReportData } from "@/lib/timer-service";
 
-const COLORS = ["#9B59B6", "#E9B44C", "#3498DB", "#E74C3C", "#1ABC9C", "#95A5A6", "#F39C12", "#16A085"];
+const COLORS = [
+  "#9B59B6",
+  "#E9B44C",
+  "#3498DB",
+  "#E74C3C",
+  "#1ABC9C",
+  "#95A5A6",
+  "#F39C12",
+  "#16A085",
+];
 
 type PeriodType = "day" | "week" | "month" | "year" | "custom";
 
@@ -28,14 +63,14 @@ function formatDuration(hours: number): string {
 }
 
 // Composant PeriodSelector réduit
-function PeriodSelector({ 
-  isOpen, 
-  onClose, 
+function PeriodSelector({
+  isOpen,
+  onClose,
   onSelectPeriod,
   currentPeriodType,
-  buttonRef 
-}: { 
-  isOpen: boolean; 
+  buttonRef,
+}: {
+  isOpen: boolean;
   onClose: () => void;
   onSelectPeriod: (type: PeriodType, start?: Date, end?: Date) => void;
   currentPeriodType: PeriodType;
@@ -51,7 +86,7 @@ function PeriodSelector({
 
     const handleClickOutside = (event: MouseEvent) => {
       if (
-        popupRef.current && 
+        popupRef.current &&
         !popupRef.current.contains(event.target as Node) &&
         buttonRef.current &&
         !buttonRef.current.contains(event.target as Node)
@@ -80,8 +115,8 @@ function PeriodSelector({
 
   const handleShortcutClick = (value: string) => {
     const now = new Date();
-    
-    switch(value) {
+
+    switch (value) {
       case "day":
         onSelectPeriod("day", now, now);
         break;
@@ -89,7 +124,9 @@ function PeriodSelector({
         onSelectPeriod("week");
         break;
       case "last_week":
-        const lastWeekStart = startOfWeek(addWeeks(now, -1), { weekStartsOn: 1 });
+        const lastWeekStart = startOfWeek(addWeeks(now, -1), {
+          weekStartsOn: 1,
+        });
         const lastWeekEnd = endOfWeek(addWeeks(now, -1), { weekStartsOn: 1 });
         onSelectPeriod("custom", lastWeekStart, lastWeekEnd);
         break;
@@ -113,10 +150,10 @@ function PeriodSelector({
     const monthEnd = endOfMonth(currentMonth);
     const startDate = startOfWeek(monthStart, { weekStartsOn: 1 });
     const endDate = endOfWeek(monthEnd, { weekStartsOn: 1 });
-    
+
     const days = eachDayOfInterval({ start: startDate, end: endDate });
     const weeks: Date[][] = [];
-    
+
     for (let i = 0; i < days.length; i += 7) {
       weeks.push(days.slice(i, i + 7));
     }
@@ -165,8 +202,11 @@ function PeriodSelector({
         </div>
 
         <div className="grid grid-cols-7 gap-0.5 mb-1 px-1">
-          {["L", "M", "M", "J", "V", "S", "D"].map((day) => (
-            <div key={day} className="text-center text-[9px] text-gray-400 py-0.5">
+          {["L", "M", "M", "J", "V", "S", "D"].map((day, idx) => (
+            <div
+              key={idx}
+              className="text-center text-[9px] text-gray-400 py-0.5"
+            >
               {day}
             </div>
           ))}
@@ -176,11 +216,12 @@ function PeriodSelector({
           {weeks.map((week, weekIdx) => (
             <div key={weekIdx} className="grid grid-cols-7 gap-0.5">
               {week.map((day, dayIdx) => {
-                const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
+                const isCurrentMonth =
+                  day.getMonth() === currentMonth.getMonth();
                 const inRange = isInRange(day);
                 const isStartDay = isStart(day);
                 const isEndDay = isEnd(day);
-                
+
                 return (
                   <button
                     key={dayIdx}
@@ -219,10 +260,10 @@ function PeriodSelector({
   };
 
   return (
-    <div 
+    <div
       ref={popupRef}
       className="absolute left-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 overflow-hidden"
-      style={{ width: "320px" }}
+      style={{ width: "400px" }}
     >
       <div className="flex" style={{ height: "280px" }}>
         <div className="w-40 border-r border-[#313442] p-2 overflow-y-auto">
@@ -242,9 +283,7 @@ function PeriodSelector({
             ))}
           </div>
         </div>
-        <div className="flex-1 p-2">
-          {renderCalendar()}
-        </div>
+        <div className="flex-1 p-2">{renderCalendar()}</div>
       </div>
     </div>
   );
@@ -257,10 +296,12 @@ export function RapportSection() {
   const [customEnd, setCustomEnd] = useState<Date | null>(null);
   const [isPeriodSelectorOpen, setIsPeriodSelectorOpen] = useState(false);
   const periodSelectorButtonRef = useRef<HTMLDivElement>(null);
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
+    new Set(),
+  );
 
   const toggleProject = (projectId: string) => {
-    setExpandedProjects(prev => {
+    setExpandedProjects((prev) => {
       const newSet = new Set(prev);
       if (newSet.has(projectId)) {
         newSet.delete(projectId);
@@ -291,7 +332,9 @@ export function RapportSection() {
           displayText: format(day, "dd MMM yyyy", { locale: fr }),
         };
       case "week":
-        const weekStart = startOfWeek(addWeeks(now, offset), { weekStartsOn: 1 });
+        const weekStart = startOfWeek(addWeeks(now, offset), {
+          weekStartsOn: 1,
+        });
         const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
         return {
           periodStart: weekStart,
@@ -342,12 +385,15 @@ export function RapportSection() {
 
     return days.map((day) => {
       const dayKey = format(day, "yyyy-MM-dd");
-      const dayEntries = report.entries.filter(entry => {
+      const dayEntries = report.entries.filter((entry) => {
         const entryDate = format(new Date(entry.startTime), "yyyy-MM-dd");
         return entryDate === dayKey;
       });
 
-      const totalSeconds = dayEntries.reduce((sum, entry) => sum + (entry.duration || 0), 0);
+      const totalSeconds = dayEntries.reduce(
+        (sum, entry) => sum + (entry.duration || 0),
+        0,
+      );
       const hours = totalSeconds / 3600;
 
       return {
@@ -364,16 +410,22 @@ export function RapportSection() {
 
     const taskMap = new Map<string, { title: string; duration: number }>();
 
-    report.entries.forEach(entry => {
-      const taskTitle = entry.taskTitle || 'Sans tâche';
-      const current = taskMap.get(taskTitle) || { title: taskTitle, duration: 0 };
+    report.entries.forEach((entry) => {
+      const taskTitle = entry.taskTitle || "Sans tâche";
+      const current = taskMap.get(taskTitle) || {
+        title: taskTitle,
+        duration: 0,
+      };
       current.duration += entry.duration || 0;
       taskMap.set(taskTitle, current);
     });
 
-    const totalDuration = Array.from(taskMap.values()).reduce((sum, t) => sum + t.duration, 0);
+    const totalDuration = Array.from(taskMap.values()).reduce(
+      (sum, t) => sum + t.duration,
+      0,
+    );
 
-    return Array.from(taskMap.values()).map(task => ({
+    return Array.from(taskMap.values()).map((task) => ({
       name: task.title,
       value: task.duration / 3600,
       percentage: totalDuration > 0 ? (task.duration / totalDuration) * 100 : 0,
@@ -395,7 +447,7 @@ export function RapportSection() {
   }, [dailyData]);
 
   const averageDailyHours = useMemo(() => {
-    const daysWithData = dailyData.filter(d => d.hours > 0).length;
+    const daysWithData = dailyData.filter((d) => d.hours > 0).length;
     return daysWithData > 0 ? weekTotalHours / daysWithData : 0;
   }, [dailyData, weekTotalHours]);
 
@@ -406,7 +458,9 @@ export function RapportSection() {
           <p className="text-white text-xs font-medium">
             {payload[0].payload.day} {payload[0].payload.date}
           </p>
-          <p className="text-purple-400 font-mono text-xs mt-0.5">{payload[0].payload.formattedTime}</p>
+          <p className="text-purple-400 font-mono text-xs mt-0.5">
+            {payload[0].payload.formattedTime}
+          </p>
         </div>
       );
     }
@@ -427,20 +481,25 @@ export function RapportSection() {
       <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2 relative">
-            <button onClick={() => setOffset((o) => o - 1)} className="p-1 hover:bg-white/5 rounded transition">
+            <button
+              onClick={() => setOffset((o) => o - 1)}
+              className="p-1 hover:bg-white/5 rounded transition"
+            >
               <ChevronLeft className="text-white" size={16} />
             </button>
 
-            <div 
+            <div
               ref={periodSelectorButtonRef}
               onClick={() => setIsPeriodSelectorOpen(!isPeriodSelectorOpen)}
               className="flex items-center gap-1 bg-[#0F0F12] px-3 py-1 rounded cursor-pointer hover:bg-[#1a1a1f] transition"
             >
               <Calendar className="text-purple-400" size={14} />
-              <span className="text-white text-xs font-medium">{displayText}</span>
+              <span className="text-white text-xs font-medium">
+                {displayText}
+              </span>
             </div>
 
-            <PeriodSelector 
+            <PeriodSelector
               isOpen={isPeriodSelectorOpen}
               onClose={() => setIsPeriodSelectorOpen(false)}
               onSelectPeriod={handleSelectPeriod}
@@ -448,7 +507,10 @@ export function RapportSection() {
               buttonRef={periodSelectorButtonRef}
             />
 
-            <button onClick={() => setOffset((o) => o + 1)} className="p-1 hover:bg-white/5 rounded transition">
+            <button
+              onClick={() => setOffset((o) => o + 1)}
+              className="p-1 hover:bg-white/5 rounded transition"
+            >
               <ChevronRight className="text-white" size={16} />
             </button>
 
@@ -477,11 +539,15 @@ export function RapportSection() {
         <div className="grid grid-cols-2 gap-3">
           <div className="bg-[#0F0F12] rounded p-3 border border-[#313442]">
             <p className="text-gray-400 text-xs mb-0.5">Heures totales</p>
-            <p className="text-white text-xl font-bold font-mono">{formatHours(report?.totalHours || 0)}</p>
+            <p className="text-white text-xl font-bold font-mono">
+              {formatHours(report?.totalHours || 0)}
+            </p>
           </div>
           <div className="bg-[#0F0F12] rounded p-3 border border-[#313442]">
             <p className="text-gray-400 text-xs mb-0.5">Moyenne/jour</p>
-            <p className="text-white text-xl font-bold font-mono">{formatHours(averageDailyHours)}</p>
+            <p className="text-white text-xl font-bold font-mono">
+              {formatHours(averageDailyHours)}
+            </p>
           </div>
         </div>
       </div>
@@ -490,13 +556,26 @@ export function RapportSection() {
       <div className="grid grid-cols-3 gap-4">
         {/* GRAPHIQUE EN BARRES */}
         <div className="col-span-2 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-          <h3 className="text-white font-semibold text-sm mb-3">Durée par jour</h3>
+          <h3 className="text-white font-semibold text-sm mb-3">
+            Durée par jour
+          </h3>
           <ResponsiveContainer width="100%" height={250}>
             <BarChart data={dailyData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#313442" />
-              <XAxis dataKey="day" stroke="#9CA3AF" tick={{ fill: "#9CA3AF", fontSize: 10 }} />
-              <YAxis stroke="#9CA3AF" tick={{ fill: "#9CA3AF", fontSize: 10 }} tickFormatter={(value) => `${value}h`} />
-              <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(139, 92, 246, 0.1)" }} />
+              <XAxis
+                dataKey="day"
+                stroke="#9CA3AF"
+                tick={{ fill: "#9CA3AF", fontSize: 10 }}
+              />
+              <YAxis
+                stroke="#9CA3AF"
+                tick={{ fill: "#9CA3AF", fontSize: 10 }}
+                tickFormatter={(value) => `${value}h`}
+              />
+              <Tooltip
+                content={<CustomTooltip />}
+                cursor={{ fill: "rgba(139, 92, 246, 0.1)" }}
+              />
               <Bar dataKey="hours" fill="#9B59B6" radius={[4, 4, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
@@ -504,7 +583,9 @@ export function RapportSection() {
 
         {/* GRAPHIQUE CIRCULAIRE */}
         <div className="col-span-1 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-          <h3 className="text-white font-semibold text-sm mb-3">Temps par tâche</h3>
+          <h3 className="text-white font-semibold text-sm mb-3">
+            Temps par tâche
+          </h3>
           <ResponsiveContainer width="100%" height={150}>
             <PieChart>
               <Pie
@@ -517,7 +598,10 @@ export function RapportSection() {
                 dataKey="value"
               >
                 {taskData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell
+                    key={`cell-${index}`}
+                    fill={COLORS[index % COLORS.length]}
+                  />
                 ))}
               </Pie>
               <Tooltip
@@ -525,9 +609,15 @@ export function RapportSection() {
                   if (active && payload && payload.length) {
                     return (
                       <div className="bg-[#1F2128] border border-[#313442] rounded p-2 shadow">
-                        <p className="text-white text-xs font-medium">{payload[0].payload.name}</p>
-                        <p className="text-purple-400 font-mono text-xs">{formatDuration(payload[0].value)}</p>
-                        <p className="text-gray-400 text-[10px]">{payload[0].payload.percentage.toFixed(1)}%</p>
+                        <p className="text-white text-xs font-medium">
+                          {payload[0].payload.name}
+                        </p>
+                        <p className="text-purple-400 font-mono text-xs">
+                          {formatDuration(payload[0].value)}
+                        </p>
+                        <p className="text-gray-400 text-[10px]">
+                          {payload[0].payload.percentage.toFixed(1)}%
+                        </p>
                       </div>
                     );
                   }
@@ -538,12 +628,22 @@ export function RapportSection() {
           </ResponsiveContainer>
           <div className="mt-3 space-y-1 max-h-[100px] overflow-y-auto">
             {taskData.map((item, index) => (
-              <div key={index} className="flex items-center justify-between text-xs">
+              <div
+                key={index}
+                className="flex items-center justify-between text-xs"
+              >
                 <div className="flex items-center gap-1 flex-1">
-                  <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
-                  <span className="text-gray-300 truncate text-[10px]">{item.name}</span>
+                  <div
+                    className="w-2 h-2 rounded-sm"
+                    style={{ backgroundColor: COLORS[index % COLORS.length] }}
+                  />
+                  <span className="text-gray-300 truncate text-[10px]">
+                    {item.name}
+                  </span>
                 </div>
-                <span className="text-white font-medium text-[10px]">{item.percentage.toFixed(1)}%</span>
+                <span className="text-white font-medium text-[10px]">
+                  {item.percentage.toFixed(1)}%
+                </span>
               </div>
             ))}
           </div>
@@ -552,59 +652,103 @@ export function RapportSection() {
 
       {/* TABLEAU DÉTAILLÉ */}
       <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-        <h3 className="text-white font-semibold text-sm mb-3">Détails par projet</h3>
+        <h3 className="text-white font-semibold text-sm mb-3">
+          Détails par projet
+        </h3>
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#313442]">
-              <th className="text-left text-gray-400 font-medium py-2 px-3 text-xs">PROJET | TÂCHE</th>
-              <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">DURÉE</th>
-              <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">%</th>
-              <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">ENTRÉES</th>
+              <th className="text-left text-gray-400 font-medium py-2 px-3 text-xs">
+                PROJET | TÂCHE
+              </th>
+              <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">
+                DURÉE
+              </th>
+              <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">
+                %
+              </th>
+              <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">
+                ENTRÉES
+              </th>
             </tr>
           </thead>
           <tbody>
             {(report?.byProject || []).map((project, projectIndex) => {
-              const isExpanded = expandedProjects.has(project.projectId || 'no-project');
-              const projectEntries = (report?.entries || []).filter(
-                e => (e.projectId || null) === project.projectId
+              const isExpanded = expandedProjects.has(
+                project.projectId || "no-project",
               );
-              
+              const projectEntries = (report?.entries || []).filter(
+                (e) => (e.projectId || null) === project.projectId,
+              );
+
               return (
-                <React.Fragment key={project.projectId || `no-project-${projectIndex}`}>
-                  <tr 
+                <React.Fragment
+                  key={project.projectId || `no-project-${projectIndex}`}
+                >
+                  <tr
                     className="border-b border-[#313442]/50 hover:bg-white/5 cursor-pointer"
-                    onClick={() => toggleProject(project.projectId || 'no-project')}
+                    onClick={() =>
+                      toggleProject(project.projectId || "no-project")
+                    }
                   >
                     <td className="py-2 px-3 text-white flex items-center gap-1">
-                      <ChevronRight 
-                        size={12} 
-                        className={`transform transition-transform ${isExpanded ? 'rotate-90' : ''}`}
+                      <ChevronRight
+                        size={12}
+                        className={`transform transition-transform ${isExpanded ? "rotate-90" : ""}`}
                       />
-                      <span className="text-xs font-medium">{project.projectName}</span>
-                      <span className="text-gray-400 text-[10px]">({project.entriesCount})</span>
+                      <span className="text-xs font-medium">
+                        {project.projectName}
+                      </span>
+                      <span className="text-gray-400 text-[10px]">
+                        ({project.entriesCount})
+                      </span>
                     </td>
-                    <td className="text-right py-2 px-3 text-white font-mono text-xs">{formatHours(project.hours)}</td>
-                    <td className="text-right py-2 px-3 text-white text-xs">{project.percentage.toFixed(1)}%</td>
-                    <td className="text-right py-2 px-3 text-white text-xs">{project.entriesCount}</td>
+                    <td className="text-right py-2 px-3 text-white font-mono text-xs">
+                      {formatHours(project.hours)}
+                    </td>
+                    <td className="text-right py-2 px-3 text-white text-xs">
+                      {project.percentage.toFixed(1)}%
+                    </td>
+                    <td className="text-right py-2 px-3 text-white text-xs">
+                      {project.entriesCount}
+                    </td>
                   </tr>
-                  
-                  {isExpanded && projectEntries.map((entry, idx) => (
-                    <tr key={`${project.projectId}-entry-${idx}`} className="border-b border-[#313442]/30 bg-[#0F0F12]/50">
-                      <td className="py-1 px-3 pl-8 text-gray-300 text-xs">
-                        <div>{entry.taskTitle || entry.description || "Sans tâche"}</div>
-                        <div className="text-[10px] text-gray-500">
-                          {format(new Date(entry.startTime), "dd MMM • HH:mm", { locale: fr })}
-                        </div>
-                      </td>
-                      <td className="text-right py-1 px-3 text-gray-300 font-mono text-xs">
-                        {formatHours(entry.duration / 3600)}
-                      </td>
-                      <td className="text-right py-1 px-3 text-gray-300 text-xs">
-                        {((entry.duration / 3600 / project.hours) * 100).toFixed(1)}%
-                      </td>
-                      <td className="text-right py-1 px-3 text-gray-300 text-xs">1</td>
-                    </tr>
-                  ))}
+
+                  {isExpanded &&
+                    projectEntries.map((entry, idx) => (
+                      <tr
+                        key={`${project.projectId}-entry-${idx}`}
+                        className="border-b border-[#313442]/30 bg-[#0F0F12]/50"
+                      >
+                        <td className="py-1 px-3 pl-8 text-gray-300 text-xs">
+                          <div>
+                            {entry.taskTitle ||
+                              entry.description ||
+                              "Sans tâche"}
+                          </div>
+                          <div className="text-[10px] text-gray-500">
+                            {format(
+                              new Date(entry.startTime),
+                              "dd MMM • HH:mm",
+                              { locale: fr },
+                            )}
+                          </div>
+                        </td>
+                        <td className="text-right py-1 px-3 text-gray-300 font-mono text-xs">
+                          {formatHours(entry.duration / 3600)}
+                        </td>
+                        <td className="text-right py-1 px-3 text-gray-300 text-xs">
+                          {(
+                            (entry.duration / 3600 / project.hours) *
+                            100
+                          ).toFixed(1)}
+                          %
+                        </td>
+                        <td className="text-right py-1 px-3 text-gray-300 text-xs">
+                          1
+                        </td>
+                      </tr>
+                    ))}
                 </React.Fragment>
               );
             })}
@@ -613,8 +757,12 @@ export function RapportSection() {
               <td className="text-right py-2 px-3 text-white font-mono font-bold text-xs">
                 {formatHours(report?.totalHours || 0)}
               </td>
-              <td className="text-right py-2 px-3 text-white font-bold text-xs">100%</td>
-              <td className="text-right py-2 px-3 text-white font-bold text-xs">{report?.entriesCount || 0}</td>
+              <td className="text-right py-2 px-3 text-white font-bold text-xs">
+                100%
+              </td>
+              <td className="text-right py-2 px-3 text-white font-bold text-xs">
+                {report?.entriesCount || 0}
+              </td>
             </tr>
           </tbody>
         </table>

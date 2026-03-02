@@ -164,7 +164,7 @@ export function DocumentsSection({
                             variant="ghost"
                             onClick={() => onDownloadContract(contract)}
                             disabled={deleteContractPending}
-                            className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
+                            className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                           >
                             <Download className="w-4 h-4 mr-1" />
                             Télécharger
@@ -174,7 +174,7 @@ export function DocumentsSection({
                             variant="ghost"
                             onClick={() => onDeleteContract(contract._id)}
                             disabled={deleteContractPending}
-                            className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
+                            className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                           >
                             <Trash2 className="w-4 h-4" />
                             Supprimer
@@ -252,7 +252,7 @@ export function DocumentsSection({
                             variant="ghost"
                             onClick={() => onDownloadNda(nda)}
                             disabled={deleteNdaPending}
-                            className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
+                            className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                           >
                             <Download className="w-4 h-4 mr-1" />
                             Télécharger
@@ -262,7 +262,7 @@ export function DocumentsSection({
                             variant="ghost"
                             onClick={() => onDeleteNda(nda._id)}
                             disabled={deleteNdaPending}
-                            className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
+                            className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                           >
                             <Trash2 className="w-4 h-4" />
                             Supprimer
@@ -346,7 +346,7 @@ export function DocumentsSection({
                       variant="ghost"
                       onClick={() => onDownloadDocument(doc)}
                       disabled={deleteDocumentPending}
-                      className="border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
+                      className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                     >
                       <Download className="w-4 h-4 mr-1" />
                       Télécharger
@@ -356,7 +356,7 @@ export function DocumentsSection({
                       variant="ghost"
                       onClick={() => onDeleteDocument(doc._id)}
                       disabled={deleteDocumentPending}
-                      className="border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
+                      className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                     >
                       <Trash2 className="w-4 h-4" />
                       Supprimer

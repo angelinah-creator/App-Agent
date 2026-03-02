@@ -558,7 +558,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
 
           <div className="flex items-center gap-3">
             {/* Indicateur de permission */}
-            <div
+            {/* <div
               className={`px-3 py-1 rounded-full text-xs ${
                 userPermission === "super_editor"
                   ? "bg-purple-500/20 text-purple-300"
@@ -572,7 +572,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
                 : userPermission === "editor"
                 ? "Éditeur"
                 : "Visionneur"}
-            </div>
+            </div> */}
 
             {/* Bouton inviter */}
             {canEdit && (
@@ -586,7 +586,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
             )}
 
             {/* Bouton paramètres (seulement pour super_editors et admins) */}
-            {(userPermission === "super_editor" ||
+            {/* {(userPermission === "super_editor" ||
               userData.role === "admin") && (
               <button
                 onClick={() => setShowPermissions(true)}
@@ -595,7 +595,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
               >
                 <Settings size={18} />
               </button>
-            )}
+            )} */}
           </div>
         </div>
 
