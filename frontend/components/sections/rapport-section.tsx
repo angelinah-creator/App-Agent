@@ -1,7 +1,14 @@
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
-import { ChevronLeft, ChevronRight, Calendar, Download, Filter, X } from "lucide-react";
+import {
+  ChevronLeft,
+  ChevronRight,
+  Calendar,
+  Download,
+  Filter,
+  X,
+} from "lucide-react";
 import {
   BarChart,
   Bar,
@@ -17,7 +24,6 @@ import {
 import {
   addWeeks,
   addMonths,
-  subMonths,
   addYears,
   format,
   startOfWeek,
@@ -33,6 +39,9 @@ import {
 import { fr } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { timerService, ReportData } from "@/lib/timer-service";
+import jsPDF from "jspdf";
+import autoTable from "jspdf-autotable";
+import domtoimage from "dom-to-image";
 
 const COLORS = [
   "#9B59B6",
@@ -112,7 +121,9 @@ function ProjectFilter({
       >
         <Filter size={12} />
         <span>
-          {activeCount > 0 ? `${activeCount} projet${activeCount > 1 ? "s" : ""}` : "Projets"}
+          {activeCount > 0
+            ? `${activeCount} projet${activeCount > 1 ? "s" : ""}`
+            : "Projets"}
         </span>
         {activeCount > 0 && (
           <span
@@ -420,6 +431,10 @@ export function RapportSection() {
   const periodSelectorButtonRef = useRef<HTMLDivElement>(null);
   const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
 
+  // Refs pour les graphiques (export PDF)
+  const barChartRef = useRef<HTMLDivElement>(null);
+  const pieChartRef = useRef<HTMLDivElement>(null);
+
   // ── Filtre projet ──────────────────────────────────────────────────────────
   const [selectedProjectIds, setSelectedProjectIds] = useState<Set<string>>(new Set());
 
@@ -526,7 +541,6 @@ export function RapportSection() {
       0,
     );
 
-    // Recalcule les pourcentages
     const totalHours = totalSeconds / 3600;
     const byProjectRecalc = filteredByProject.map((p) => ({
       ...p,
@@ -628,6 +642,185 @@ export function RapportSection() {
     return null;
   };
 
+  // ─── Fonction d'export PDF (adaptée de rapport_collabo-section) ─────────────
+  const handleExportPDF = async () => {
+    if (!filteredReport) return;
+
+    const doc = new jsPDF({
+      orientation: "portrait",
+      unit: "mm",
+      format: "a4",
+    });
+
+    const pageWidth = doc.internal.pageSize.getWidth();
+    let y = 20;
+
+    /* ================= HEADER ================= */
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(18);
+    doc.text("Rapport d'activité global", 14, y);
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
+    doc.setTextColor(120);
+    doc.text(displayText, 14, y + 6);
+
+    doc.setDrawColor(230);
+    doc.line(14, y + 10, pageWidth - 14, y + 10);
+    y += 18;
+
+    /* ================= SUMMARY CARDS ================= */
+    const cardWidth = (pageWidth - 40) / 2;
+
+    const drawCard = (x: number, label: string, value: string) => {
+      doc.setDrawColor(235);
+      doc.roundedRect(x, y, cardWidth, 18, 3, 3);
+
+      doc.setFontSize(9);
+      doc.setTextColor(130);
+      doc.text(label, x + 4, y + 6);
+
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(14);
+      doc.setTextColor(30);
+      doc.text(value, x + 4, y + 13);
+
+      doc.setFont("helvetica", "normal");
+    };
+
+    drawCard(14, "Heures totales", formatHours(filteredReport.totalHours));
+    drawCard(20 + cardWidth, "Moyenne/jour", formatHours(averageDailyHours));
+
+    y += 28;
+
+    /* ================= CAPTURE CHARTS ================= */
+    let barChartImg = null;
+    let pieChartImg = null;
+
+    if (barChartRef.current) {
+      barChartImg = await domtoimage.toPng(barChartRef.current, {
+        scale: 2,
+      } as any);
+    }
+
+    if (pieChartRef.current) {
+      pieChartImg = await domtoimage.toPng(pieChartRef.current, {
+        scale: 2,
+      } as any);
+    }
+
+    /* ================= BAR CHART ================= */
+    if (barChartImg) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("Durée par jour", 14, y);
+
+      y += 4;
+      doc.addImage(barChartImg, "PNG", 14, y, 180, 70);
+      y += 80;
+    }
+
+    /* ================= PIE CENTERED + LEGEND ================= */
+    if (pieChartImg && taskData.length) {
+      doc.setFont("helvetica", "bold");
+      doc.setFontSize(13);
+      doc.text("Répartition par tâche", pageWidth / 2, y, { align: "center" });
+
+      y += 6;
+
+      // Charger l'image pour obtenir le ratio
+      const img = new Image();
+      img.src = pieChartImg;
+      await new Promise((resolve) => {
+        img.onload = resolve;
+      });
+
+      const ratio = img.height / img.width;
+      const pieWidth = 110;
+      const pieHeight = pieWidth * ratio;
+      const pieX = (pageWidth - pieWidth) / 2;
+      const pieY = y;
+
+      doc.addImage(pieChartImg, "PNG", pieX, pieY, pieWidth, pieHeight);
+      y += pieHeight + 10;
+
+      /* ---------- LÉGENDE SOUS LE CAMEMBERT ---------- */
+      const legendLeft = 30;
+      const lineHeight = 6;
+      const squareSize = 3.5;
+
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(10);
+
+      taskData.forEach((task, index) => {
+        const color = COLORS[index % COLORS.length];
+        const r = parseInt(color.substring(1, 3), 16);
+        const g = parseInt(color.substring(3, 5), 16);
+        const b = parseInt(color.substring(5, 7), 16);
+
+        doc.setFillColor(r, g, b);
+        doc.rect(legendLeft, y - 3, squareSize, squareSize, "F");
+
+        doc.setTextColor(40);
+        doc.text(task.name, legendLeft + 6, y);
+
+        const rightText = `${task.percentage.toFixed(1)}%   ${formatDuration(task.value)}`;
+        doc.setTextColor(120);
+        doc.text(rightText, pageWidth - 30, y, { align: "right" });
+
+        y += lineHeight;
+      });
+
+      y += 8;
+    }
+
+    /* ================= DETAIL TABLE ================= */
+    doc.setFontSize(13);
+    doc.text("Détail par projet", 14, y);
+    y += 5;
+
+    const rows = filteredReport.entries.map((entry) => {
+      const project =
+        filteredReport.byProject.find((p) => p.projectId === entry.projectId)
+          ?.projectName || "Sans projet";
+
+      return [
+        project,
+        entry.taskTitle || "Sans tâche",
+        formatHours(entry.duration / 3600),
+      ];
+    });
+
+    autoTable(doc, {
+      startY: y,
+      head: [["Projet", "Tâche", "Durée"]],
+      body: rows,
+      theme: "striped",
+      styles: {
+        fontSize: 9,
+        lineColor: [240, 240, 240],
+        lineWidth: 0.1,
+      },
+      headStyles: {
+        fillColor: [155, 89, 182],
+        textColor: 255,
+      },
+      alternateRowStyles: {
+        fillColor: [250, 250, 250],
+      },
+    });
+
+    /* ================= FOOTER ================= */
+    const pageHeight = doc.internal.pageSize.getHeight();
+
+    doc.setFontSize(8);
+    doc.setTextColor(150);
+    doc.text("Généré automatiquement • Rapport de temps", 14, pageHeight - 10);
+    doc.text(`Page 1`, pageWidth - 20, pageHeight - 10);
+
+    doc.save(`rapport_${format(new Date(), "yyyy-MM-dd")}.pdf`);
+  };
+
   if (isLoading) {
     return (
       <div className="flex items-center justify-center h-screen">
@@ -696,7 +889,10 @@ export function RapportSection() {
               onChange={setSelectedProjectIds}
             />
 
-            <button className="flex items-center gap-1 px-3 py-1 bg-purple-500 hover:bg-purple-600 rounded transition text-white">
+            <button
+              onClick={handleExportPDF}
+              className="flex items-center gap-1 px-3 py-1 bg-purple-500 hover:bg-purple-600 rounded transition text-white"
+            >
               <Download size={14} />
               <span className="text-xs">Export PDF</span>
             </button>
@@ -725,68 +921,72 @@ export function RapportSection() {
         {/* GRAPHIQUE EN BARRES */}
         <div className="col-span-2 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
           <h3 className="text-white font-semibold text-sm mb-3">Durée par jour</h3>
-          <ResponsiveContainer width="100%" height={250}>
-            <BarChart data={dailyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#313442" />
-              <XAxis
-                dataKey="day"
-                stroke="#9CA3AF"
-                tick={{ fill: "#9CA3AF", fontSize: 10 }}
-              />
-              <YAxis
-                stroke="#9CA3AF"
-                tick={{ fill: "#9CA3AF", fontSize: 10 }}
-                tickFormatter={(value) => `${value}h`}
-              />
-              <Tooltip
-                content={<CustomTooltip />}
-                cursor={{ fill: "rgba(139, 92, 246, 0.1)" }}
-              />
-              <Bar dataKey="hours" fill="#9B59B6" radius={[4, 4, 0, 0]} />
-            </BarChart>
-          </ResponsiveContainer>
+          <div ref={barChartRef}>
+            <ResponsiveContainer width="100%" height={250}>
+              <BarChart data={dailyData}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#313442" />
+                <XAxis
+                  dataKey="day"
+                  stroke="#9CA3AF"
+                  tick={{ fill: "#9CA3AF", fontSize: 10 }}
+                />
+                <YAxis
+                  stroke="#9CA3AF"
+                  tick={{ fill: "#9CA3AF", fontSize: 10 }}
+                  tickFormatter={(value) => `${value}h`}
+                />
+                <Tooltip
+                  content={<CustomTooltip />}
+                  cursor={{ fill: "rgba(139, 92, 246, 0.1)" }}
+                />
+                <Bar dataKey="hours" fill="#9B59B6" radius={[4, 4, 0, 0]} />
+              </BarChart>
+            </ResponsiveContainer>
+          </div>
         </div>
 
         {/* GRAPHIQUE CIRCULAIRE */}
         <div className="col-span-1 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
           <h3 className="text-white font-semibold text-sm mb-3">Temps par tâche</h3>
-          <ResponsiveContainer width="100%" height={150}>
-            <PieChart>
-              <Pie
-                data={taskData}
-                cx="50%"
-                cy="50%"
-                innerRadius={40}
-                outerRadius={60}
-                paddingAngle={2}
-                dataKey="value"
-              >
-                {taskData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                ))}
-              </Pie>
-              <Tooltip
-                content={({ active, payload }: any) => {
-                  if (active && payload && payload.length) {
-                    return (
-                      <div className="bg-[#1F2128] border border-[#313442] rounded p-2 shadow">
-                        <p className="text-white text-xs font-medium">
-                          {payload[0].payload.name}
-                        </p>
-                        <p className="text-purple-400 font-mono text-xs">
-                          {formatDuration(payload[0].value)}
-                        </p>
-                        <p className="text-gray-400 text-[10px]">
-                          {payload[0].payload.percentage.toFixed(1)}%
-                        </p>
-                      </div>
-                    );
-                  }
-                  return null;
-                }}
-              />
-            </PieChart>
-          </ResponsiveContainer>
+          <div ref={pieChartRef}>
+            <ResponsiveContainer width="100%" height={150}>
+              <PieChart>
+                <Pie
+                  data={taskData}
+                  cx="50%"
+                  cy="50%"
+                  innerRadius={40}
+                  outerRadius={60}
+                  paddingAngle={2}
+                  dataKey="value"
+                >
+                  {taskData.map((entry, index) => (
+                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  ))}
+                </Pie>
+                <Tooltip
+                  content={({ active, payload }: any) => {
+                    if (active && payload && payload.length) {
+                      return (
+                        <div className="bg-[#1F2128] border border-[#313442] rounded p-2 shadow">
+                          <p className="text-white text-xs font-medium">
+                            {payload[0].payload.name}
+                          </p>
+                          <p className="text-purple-400 font-mono text-xs">
+                            {formatDuration(payload[0].value)}
+                          </p>
+                          <p className="text-gray-400 text-[10px]">
+                            {payload[0].payload.percentage.toFixed(1)}%
+                          </p>
+                        </div>
+                      );
+                    }
+                    return null;
+                  }}
+                />
+              </PieChart>
+            </ResponsiveContainer>
+          </div>
           <div className="mt-3 space-y-1 max-h-[100px] overflow-y-auto">
             {taskData.map((item, index) => (
               <div key={index} className="flex items-center justify-between text-xs">
