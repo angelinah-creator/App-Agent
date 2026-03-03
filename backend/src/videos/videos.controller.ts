@@ -11,7 +11,7 @@ import {
   UseGuards,
   BadRequestException,
   Req,
-  NotFoundException,
+  Patch,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
 import express from 'express';
@@ -38,12 +38,11 @@ export class VideosController {
       throw new BadRequestException('Fichier vidéo requis');
     }
 
-    // Parser les chapitres depuis la chaîne JSON
     let chapters: ChapterDto[] = [];
     if (body.chapters) {
       try {
         chapters = JSON.parse(body.chapters);
-      } catch (error) {
+      } catch {
         throw new BadRequestException('Format des chapitres invalide');
       }
     }
@@ -51,24 +50,40 @@ export class VideosController {
     const createVideoDto: CreateVideoDto = {
       title: body.title,
       description: body.description,
-      chapters: chapters,
+      chapters,
     };
 
     const user = request.user as any;
-    const userId = user.userId;
-
-    return this.videosService.create(createVideoDto, file, userId);
+    return this.videosService.create(createVideoDto, file, user.userId);
   }
 
-  // Récupérer la vidéo (tout le monde peut lire)
+  // Récupérer toutes les vidéos actives (collaborateurs)
   @Get()
   @UseGuards(JwtAuthGuard)
-  async getVideo(): Promise<Video | { message: string }> {
-    const video = await this.videosService.getVideo();
-    if (!video) {
-      return { message: 'Aucune vidéo disponible' };
-    }
-    return video;
+  async findAll(): Promise<Video[]> {
+    return this.videosService.findAll();
+  }
+
+  // Récupérer toutes les vidéos (admin - inclut inactives)
+  @Get('admin')
+  @UseGuards(JwtAuthGuard, ManagerGuard)
+  async findAllAdmin(): Promise<Video[]> {
+    return this.videosService.findAllAdmin();
+  }
+
+  // Récupérer une vidéo par ID
+  @Get(':id')
+  @UseGuards(JwtAuthGuard)
+  async findOne(@Param('id') id: string): Promise<Video> {
+    return this.videosService.findOne(id);
+  }
+
+  // Incrémenter les vues
+  @Patch(':id/view')
+  @UseGuards(JwtAuthGuard)
+  async incrementViews(@Param('id') id: string): Promise<{ message: string }> {
+    await this.videosService.incrementViews(id);
+    return { message: 'Vue enregistrée' };
   }
 
   // Modification - Admin et Manager seulement

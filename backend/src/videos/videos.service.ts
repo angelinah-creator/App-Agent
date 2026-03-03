@@ -1,4 +1,7 @@
-import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+} from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Video, VideoDocument } from './schemas/video.schema';
@@ -17,29 +20,19 @@ export class VideosService {
     file: Express.Multer.File,
     userId: string,
   ): Promise<Video> {
-    // Vérifier s'il existe déjà une vidéo
-    const existingVideo = await this.videoModel.findOne().exec();
-    if (existingVideo) {
-      // Supprimer l'ancienne vidéo de Cloudinary
-      await this.cloudinaryService.deleteVideo(existingVideo.publicId);
-      // Supprimer l'ancienne vidéo de la base
-      await this.videoModel.findByIdAndDelete(existingVideo._id);
-    }
-
     // Upload vers Cloudinary
     const uploadResult = await this.cloudinaryService.uploadVideo(
       file.buffer,
-      file.originalname,
+      `${Date.now()}_${file.originalname}`,
     );
 
-    // Créer l'entrée en base de données
     const video = new this.videoModel({
       ...createVideoDto,
       fileName: file.originalname,
       originalName: file.originalname,
       url: uploadResult.url,
       publicId: uploadResult.publicId,
-      duration: uploadResult.duration,
+      duration: uploadResult.duration || 0,
       format: uploadResult.format,
       size: file.size,
       uploadedBy: new Types.ObjectId(userId),
@@ -49,11 +42,37 @@ export class VideosService {
     return video.save();
   }
 
-  async getVideo(): Promise<Video | null> {
+  async findAll(): Promise<Video[]> {
     return this.videoModel
-      .findOne()
-      .populate('uploadedBy', 'username email')
+      .find({ isActive: true })
+      .populate('uploadedBy', 'username email nom prenoms')
+      .sort({ createdAt: -1 })
       .exec();
+  }
+
+  async findAllAdmin(): Promise<Video[]> {
+    return this.videoModel
+      .find()
+      .populate('uploadedBy', 'username email nom prenoms')
+      .sort({ createdAt: -1 })
+      .exec();
+  }
+
+  async findOne(id: string): Promise<Video> {
+    const video = await this.videoModel
+      .findById(id)
+      .populate('uploadedBy', 'username email nom prenoms')
+      .exec();
+
+    if (!video) {
+      throw new NotFoundException(`Vidéo avec l'ID ${id} introuvable`);
+    }
+
+    return video;
+  }
+
+  async incrementViews(id: string): Promise<void> {
+    await this.videoModel.findByIdAndUpdate(id, { $inc: { views: 1 } }).exec();
   }
 
   async update(id: string, updateVideoDto: UpdateVideoDto): Promise<Video> {
@@ -62,7 +81,7 @@ export class VideosService {
       .exec();
 
     if (!video) {
-      throw new NotFoundException(`Video with ID ${id} not found`);
+      throw new NotFoundException(`Vidéo avec l'ID ${id} introuvable`);
     }
 
     return video;
@@ -72,13 +91,10 @@ export class VideosService {
     const video = await this.videoModel.findById(id).exec();
 
     if (!video) {
-      throw new NotFoundException(`Video with ID ${id} not found`);
+      throw new NotFoundException(`Vidéo avec l'ID ${id} introuvable`);
     }
 
-    // Supprimer de Cloudinary
     await this.cloudinaryService.deleteVideo(video.publicId);
-
-    // Supprimer de la base de données
     await this.videoModel.findByIdAndDelete(id);
   }
 }

@@ -3,7 +3,8 @@ import { Document, Types } from 'mongoose';
 
 export type VideoDocument = Video & Document;
 
-class Chapter {
+@Schema({ _id: false })
+export class Chapter {
   @Prop({ required: true })
   title: string;
 
@@ -11,11 +12,13 @@ class Chapter {
   description?: string;
 
   @Prop({ required: true })
-  startTime: number; // en secondes
+  startTime: number;
 
   @Prop()
-  endTime?: number; // en secondes
+  endTime?: number;
 }
+
+export const ChapterSchema = SchemaFactory.createForClass(Chapter);
 
 @Schema({ timestamps: true })
 export class Video {
@@ -55,7 +58,7 @@ export class Video {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   uploadedBy: Types.ObjectId;
 
-  @Prop({ type: [Chapter], default: [] })
+  @Prop({ type: [ChapterSchema], default: [] })
   chapters: Chapter[];
 }
 

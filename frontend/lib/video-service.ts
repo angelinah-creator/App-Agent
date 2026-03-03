@@ -12,14 +12,19 @@ export interface Video {
   title: string;
   description?: string;
   url: string;
+  publicId: string;
   duration: number;
+  format?: string;
+  size?: number;
   chapters: Chapter[];
   views: number;
   isActive: boolean;
   uploadedBy: {
     _id: string;
-    username: string;
+    username?: string;
     email: string;
+    nom?: string;
+    prenoms?: string;
   };
   createdAt: string;
   updatedAt: string;
@@ -39,44 +44,40 @@ export interface UpdateVideoData {
 }
 
 class VideoService {
-  // Récupérer la vidéo (unique)
-  async getActiveVideo(): Promise<Video | null> {
-    try {
-      const response = await api.get('/videos');
-      // Si le backend retourne un message "Aucune vidéo disponible"
-      if (response.data.message) {
-        return null;
-      }
-      return response.data;
-    } catch (error: any) {
-      if (error.response?.status === 404) {
-        return null;
-      }
-      throw error;
-    }
+  async getVideos(): Promise<Video[]> {
+    const response = await api.get('/videos');
+    return response.data;
   }
 
-  // Uploader une vidéo (remplace l'ancienne si elle existe)
+  async getVideosAdmin(): Promise<Video[]> {
+    const response = await api.get('/videos/admin');
+    return response.data;
+  }
+
+  async getVideo(id: string): Promise<Video> {
+    const response = await api.get(`/videos/${id}`);
+    return response.data;
+  }
+
   async uploadVideo(formData: FormData): Promise<Video> {
     const response = await api.post('/videos/upload', formData, {
-      headers: {
-        'Content-Type': 'multipart/form-data',
-      },
+      headers: { 'Content-Type': 'multipart/form-data' },
     });
     return response.data;
   }
 
-  // Mettre à jour une vidéo (titre, description, chapitres)
   async updateVideo(id: string, data: UpdateVideoData): Promise<Video> {
     const response = await api.put(`/videos/${id}`, data);
     return response.data;
   }
 
-  // Supprimer la vidéo
   async deleteVideo(id: string): Promise<void> {
     await api.delete(`/videos/${id}`);
   }
 
+  async incrementViews(id: string): Promise<void> {
+    await api.patch(`/videos/${id}/view`);
+  }
 }
 
 export const videoService = new VideoService();

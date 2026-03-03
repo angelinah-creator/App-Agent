@@ -1,4 +1,11 @@
-import { IsString, IsOptional, IsNumber, IsArray, ValidateNested, IsInt, Min } from 'class-validator';
+import {
+  IsString,
+  IsOptional,
+  IsArray,
+  ValidateNested,
+  IsInt,
+  Min,
+} from 'class-validator';
 import { Type, Transform } from 'class-transformer';
 
 export class ChapterDto {
@@ -14,7 +21,7 @@ export class ChapterDto {
   @Min(0)
   startTime: number;
 
-  @Transform(({ value }) => value ? parseInt(value, 10) : undefined)
+  @Transform(({ value }) => (value ? parseInt(value, 10) : undefined))
   @IsInt()
   @Min(0)
   @IsOptional()
