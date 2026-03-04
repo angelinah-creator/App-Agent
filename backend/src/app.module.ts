@@ -21,6 +21,7 @@ import { PersonalTasksModule } from './personal-tasks/personal-tasks.module';
 import { SharedTasksModule } from './shared-tasks/shared-tasks.module';
 import { TimeEntriesModule } from './time-entries/time-entries.module';
 import { NdasModule } from './nda/nda.module';
+import { RendezVousModule } from './rendez-vous/rendez-vous.module';
 
 @Module({
   imports: [
@@ -47,7 +48,8 @@ import { NdasModule } from './nda/nda.module';
     PersonalTasksModule,
     SharedTasksModule,
     TimeEntriesModule,
-    NdasModule
+    NdasModule,
+    RendezVousModule
   ],
 })
 export class AppModule {}

@@ -1,14 +1,12 @@
 import type { Metadata } from 'next'
-import { GeistSans } from 'geist/font/sans'
-import { GeistMono } from 'geist/font/mono'
 import { Analytics } from '@vercel/analytics/next'
 import QueryProvider from '@/providers/query-provider'
-import { Geist, Geist_Mono, Montserrat } from "next/font/google";
+import { Montserrat } from "next/font/google";
 import './globals.css'
 
 export const metadata: Metadata = {
   title: 'OPSIDE',
-  description: 'Plateforme de gestion des agents',
+  description: '',
 }
 
 const montserrat = Montserrat({

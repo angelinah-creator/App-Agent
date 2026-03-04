@@ -32,11 +32,9 @@ import { AbsencesSection } from "@/components/sections/absences-section";
 import { VideoSection } from "@/components/sections/video-section";
 import { VideoSectionAdmin } from "@/components/sections/video-section-admin";
 import { DashboardSection } from "@/components/sections/dashboard-section";
-
 import { TachesSection } from "@/components/sections/taches-section";
 import { EspacesPartageSection } from "@/components/sections/espaces_partage-section";
 import { EspacesCollaboSection } from "@/components/sections/espaces_collabo-section";
-
 import { AbsencesSectionAdmin } from "@/components/sections/absences-section-admin";
 // import { AgentsSection } from "@/components/sections/agents-section";
 import { AgentsSection } from "@/components/sections/gestion_agent_admin/AgentsSection";
@@ -46,10 +44,10 @@ import { UploadDocumentModal } from "@/components/modals/upload-document-modal";
 import { UploadKPIModal } from "@/components/modals/upload-kpi-modal";
 import { KPIsSectionAdmin } from "@/components/sections/kpis-section-admin";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
-
 import { TimerSection } from "@/components/sections/timer-section";
 import { RapportSection } from "@/components/sections/rapport-section";
 import { RapportCollaboSection } from "@/components/sections/rapport_collabo-section";
+import { RendezVousSection } from "@/components/sections/rendez_vous-section";
 import { api } from "@/lib/api-config";
 
 function HomePage() {
@@ -973,6 +971,10 @@ function HomePage() {
                     onToggleArchived={handleToggleArchivedAgents}
                   />
                 )}
+
+                {activeSection === "rendez_vous" && (
+                  <RendezVousSection userRole="admin" />
+                )}
               </>
             )}
 
@@ -1048,6 +1050,10 @@ function HomePage() {
                 {activeSection === "timer" && <TimerSection />}
 
                 {activeSection === "rapports" && <RapportSection />}
+
+                {activeSection === "rendez_vous" && (
+                  <RendezVousSection userRole="collaborateur" />
+                )}
               </>
             )}
 
@@ -1126,6 +1132,10 @@ function HomePage() {
 
                 {activeSection === "rapports_collabo" && (
                   <RapportCollaboSection />
+                )}
+
+                {activeSection === "rendez_vous" && (
+                  <RendezVousSection userRole="manager" />
                 )}
               </>
             )}

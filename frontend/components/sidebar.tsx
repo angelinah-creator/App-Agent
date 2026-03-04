@@ -12,6 +12,7 @@ import {
   LogOut,
   Video,
   Clock,
+  CalendarCheck
 } from "lucide-react";
 import { authService } from "@/lib/auth-service";
 import { useRouter } from "next/navigation";
@@ -55,6 +56,7 @@ export function Sidebar({
         label: "Rapports Collaborateur",
         icon: FileText,
       },
+      { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
       { id: "video_admin", label: "Onboarding", icon: Video },
     ];
 
@@ -75,6 +77,7 @@ export function Sidebar({
         label: "Rapports Collaborateur",
         icon: FileText,
       },
+      { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
       { id: "video", label: "Onboarding", icon: Video },
       // { id: "certifications", label: "Certifications", icon: FileText },
       // { id: "suivi_des_agents", label: "Suivi des Agents", icon: Calendar },
@@ -94,6 +97,7 @@ export function Sidebar({
       { id: "timer", label: "Timer", icon: Clock },
       { id: "rapports", label: "Rapports", icon: FileText },
       // { id: "certifications", label: "Certifications", icon: FileText },
+      { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
       { id: "video", label: "Onboarding", icon: Video },
     ];
 
