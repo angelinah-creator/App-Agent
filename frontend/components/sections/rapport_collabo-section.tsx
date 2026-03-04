@@ -45,15 +45,58 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import domtoimage from "dom-to-image";
 
+// const COLORS = [
+//   "#9B59B6",
+//   "#E9B44C",
+//   "#3498DB",
+//   "#E74C3C",
+//   "#1ABC9C",
+//   "#95A5A6",
+//   "#F39C12",
+//   "#16A085",
+// ];
+
 const COLORS = [
-  "#9B59B6",
-  "#E9B44C",
-  "#3498DB",
-  "#E74C3C",
-  "#1ABC9C",
-  "#95A5A6",
-  "#F39C12",
-  "#16A085",
+  "#1f77b4", // bleu
+  "#ff7f0e", // orange
+  "#2ca02c", // vert
+  "#d62728", // rouge
+  "#9467bd", // violet
+  "#8c564b", // brun
+  "#e377c2", // rose
+  "#7f7f7f", // gris
+  "#bcbd22", // jaune-vert
+  "#17becf", // cyan
+  "#aec7e8", // bleu clair
+  "#ffbb78", // orange pâle
+  "#98df8a", // vert clair
+  "#ff9896", // rouge clair
+  "#c5b0d5", // lavande
+  "#c49c94", // beige
+  "#f7b6d2", // rose clair
+  "#c7c7c7", // gris clair
+  "#dbdb8d", // jaune-vert pâle
+  "#9edae5", // turquoise clair
+  "#393b79", // bleu nuit
+  "#637939", // vert olive
+  "#8c6d31", // ocre
+  "#843c39", // bordeaux
+  "#7b4173", // prune
+  "#a55194", // violet moyen
+  "#ce6dbd", // orchidée
+  "#de9ed6", // mauve
+  "#3182bd", // bleu marine
+  "#6baed6", // bleu ciel
+  "#9ecae1", // bleu très clair
+  "#c6dbef", // bleu glacier
+  "#e6550d", // orange foncé
+  "#fd8d3c", // corail
+  "#fdae6b", // pêche
+  "#fdd0a2", // crème
+  "#31a354", // vert forêt
+  "#74c476", // vert pomme
+  "#a1d99b", // vert menthe
+  "#c7e9c0", // vert très clair
 ];
 
 type PeriodType = "day" | "week" | "month" | "year" | "custom";
