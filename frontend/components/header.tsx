@@ -11,9 +11,10 @@ interface HeaderProps {
   title: string
   subtitle: string
   notificationBell?: React.ReactNode
+  onProfileClick?: () => void
 }
 
-export function Header({ title, subtitle, notificationBell }: HeaderProps) {
+export function Header({ title, subtitle, notificationBell, onProfileClick }: HeaderProps) {
   const [showProfileModal, setShowProfileModal] = useState(false)
   
   const { data: userProfile } = useQuery({
@@ -26,6 +27,13 @@ export function Header({ title, subtitle, notificationBell }: HeaderProps) {
     return `${userProfile.prenoms?.[0] || ''}${userProfile.nom?.[0] || ''}`.toUpperCase()
   }
 
+  const handleProfileClick = () => {
+    // Si onProfileClick est fourni, on l'utilise pour naviguer vers l'onglet profil
+    if (onProfileClick) {
+      onProfileClick()
+    }
+  }
+
   return (
     <>
       <div className="bg-[#1F2128] backdrop-blur-xl border-b border-[#313442] px-8 py-1 pr-10 flex items-center justify-end sticky top-0 z-50 shadow-sm">
@@ -33,7 +41,7 @@ export function Header({ title, subtitle, notificationBell }: HeaderProps) {
           {notificationBell}
           
           <button
-            onClick={() => setShowProfileModal(true)}
+            onClick={handleProfileClick} // Utilisez le nouveau handler
             className="flex items-center gap-3 px-3 py-2 rounded-lg"
           >
             <div className="relative group">
@@ -50,21 +58,10 @@ export function Header({ title, subtitle, notificationBell }: HeaderProps) {
                   {getInitials()}
                 </div>
               )}
-              <div className="absolute inset-0 bg-black/40 opacity-0 group-hover:opacity-100 rounded-full flex items-center justify-center transition-opacity">
-                {/* <Camera className="w-5 h-5 text-white" /> */}
-              </div>
             </div>
           </button>
         </div>
       </div>
-
-      {showProfileModal && userProfile && (
-        <ProfileModal
-          user={userProfile}
-          isOpen={showProfileModal}
-          onClose={() => setShowProfileModal(false)}
-        />
-      )}
     </>
   )
 }

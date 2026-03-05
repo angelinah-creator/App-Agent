@@ -27,7 +27,8 @@ import { NdasSectionAdmin } from "@/components/sections/ndas-section-admin";
 import { FacturesSection } from "@/components/sections/factures-section";
 import { FacturesSectionAdmin } from "@/components/sections/factures-section-admin";
 import { KPIsSection } from "@/components/sections/kpis-section";
-import { ProfilSection } from "@/components/sections/profil-section";
+// import { ProfilSection } from "@/components/sections/profil-section-client";
+import { Profil } from "@/components/sections/profil-section";
 import { AbsencesSection } from "@/components/sections/absences-section";
 import { VideoSection } from "@/components/sections/video-section";
 import { VideoSectionAdmin } from "@/components/sections/video-section-admin";
@@ -855,6 +856,7 @@ function HomePage() {
             title={getHeaderContent().title}
             subtitle={getHeaderContent().subtitle}
             notificationBell={<NotificationBell />}
+            onProfileClick={() => setActiveSection("profil")} 
           />
         </div>
 
@@ -975,6 +977,8 @@ function HomePage() {
                 {activeSection === "rendez_vous" && (
                   <RendezVousSection userRole="admin" />
                 )}
+
+                {activeSection === "profil" && <Profil />}
               </>
             )}
 
@@ -1031,9 +1035,9 @@ function HomePage() {
                   />
                 )}
 
-                {activeSection === "profil" && (
+                {/* {activeSection === "profil" && (
                   <ProfilSection userData={userData} onLogout={handleLogout} />
-                )}
+                )} */}
 
                 {activeSection === "absences" && <AbsencesSection />}
 
@@ -1054,6 +1058,8 @@ function HomePage() {
                 {activeSection === "rendez_vous" && (
                   <RendezVousSection userRole="collaborateur" />
                 )}
+
+                {activeSection === "profil" && <Profil />}
               </>
             )}
 
@@ -1137,6 +1143,8 @@ function HomePage() {
                 {activeSection === "rendez_vous" && (
                   <RendezVousSection userRole="manager" />
                 )}
+
+                {activeSection === "profil" && <Profil />}
               </>
             )}
 

@@ -58,6 +58,7 @@ export function Sidebar({
       },
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
       { id: "video_admin", label: "Onboarding", icon: Video },
+      {id: "profil", label: "Profil", icon: User}
     ];
 
     const managerItems = [
@@ -79,6 +80,7 @@ export function Sidebar({
       },
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
       { id: "video", label: "Onboarding", icon: Video },
+      {id: "profil", label: "Profil", icon: User}
       // { id: "certifications", label: "Certifications", icon: FileText },
       // { id: "suivi_des_agents", label: "Suivi des Agents", icon: Calendar },
       // { id: "taches_en_retard", label: "Taches en Retard", icon: Calendar },
@@ -99,9 +101,10 @@ export function Sidebar({
       // { id: "certifications", label: "Certifications", icon: FileText },
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
       { id: "video", label: "Onboarding", icon: Video },
+      {id: "profil", label: "Profil", icon: User}
     ];
 
-    const clientItems = [{ id: "profil", label: "Profil", icon: User }];
+    const clientItems = [{ id: "profil_client", label: "Profil", icon: User }];
 
     switch (userRole) {
       case "admin":
