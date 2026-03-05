@@ -356,7 +356,7 @@ export function RendezVousSection({ userRole }: RendezVousSectionProps) {
           <p className="text-gray-400 text-sm mt-0.5">
             {canManage
               ? "Gérez votre lien Calendly et consultez les disponibilités"
-              : "Prenez rendez-vous avec l'équipe d'encadrement"}
+              : "Prenez rendez-vous"}
           </p>
         </div>
 
@@ -371,32 +371,6 @@ export function RendezVousSection({ userRole }: RendezVousSectionProps) {
           </button>
         )}
       </div>
-
-      {/* Info bandeau si admin/manager a déjà un lien */}
-      {/* {canManage && myLink && (
-        <div className="bg-[#6C4EA8]/10 border border-[#6C4EA8]/30 rounded-xl px-5 py-4 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-3">
-            <div className="w-8 h-8 bg-[#6C4EA8]/20 rounded-lg flex items-center justify-center">
-              <Check className="w-4 h-4 text-[#6C4EA8]" />
-            </div>
-            <div>
-              <p className="text-white text-sm font-medium">
-                Votre lien Calendly est actif
-              </p>
-              <p className="text-gray-400 text-xs truncate max-w-xs">
-                {myLink.lienCalendly}
-              </p>
-            </div>
-          </div>
-          <button
-            onClick={() => setEditingLink(myLink)}
-            className="flex items-center gap-1.5 px-3 py-1.5 border border-[#313442] text-gray-300 text-xs rounded-lg hover:bg-white/5 transition-colors flex-shrink-0"
-          >
-            <Pencil className="w-3.5 h-3.5" />
-            Modifier
-          </button>
-        </div>
-      )} */}
 
       {/* Chargement */}
       {isLoading && (

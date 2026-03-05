@@ -22,13 +22,18 @@ export default function CollaboratorDropdown({
   loading,
 }: CollaboratorDropdownProps) {
   const [searchTerm, setSearchTerm] = useState("");
-  const [filteredCollaborators, setFilteredCollaborators] = useState<Agent[]>(collaborators);
+  const [filteredCollaborators, setFilteredCollaborators] =
+    useState<Agent[]>(collaborators);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Gérer le clic en dehors du dropdown
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
-      if (isOpen && dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+      if (
+        isOpen &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(event.target as Node)
+      ) {
         onToggle();
       }
     };
@@ -43,12 +48,13 @@ export default function CollaboratorDropdown({
     if (!searchTerm.trim()) {
       setFilteredCollaborators(collaborators);
     } else {
-      const filtered = collaborators.filter(collab =>
-        `${collab.prenoms || ''} ${collab.nom || ''}`
-          .toLowerCase()
-          .includes(searchTerm.toLowerCase()) ||
-        collab.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        collab.poste?.toLowerCase().includes(searchTerm.toLowerCase())
+      const filtered = collaborators.filter(
+        (collab) =>
+          `${collab.prenoms || ""} ${collab.nom || ""}`
+            .toLowerCase()
+            .includes(searchTerm.toLowerCase()) ||
+          collab.email?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+          collab.poste?.toLowerCase().includes(searchTerm.toLowerCase()),
       );
       setFilteredCollaborators(filtered);
     }
@@ -69,10 +75,29 @@ export default function CollaboratorDropdown({
         onClick={onToggle}
         className="flex items-center gap-2 px-3 py-2 bg-[#2a2a2d] hover:bg-[#35353a] border border-gray-700 rounded-lg transition-all duration-200 min-w-[240px]"
       >
-        <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-800 border border-gray-500">
+        {/* <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-800 border border-gray-500">
           <User className="w-4 h-4 text-gray-500" />
-        </div>
-        
+        </div> */}
+
+        {selectedCollaborator?.profilePhoto?.url ? (
+          <img
+            src={selectedCollaborator.profilePhoto.url}
+            alt={`${selectedCollaborator.prenoms} ${selectedCollaborator.nom}`}
+            className="w-8 h-8 rounded-full object-cover border border-gray-500"
+          />
+        ) : (
+          <div className="w-8 h-8 rounded-full flex items-center justify-center bg-gray-800 border border-gray-500">
+            {selectedCollaborator ? (
+              <span className="text-xs font-semibold">
+                {selectedCollaborator.prenoms?.charAt(0)}
+                {selectedCollaborator.nom?.charAt(0)}
+              </span>
+            ) : (
+              <User className="w-4 h-4 text-gray-500" />
+            )}
+          </div>
+        )}
+
         <div className="flex-1 text-left">
           {selectedCollaborator ? (
             <div>
@@ -85,12 +110,14 @@ export default function CollaboratorDropdown({
             </div>
           ) : (
             <div>
-              <div className="text-sm font-medium text-gray-300">Sélectionner un collaborateur</div>
+              <div className="text-sm font-medium text-gray-300">
+                Sélectionner un collaborateur
+              </div>
               <div className="text-xs text-gray-500">Cliquez pour choisir</div>
             </div>
           )}
         </div>
-        
+
         {isOpen ? (
           <ChevronUp className="w-4 h-4 text-gray-400" />
         ) : (
@@ -104,7 +131,10 @@ export default function CollaboratorDropdown({
           {/* En-tête avec recherche */}
           <div className="p-3 border-b border-gray-800">
             <div className="relative">
-              <Search className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-500" size={14} />
+              <Search
+                className="absolute left-2.5 top-1/2 transform -translate-y-1/2 text-gray-500"
+                size={14}
+              />
               <input
                 type="text"
                 placeholder="Rechercher..."
@@ -138,22 +168,35 @@ export default function CollaboratorDropdown({
                       onClick={() => handleSelect(collab)}
                       className={`w-full p-1.5 text-left hover:bg-gray-800/50 transition-colors flex items-center gap-2 ${
                         selectedCollaborator?._id === collab._id
-                          ? 'bg-purple-900/20 border-l-2 border-l-purple-500'
-                          : ''
-                      } ${collab.archived ? 'opacity-60' : ''}`}
+                          ? "bg-purple-900/20 border-l-2 border-l-purple-500"
+                          : ""
+                      } ${collab.archived ? "opacity-60" : ""}`}
                     >
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center ${
-                        collab.archived ? 'bg-gray-600' : 'bg-purple-600'
-                      }`}>
-                        <span className="text-xs font-semibold">
-                          {collab.prenoms?.charAt(0) || ''}{collab.nom?.charAt(0) || ''}
-                        </span>
-                      </div>
+                      {collab.profilePhoto?.url ? (
+                        <img
+                          src={collab.profilePhoto.url}
+                          alt={`${collab.prenoms} ${collab.nom}`}
+                          className="w-8 h-8 rounded-full object-cover border border-gray-700"
+                        />
+                      ) : (
+                        <div
+                          className={`w-8 h-8 rounded-full flex items-center justify-center ${
+                            collab.archived ? "bg-gray-600" : "bg-purple-600"
+                          }`}
+                        >
+                          <span className="text-xs font-semibold">
+                            {collab.prenoms?.charAt(0) || ""}
+                            {collab.nom?.charAt(0) || ""}
+                          </span>
+                        </div>
+                      )}
                       <div className="flex-1 min-w-0">
                         <div className="text-sm font-medium truncate">
                           {collab.prenoms} {collab.nom}
                           {collab.archived && (
-                            <span className="ml-1 text-xs text-gray-400">(archivé)</span>
+                            <span className="ml-1 text-xs text-gray-400">
+                              (archivé)
+                            </span>
                           )}
                         </div>
                         <div className="text-[10px] text-gray-400 truncate">
@@ -174,10 +217,10 @@ export default function CollaboratorDropdown({
                 {collaborators.length} collab.
               </div>
               <div className="text-gray-400">
-                {collaborators.filter(c => !c.archived).length} actif(s)
+                {collaborators.filter((c) => !c.archived).length} actif(s)
               </div>
               <div className="text-gray-400">
-                {collaborators.filter(c => c.archived).length} archivé(s)
+                {collaborators.filter((c) => c.archived).length} archivé(s)
               </div>
             </div>
           </div>
