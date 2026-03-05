@@ -85,7 +85,7 @@ export function KPIsSection({
             </p>
           </div>
         ) : kpis.length === 0 ? (
-          <div className="text-center py-6 bg-gradient-to-br from-slate-50 to-violet-50/30 rounded-xl">
+          <div className="text-center py-6 bg-[#303237] rounded-xl">
             <BarChart3 className="mx-auto h-10 w-10 text-white" />
             <p className="mt-3 text-white font-medium text-sm">
               Aucun rapport KPI uploadé

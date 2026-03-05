@@ -48,7 +48,7 @@ export class SpacePermissionsService {
     return this.spacePermissionModel.findOne({
       spaceId: new Types.ObjectId(spaceId),
       userId: new Types.ObjectId(userId),
-    }).populate('userId', 'nom prenoms email').exec();
+    }).populate('userId', 'nom prenoms email profilePhoto').exec();
   }
 
   async canUserEdit(spaceId: string, userId: string, userRole?: string): Promise<boolean> {
@@ -86,7 +86,7 @@ export class SpacePermissionsService {
   async getSpacePermissions(spaceId: string): Promise<SpacePermissionDocument[]> {
     return this.spacePermissionModel
       .find({ spaceId: new Types.ObjectId(spaceId) })
-      .populate('userId', 'nom prenoms email role')
+      .populate('userId', 'nom prenoms email role profilePhoto')
       .exec();
   }
 

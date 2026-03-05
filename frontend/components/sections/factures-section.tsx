@@ -262,7 +262,7 @@ export function FacturesSection({
                       </div>
                     </div>
                   </div>
-                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-slate-100">
+                  <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#313442]">
                     {/* <Button
                       size="sm"
                       variant="ghost"

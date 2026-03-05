@@ -561,7 +561,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
 
           <div className="flex items-center gap-3">
             {/* Bouton inviter */}
-            {canEdit && (
+            {userPermission === "super_editor" && (
               <button
                 onClick={() => setShowPermissions(true)}
                 className="flex items-center gap-2 px-4 py-2 bg-gray-800 hover:bg-gray-700 rounded-sm transition text-xs"
