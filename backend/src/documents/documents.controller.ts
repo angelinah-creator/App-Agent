@@ -12,12 +12,10 @@ import {
   Res,
 } from '@nestjs/common';
 import { FileInterceptor } from '@nestjs/platform-express';
-// ✅ CORRECTION : Utiliser 'import type' pour les types uniquement
 import type { Response } from 'express';
 import { DocumentsService } from './documents.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
-import { DocumentType } from './schemas/document.schema';
 import { Request } from 'express';
 import { AdminGuard } from 'src/auth/guards/admin.guard';
 
@@ -55,14 +53,6 @@ export class DocumentsController {
   @Get('my-documents')
   async getMyDocuments(@Req() req: AuthenticatedRequest) {
     return this.documentsService.getUserDocuments(req.user.userId);
-  }
-
-  @Get('my-documents/:type')
-  async getMyDocumentsByType(
-    @Param('type') type: DocumentType,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    return this.documentsService.getUserDocumentsByType(req.user.userId, type);
   }
 
   @Get('stats')

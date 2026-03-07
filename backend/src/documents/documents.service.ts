@@ -1,7 +1,7 @@
 import { Injectable, NotFoundException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { Document, DocumentDocument, DocumentType } from './schemas/document.schema';
+import { Document, DocumentDocument } from './schemas/document.schema';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateDocumentDto } from './dto/create-document.dto';
 import { UsersService } from '../users/users.service'; // AJOUT
@@ -54,7 +54,7 @@ export class DocumentsService {
     const timestamp = Date.now();
     const fileExtension = file.originalname.split('.').pop();
     // const fileName = `document_${createDocumentDto.type}_${cleanNom}_${cleanPrenoms}_${timestamp}.${fileExtension}`;
-    const fileName = `document_${createDocumentDto.type}_${cleanNom}_${cleanPrenoms}.${fileExtension}`;
+    const fileName = `document_${cleanNom}_${cleanPrenoms}.${fileExtension}`;
 
     try {
       // Upload vers Cloudinary
@@ -67,7 +67,6 @@ export class DocumentsService {
       // Créer le document en base
       const documentData = {
         userId: new Types.ObjectId(userId),
-        type: createDocumentDto.type,
         originalName: file.originalname,
         fileName: fileName,
         fileUrl: fileUrl,
@@ -92,11 +91,10 @@ export class DocumentsService {
       .exec();
   }
 
-  async getUserDocumentsByType(userId: string, type: DocumentType): Promise<DocumentDocument[]> {
+  async getUserDocumentsByType(userId: string): Promise<DocumentDocument[]> {
     return this.documentModel
       .find({ 
         userId: new Types.ObjectId(userId),
-        type: type 
       })
       .sort({ createdAt: -1 })
       .exec();

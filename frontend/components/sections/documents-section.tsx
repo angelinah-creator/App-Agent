@@ -71,18 +71,6 @@ export function DocumentsSection({
     );
   };
 
-  const getDocumentTypeLabel = (type: string) => {
-    const typeLabels: { [key: string]: string } = {
-      cin_recto: "CIN Recto",
-      cin_verso: "CIN Verso",
-      certificat_residence: "Certificat de Résidence",
-      diplome: "Diplôme",
-      cv: "CV",
-      autre: "Autre",
-    };
-    return typeLabels[type] || type;
-  };
-
   // 🔍 LOG DE DÉBOGAGE - À RETIRER APRÈS
   useEffect(() => {
     console.log("📊 Documents Section - NDAs:", {
@@ -326,10 +314,6 @@ export function DocumentsSection({
                       <h4 className="font-semibold text-white truncate">
                         {doc.originalName}
                       </h4>
-                      {/* <p className="text-sm text-[#F1F1F1]">
-                        {getDocumentTypeLabel(doc.type)} •{" "}
-                        {(doc.fileSize / (1024 * 1024)).toFixed(2)} MB
-                      </p> */}
                       <p className="text-xs text-[#F1F1F1] mt-1">
                         {new Date(doc.createdAt).toLocaleDateString("fr-FR")}
                       </p>

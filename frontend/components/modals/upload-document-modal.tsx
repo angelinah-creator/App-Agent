@@ -4,9 +4,8 @@ import type React from "react"
 
 import { X, Upload } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
+// import { input } from "@/components/ui/input"
+// import { div } from "@/components/ui/div"
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select"
 import type { CreateDocumentDto } from "@/lib/types"
 
@@ -35,8 +34,8 @@ export function UploadDocumentModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-      <Card className="w-full max-w-md border-slate-200/50 animate-in fade-in zoom-in-95 duration-300 shadow-2xl bg-white/95 backdrop-blur-xl">
-        <CardContent className="p-6">
+      <div className="w-full max-w-md border-slate-200/50 animate-in fade-in zoom-in-95 duration-300 shadow-2xl bg-white/95 backdrop-blur-xl">
+        <div className="p-6">
           <div className="flex items-center justify-between mb-6">
             <h3 className="text-xl font-semibold text-slate-800">Ajouter un document</h3>
             <button
@@ -49,32 +48,10 @@ export function UploadDocumentModal({
 
           <div className="space-y-4">
             <div>
-              <Label htmlFor="documentType" className="text-slate-700 font-medium">
-                Type de document
-              </Label>
-              <Select
-                value={uploadData.type}
-                onValueChange={(value: any) => onUploadDataChange({ ...uploadData, type: value })}
-              >
-                <SelectTrigger className="w-full mt-1.5 border-slate-300 focus:border-blue-500 focus:ring-blue-500">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="cin_recto">CIN Recto</SelectItem>
-                  <SelectItem value="cin_verso">CIN Verso</SelectItem>
-                  <SelectItem value="certificat_residence">Certificat de Résidence</SelectItem>
-                  <SelectItem value="diplome">Diplôme</SelectItem>
-                  <SelectItem value="cv">CV</SelectItem>
-                  <SelectItem value="autre">Autre</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div>
-              <Label htmlFor="description" className="text-slate-700 font-medium">
+              <div className="text-slate-700 font-medium">
                 Description (optionnel)
-              </Label>
-              <Input
+              </div>
+              <input
                 value={uploadData.description}
                 onChange={(e) => onUploadDataChange({ ...uploadData, description: e.target.value })}
                 placeholder="Description du document"
@@ -83,9 +60,9 @@ export function UploadDocumentModal({
             </div>
 
             <div>
-              <Label htmlFor="file" className="text-slate-700 font-medium">
+              <div  className="text-slate-700 font-medium">
                 Fichier
-              </Label>
+              </div>
               <div
                 className="mt-1.5 border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 hover:bg-blue-50/50 transition-all duration-300 hover:scale-102"
                 onClick={() => document.getElementById("file-upload")?.click()}
@@ -129,8 +106,8 @@ export function UploadDocumentModal({
               </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }

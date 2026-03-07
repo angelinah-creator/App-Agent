@@ -61,22 +61,10 @@ export function DocumentsSectionAdmin({
       searchTerm === "" ||
       doc.originalName.toLowerCase().includes(searchTerm.toLowerCase())
 
-    const matchesType = filterType === "all" || doc.type === filterType
+    const matchesType = filterType === "all"
 
     return matchesSearch && matchesType
   })
-
-  const getDocumentTypeLabel = (type: string) => {
-    const labels: Record<string, string> = {
-      cin_recto: "CIN Recto",
-      cin_verso: "CIN Verso",
-      certificat_residence: "Certificat de résidence",
-      diplome: "Diplôme",
-      cv: "CV",
-      autre: "Autre",
-    }
-    return labels[type] || type
-  }
 
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("fr-FR", {
@@ -141,21 +129,6 @@ export function DocumentsSectionAdmin({
                     className="pl-10 bg-[#2C2E3A] border border-[#2C2E3A]"
                   />
                 </div>
-
-                <Select value={filterType} onValueChange={setFilterType}>
-                  <SelectTrigger className="bg-[#2C2E3A] border border-[#2C2E3A] text-white">
-                    <SelectValue placeholder="Type de document" />
-                  </SelectTrigger>
-                  <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
-                    <SelectItem value="all">Tous les types</SelectItem>
-                    <SelectItem value="cin_recto">CIN Recto</SelectItem>
-                    <SelectItem value="cin_verso">CIN Verso</SelectItem>
-                    <SelectItem value="certificat_residence">Certificat de résidence</SelectItem>
-                    <SelectItem value="diplome">Diplôme</SelectItem>
-                    <SelectItem value="cv">CV</SelectItem>
-                    <SelectItem value="autre">Autre</SelectItem>
-                  </SelectContent>
-                </Select>
               </>
             )}
           </div>
@@ -226,12 +199,6 @@ export function DocumentsSectionAdmin({
                   </div>
                   
                   <div className="flex-1 space-y-2 min-w-0">
-                    <div className="flex items-center gap-2">
-                      <span className="text-xs px-2 py-1 rounded-full font-medium text-white">
-                        {getDocumentTypeLabel(doc.type)}
-                      </span>
-                    </div>
-
                     <h4 className="font-semibold text-white truncate text-sm">
                       {doc.originalName}
                     </h4>

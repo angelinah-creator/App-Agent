@@ -3,22 +3,10 @@ import { Document as MongoDocument, Types } from 'mongoose';
 
 export type DocumentDocument = Document & MongoDocument;
 
-export enum DocumentType {
-  CIN_RECTO = 'cin_recto',
-  CIN_VERSO = 'cin_vesro',
-  CERTIFICAT_RESIDENCE = 'certificat_residence',
-  DIPLOME = 'diplome',
-  CV = 'cv',
-  AUTRE = 'autre'
-}
-
 @Schema({ timestamps: true })
 export class Document {
   @Prop({ required: true, type: Types.ObjectId, ref: 'User' })
   userId: Types.ObjectId;
-
-  @Prop({ required: true, enum: DocumentType })
-  type: DocumentType;
 
   @Prop({ required: true })
   originalName: string;

@@ -42,7 +42,6 @@ export interface CreateClientDto {
 }
 
 export interface CreateDocumentDto {
-  type: "cin_recto" | "cin_verso" | "certificat_residence" | "diplome" | "cv" | "autre"
   description: string
 }
 

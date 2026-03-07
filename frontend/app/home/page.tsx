@@ -63,7 +63,6 @@ function HomePage() {
   // Document upload state
   const [showUploadModal, setShowUploadModal] = useState(false);
   const [uploadData, setUploadData] = useState<any>({
-    type: "cin_recto",
     description: "",
   });
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -549,7 +548,7 @@ function HomePage() {
       // Fermer le modal et réinitialiser
       setShowUploadModal(false);
       setSelectedFile(null);
-      setUploadData({ type: "cin_recto", description: "" });
+      setUploadData({description: "" });
     },
     onError: (error: any) => {
       console.error("Erreur upload document:", error);
