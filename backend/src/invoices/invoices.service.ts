@@ -96,6 +96,7 @@ export class InvoicesService {
         month: createInvoiceDto.month,
         year: createInvoiceDto.year,
         reference: createInvoiceDto.reference,
+        amount: createInvoiceDto.amount,
         pdfUrl,
         publicId,
         fileName,
@@ -126,27 +127,19 @@ export class InvoicesService {
       .populate('agentId', 'nom prenoms email profile')
       .exec();
 
-    if (!invoice) {
-      throw new NotFoundException('Facture non trouvée');
-    }
+    if (!invoice) throw new NotFoundException('Facture non trouvée');
 
     const updateData: any = {
       processedBy: new Types.ObjectId(adminId),
       processedAt: new Date(),
     };
 
-    if (updateInvoiceDto.amount !== undefined) {
-      updateData.amount = updateInvoiceDto.amount;
-    }
-
     if (updateInvoiceDto.paymentDate) {
       updateData.paymentDate = new Date(updateInvoiceDto.paymentDate);
     }
-
     if (updateInvoiceDto.transferReference) {
       updateData.transferReference = updateInvoiceDto.transferReference;
     }
-
     if (updateInvoiceDto.status) {
       updateData.status = updateInvoiceDto.status;
     }
@@ -157,27 +150,48 @@ export class InvoicesService {
       .populate('processedBy', 'nom prenoms')
       .exec();
 
-    // Notifier l'agent du changement de statut
     await this.notifyAgentAboutInvoiceUpdate(updatedInvoice!);
-
     return updatedInvoice!;
   }
 
   async getAgentInvoices(agentId: string): Promise<InvoiceDocument[]> {
-    return this.invoiceModel
+    const invoices = await this.invoiceModel
       .find({ agentId: new Types.ObjectId(agentId) })
       .populate('processedBy', 'nom prenoms')
-      .sort({ year: -1, month: -1 })
       .exec();
+
+    return invoices.sort((a, b) => {
+      const aIsPending = a.status === InvoiceStatus.PENDING;
+      const bIsPending = b.status === InvoiceStatus.PENDING;
+
+      if (aIsPending && !bIsPending) return -1;
+      if (!aIsPending && bIsPending) return 1;
+
+      if (a.year !== b.year) return b.year - a.year;
+      return b.month - a.month;
+    });
   }
 
   async getAllInvoices(): Promise<InvoiceDocument[]> {
-    return this.invoiceModel
+    const invoices = await this.invoiceModel
       .find()
       .populate('agentId', 'nom prenoms email profile')
       .populate('processedBy', 'nom prenoms')
-      .sort({ year: -1, month: -1, createdAt: -1 })
       .exec();
+
+    // Tri : pending en haut (du plus récent par période), paid en bas (du plus récent par période)
+    return invoices.sort((a, b) => {
+      const aIsPending = a.status === InvoiceStatus.PENDING;
+      const bIsPending = b.status === InvoiceStatus.PENDING;
+
+      // Séparer pending vs non-pending
+      if (aIsPending && !bIsPending) return -1;
+      if (!aIsPending && bIsPending) return 1;
+
+      // Dans le même groupe : trier par période décroissante (année puis mois)
+      if (a.year !== b.year) return b.year - a.year;
+      return b.month - a.month;
+    });
   }
 
   async getInvoiceById(invoiceId: string): Promise<InvoiceDocument> {

@@ -418,14 +418,19 @@ function HomePage() {
       month,
       year,
       reference,
+      amount,
       file,
     }: {
       month: number;
       year: number;
       reference: string;
+      amount: number;
       file: File;
     }) => {
-      return invoiceService.createInvoice({ month, year, reference }, file);
+      return invoiceService.createInvoice(
+        { month, year, reference, amount },
+        file,
+      );
     },
     onSuccess: async () => {
       // Invalider TOUTES les requêtes liées aux factures
@@ -548,7 +553,7 @@ function HomePage() {
       // Fermer le modal et réinitialiser
       setShowUploadModal(false);
       setSelectedFile(null);
-      setUploadData({description: "" });
+      setUploadData({ description: "" });
     },
     onError: (error: any) => {
       console.error("Erreur upload document:", error);
@@ -618,6 +623,7 @@ function HomePage() {
     month: number;
     year: number;
     reference: string;
+    amount: number;
     file: File;
   }) => {
     addInvoiceMutation.mutate(data);
@@ -636,7 +642,14 @@ function HomePage() {
     });
   };
 
-  const handleValidateInvoice = (invoiceId: string, data: any) => {
+  const handleValidateInvoice = (
+    invoiceId: string,
+    data: {
+      paymentDate: string;
+      transferReference: string;
+      status: string;
+    },
+  ) => {
     validateInvoiceMutation.mutate({ invoiceId, data });
   };
 
@@ -855,7 +868,7 @@ function HomePage() {
             title={getHeaderContent().title}
             subtitle={getHeaderContent().subtitle}
             notificationBell={<NotificationBell />}
-            onProfileClick={() => setActiveSection("profil")} 
+            onProfileClick={() => setActiveSection("profil")}
           />
         </div>
 

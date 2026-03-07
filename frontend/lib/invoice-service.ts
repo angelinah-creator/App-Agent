@@ -23,6 +23,7 @@ export interface CreateInvoiceDto {
   month: number;
   year: number;
   reference: string;
+  amount: number;
 }
 
 export interface UpdateInvoiceDto {
@@ -39,6 +40,7 @@ class InvoiceService {
     formData.append('month', createInvoiceDto.month.toString());
     formData.append('year', createInvoiceDto.year.toString());
     formData.append('reference', createInvoiceDto.reference);
+    formData.append('amount', createInvoiceDto.amount.toString()); 
 
     const response = await api.post('/invoices/upload', formData, {
       headers: {

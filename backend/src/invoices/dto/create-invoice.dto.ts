@@ -1,14 +1,4 @@
-// backend/src/invoices/dto/create-invoice.dto.ts
-import { 
-  IsNumber, 
-  IsString, 
-  IsNotEmpty, 
-  Min, 
-  Max, 
-  IsOptional,
-  IsInt,
-  IsPositive 
-} from 'class-validator';
+import { IsNumber, IsString, IsNotEmpty, Min, Max, IsInt } from 'class-validator';
 import { Type } from 'class-transformer';
 
 export class CreateInvoiceDto {
@@ -28,4 +18,9 @@ export class CreateInvoiceDto {
   @IsString()
   @IsNotEmpty()
   reference: string;
+
+  @Type(() => Number)
+  @IsNumber()
+  @IsNotEmpty()
+  amount: number;
 }

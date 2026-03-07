@@ -30,6 +30,7 @@ interface FacturesSectionProps {
     month: number;
     year: number;
     reference: string;
+    amount: number;
     file: File;
   }) => void;
   onViewInvoice: (invoice: Invoice) => void;
@@ -113,6 +114,7 @@ export function FacturesSection({
     month: number;
     year: number;
     reference: string;
+    amount: number;
     file: File | null;
   }) => {
     if (!data.file) {
@@ -120,11 +122,11 @@ export function FacturesSection({
       return;
     }
 
-    // CORRECTION: Utiliser les données passées par le dialog
     onAddInvoice({
       month: data.month,
       year: data.year,
       reference: data.reference,
+      amount: data.amount,
       file: data.file,
     });
     setIsDialogOpen(false);

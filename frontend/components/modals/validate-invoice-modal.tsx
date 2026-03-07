@@ -20,7 +20,6 @@ interface ValidateInvoiceModalProps {
   onClose: () => void;
   invoice: Invoice;
   onValidate: (data: {
-    amount: number;
     paymentDate: string;
     transferReference: string;
     status: string;
@@ -47,7 +46,7 @@ export function ValidateInvoiceModal({
       setPaymentDate(
         invoice.paymentDate
           ? new Date(invoice.paymentDate).toISOString().split("T")[0]
-          : ""
+          : "",
       );
       setTransferReference(invoice.transferReference || "");
       setStatus(invoice.status || "paid");
@@ -58,24 +57,11 @@ export function ValidateInvoiceModal({
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-
-    if (!amount || !paymentDate || !transferReference) {
+    if (!paymentDate || !transferReference) {
       alert("Veuillez remplir tous les champs obligatoires");
       return;
     }
-
-    const amountNum = parseFloat(amount);
-    if (isNaN(amountNum) || amountNum <= 0) {
-      alert("Le montant doit être un nombre positif");
-      return;
-    }
-
-    onValidate({
-      amount: amountNum,
-      paymentDate,
-      transferReference,
-      status,
-    });
+    onValidate({ paymentDate, transferReference, status });
   };
 
   const getMonthName = (month: number) => {
@@ -146,8 +132,8 @@ export function ValidateInvoiceModal({
                   {invoice.status === "pending"
                     ? "En attente"
                     : invoice.status === "paid"
-                    ? "Payée"
-                    : "Non payée"}
+                      ? "Payée"
+                      : "Non payée"}
                 </p>
               </div>
             </div>
@@ -155,26 +141,14 @@ export function ValidateInvoiceModal({
 
           <form onSubmit={handleSubmit} className="space-y-5">
             {/* Montant */}
-            <div className="space-y-2">
-              <Label htmlFor="amount" className="text-slate-700 font-medium">
-                Montant (Ar) <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="amount"
-                type="number"
-                step="0.01"
-                min="0"
-                placeholder="100000"
-                value={amount}
-                onChange={(e) => setAmount(e.target.value)}
-                required
-                className="transition-all duration-300 focus:scale-[1.01] border-slate-300 focus:border-green-500 focus:ring-green-500 bg-white"
-              />
-              <p className="text-xs text-slate-500">
-                Montant total de la facture en euros
+            <div>
+              <span className="text-slate-600">Montant:</span>
+              <p className="font-medium text-slate-800">
+                {invoice.amount
+                  ? invoice.amount.toLocaleString("fr-FR") + " Ar"
+                  : "Non défini"}
               </p>
             </div>
-
             {/* Date de paiement */}
             <div className="space-y-2">
               <Label

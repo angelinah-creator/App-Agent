@@ -36,7 +36,6 @@ interface FacturesSectionAdminProps {
   onValidate: (
     invoiceId: string,
     data: {
-      amount: number;
       paymentDate: string;
       transferReference: string;
       status: string;
@@ -178,10 +177,6 @@ export function FacturesSectionAdmin({
         matchesYear
       );
     })
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
-    ); // Tri du plus récent au plus ancien
 
   const getProcessedByInfo = (processedBy: any): string => {
     if (!processedBy) return "Non traité";
@@ -414,65 +409,43 @@ export function FacturesSectionAdmin({
                           </div>
                           {getStatusBadge(invoice.status)}
                         </div>
-
                         <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
                           <div>
                             <span className="text-white">Référence:</span>
-                            <span className="ml-2 font-medium text-white">
+                            <span className="ml-2 font-semibold text-violet-300">
                               {invoice.reference || "N/A"}
                             </span>
                           </div>
                           <div>
                             <span className="text-white">Période:</span>
-                            <span className="ml-2 font-medium text-white">
+                            <span className="ml-2 font-semibold text-violet-300">
                               {getMonthName(invoice.month)} {invoice.year}
                             </span>
                           </div>
                           <div>
-                            <span className="text-white">Email:</span>
-                            <span className="ml-2 font-medium text-white">
-                              {agentDetails.email}
-                            </span>
-                          </div>
-                          <div>
-                            <span className="text-white">Profil:</span>
-                            <span className="ml-2 font-medium text-white capitalize">
-                              {agentDetails.profile}
-                            </span>
-                          </div>
-                          <div>
                             <span className="text-white">Montant:</span>
-                            <span className="ml-2 font-medium text-white">
-                              {formatAmount(invoice.amount)}
+                            <span className="ml-2 font-semibold text-violet-300">
+                              {invoice.amount
+                                ? invoice.amount.toLocaleString("fr-FR") + " Ar"
+                                : "Non défini"}
                             </span>
                           </div>
-                          <div>
-                            <span className="text-white">
-                              Date de paiement:
-                            </span>
-                            <span className="ml-2 font-medium text-white">
-                              {formatDate(invoice.paymentDate)}
-                            </span>
-                          </div>
+                          {/* Informations secondaires (visibles seulement si renseignées) */}
+                          {invoice.paymentDate && (
+                            <div>
+                              <span className="text-white">
+                                Date de paiement:
+                              </span>
+                              <span className="ml-2 font-medium text-white">
+                                {formatDate(invoice.paymentDate)}
+                              </span>
+                            </div>
+                          )}
                           {invoice.transferReference && (
                             <div className="col-span-2">
                               <span className="text-white">Réf. virement:</span>
                               <span className="ml-2 font-medium text-white">
                                 {invoice.transferReference}
-                              </span>
-                            </div>
-                          )}
-                          <div>
-                            <span className="text-white">Date création:</span>
-                            <span className="ml-2 font-medium text-white">
-                              {formatDate(invoice.createdAt)}
-                            </span>
-                          </div>
-                          {invoice.processedBy && (
-                            <div>
-                              <span className="text-white">Traité par:</span>
-                              <span className="ml-2 font-medium text-white">
-                                {getProcessedByInfo(invoice.processedBy)}
                               </span>
                             </div>
                           )}
