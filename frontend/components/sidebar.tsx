@@ -62,12 +62,12 @@ export function Sidebar({
     ];
 
     const managerItems = [
-      { id: "tableau_de_bord", label: "Tableau de bord", icon: FileText },
+      // { id: "tableau_de_bord", label: "Tableau de bord", icon: FileText },
       { id: "documents", label: "Documents", icon: FileText },
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
       { id: "absences", label: "Demande d'Absences", icon: Calendar },
-      { id: "projets", label: "Projets", icon: FileText },
+      // { id: "projets", label: "Projets", icon: FileText },
       { id: "taches", label: "Espace Personnel", icon: Calendar },
       { id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users },
       { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
