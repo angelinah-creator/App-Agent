@@ -4,15 +4,6 @@ import type React from "react";
 
 import { X, Upload } from "lucide-react";
 import { Button } from "@/components/ui/button";
-// import { input } from "@/components/ui/input"
-// import { div } from "@/components/ui/div"
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
 import type { CreateDocumentDto } from "@/lib/types";
 
 interface UploadDocumentModalProps {

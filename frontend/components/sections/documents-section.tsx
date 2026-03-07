@@ -71,7 +71,6 @@ export function DocumentsSection({
     );
   };
 
-  // 🔍 LOG DE DÉBOGAGE - À RETIRER APRÈS
   useEffect(() => {
     console.log("📊 Documents Section - NDAs:", {
       count: ndas.length,
@@ -120,19 +119,6 @@ export function DocumentsSection({
           ) : (
             <div className="overflow-x-auto rounded-xl border border-[#313442]">
               <table className="w-full">
-                {/* <thead className="bg-[#1F2128]">
-                  <tr className="border-b border-[#313442]">
-                    <th className="text-left py-2 px-2 text-xs font-semibold text-white">
-                      Nom du fichier
-                    </th>
-                    <th className="text-left py-2 px-2 text-xs font-semibold text-white">
-                      Type
-                    </th>
-                    <th className="text-left py-2 px-2 text-xs font-semibold text-white">
-                      Actions
-                    </th>
-                  </tr>
-                </thead> */}
                 <tbody>
                   {contracts.map((contract: Contract) => (
                     <tr
@@ -142,9 +128,6 @@ export function DocumentsSection({
                       <td className="py-2 px-2 text-[#F1F1F1] font-medium text-sm">
                         {contract.fileName}
                       </td>
-                      {/* <td className="py-2 px-2 text-[#F1F1F1] capitalize text-sm">
-                        {contract.type}
-                      </td> */}
                       <td className="py-2 px-2">
                         <div className="flex items-center gap-1">
                           <Button
@@ -214,16 +197,6 @@ export function DocumentsSection({
           ) : (
             <div className="overflow-x-auto rounded-xl border border-[#313442]">
               <table className="w-full">
-                {/* <thead className="bg-[#1F2128]">
-                  <tr className="border-b border-[#313442]">
-                    <th className="text-left py-2 px-2 text-xs font-semibold text-white">
-                      Nom du fichier
-                    </th>
-                    <th className="text-left py-2 px-2 text-xs font-semibold text-white">
-                      Actions
-                    </th>
-                  </tr>
-                </thead> */}
                 <tbody>
                   {ndas.map((nda) => (
                     <tr
@@ -273,7 +246,7 @@ export function DocumentsSection({
           <h3 className="text-base font-semibold text-white">Mes Documents</h3>
           <Button
             onClick={onAddDocument}
-            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white"
+            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105"
           >
             <Plus className="w-4 h-4 mr-2" />
             Ajouter un document

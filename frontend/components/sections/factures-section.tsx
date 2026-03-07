@@ -140,7 +140,7 @@ export function FacturesSection({
   ).length;
   const invoicesUnpaid = filteredInvoices.filter(
     (f) => f.status === "unpaid",
-  ).length; // AJOUT
+  ).length;
 
   return (
     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8">
@@ -151,7 +151,7 @@ export function FacturesSection({
           </h3>
           <Button
             onClick={() => setIsDialogOpen(true)}
-            className="bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white hover:shadow-xl hover:shadow-blue-500/40 transition-all duration-300 hover:scale-105"
+            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white transition-all duration-300 hover:scale-105"
           >
             <Plus className="w-4 h-4 mr-2" />
             Ajouter une facture
@@ -224,19 +224,19 @@ export function FacturesSection({
             {filteredInvoices.map((invoice) => (
               <Card
                 key={invoice._id}
-                className="border-[#313442] hover:shadow-xl hover:shadow-slate-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm"
+                className="border-[#313442] hover:shadow-lg hover:shadow-[#313442] transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm"
               >
-                <CardContent className="p-3">
+                <CardContent className="">
                   <div className="flex items-start gap-2">
                     <div className="w-8 h-8 rounded-xl bg-gradient-to-br from-violet-100 to-purple-100 flex items-center justify-center flex-shrink-0 shadow-sm">
                       <FileText className="w-4 h-4 text-violet-600" />
                     </div>
                     <div className="flex-1 min-w-0">
                       <h4 className="font-semibold text-[#F1F1F1] truncate">
-                        {invoice.reference}
+                        {getMonthName(invoice.month)} {invoice.year}
                       </h4>
                       <p className="text-sm text-[#F1F1F1]">
-                        {getMonthName(invoice.month)} {invoice.year}
+                        {invoice.reference}
                       </p>
                       {invoice.amount && (
                         <p className="text-sm font-medium text-violet-600 mt-1">
@@ -263,32 +263,25 @@ export function FacturesSection({
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#313442]">
-                    {/* <Button
-                      size="sm"
-                      variant="ghost"
-                      onClick={() => onViewInvoice(invoice)}
-                      className="flex-1 text-[#F1F1F1] hover:text-blue-600 hover:bg-blue-50 transition-all duration-200"
-                    >
-                      <Eye className="w-4 h-4 mr-1" />
-                      Voir
-                    </Button> */}
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => onDownloadInvoice(invoice)}
                       disabled={deleteInvoicePending}
-                      className="text-[#F1F1F1] hover:text-green-600 hover:bg-green-50 transition-all duration-200"
+                      className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                     >
                       <Download className="w-4 h-4" />
+                      Télécharger
                     </Button>
                     <Button
                       size="sm"
                       variant="ghost"
                       onClick={() => onDeleteInvoice(invoice._id)}
                       disabled={deleteInvoicePending}
-                      className="text-[#F1F1F1] hover:text-red-600 hover:bg-red-50 transition-all duration-200"
+                      className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
                     >
                       <Trash2 className="w-4 h-4" />
+                      Supprimer
                     </Button>
                   </div>
                 </CardContent>

@@ -284,16 +284,16 @@ export function NotificationBell() {
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-96 p-0" align="end">
-        <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-slate-50 to-blue-50">
+        <div className="flex items-center justify-between p-4 border border-[#313442] bg-[#1F2128] rounded-t-sm">
           <div>
-            <h3 className="font-semibold text-slate-800">Notifications</h3>
+            <h3 className="font-semibold text-white">Notifications</h3>
             {unreadCount > 0 && (
               <p className="text-xs text-slate-600">
                 {unreadCount} non lue{unreadCount > 1 ? "s" : ""}
               </p>
             )}
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2  text-white">
             {notifications.some((n) => n.read) && (
               <Button
                 variant="ghost"
@@ -319,7 +319,7 @@ export function NotificationBell() {
           </div>
         </div>
 
-        <ScrollArea className="h-[400px]">
+        <ScrollArea className="h-[400px] bg-[#1F2128]">
           {isLoading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-8 w-8 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
@@ -339,7 +339,7 @@ export function NotificationBell() {
                 return (
                   <div
                     key={notification._id}
-                    className={`p-4 hover:bg-slate-50 transition-colors relative group ${
+                    className={`p-4 hover:bg-black/20 transition-colors relative group ${
                       !notification.read
                         ? "bg-blue-50/50 border-l-4 border-l-blue-500"
                         : ""
