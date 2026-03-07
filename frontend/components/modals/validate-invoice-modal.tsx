@@ -1,18 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { X, CheckCircle, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
+import { X, CheckCircle, XCircle, Calendar, FileText, DollarSign, AlertTriangle, ChevronDown } from "lucide-react";
 import type { Invoice } from "@/lib/types";
 
 interface ValidateInvoiceModalProps {
@@ -34,19 +23,16 @@ export function ValidateInvoiceModal({
   onValidate,
   isLoading,
 }: ValidateInvoiceModalProps) {
-  const [amount, setAmount] = useState<string>("");
   const [paymentDate, setPaymentDate] = useState<string>("");
   const [transferReference, setTransferReference] = useState<string>("");
-  const [status, setStatus] = useState<string>("paid"); // Par défaut "payée"
+  const [status, setStatus] = useState<string>("paid");
 
   useEffect(() => {
     if (isOpen) {
-      // Pré-remplir avec les valeurs existantes si disponibles
-      setAmount(invoice.amount?.toString() || "");
       setPaymentDate(
         invoice.paymentDate
           ? new Date(invoice.paymentDate).toISOString().split("T")[0]
-          : "",
+          : ""
       );
       setTransferReference(invoice.transferReference || "");
       setStatus(invoice.status || "paid");
@@ -66,104 +52,92 @@ export function ValidateInvoiceModal({
 
   const getMonthName = (month: number) => {
     const months = [
-      "Janvier",
-      "Février",
-      "Mars",
-      "Avril",
-      "Mai",
-      "Juin",
-      "Juillet",
-      "Août",
-      "Septembre",
-      "Octobre",
-      "Novembre",
-      "Décembre",
+      "Janvier", "Février", "Mars", "Avril", "Mai", "Juin",
+      "Juillet", "Août", "Septembre", "Octobre", "Novembre", "Décembre"
     ];
     return months[month - 1] || "Mois inconnu";
   };
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-      <Card className="w-full max-w-2xl border-slate-200/50 animate-in fade-in zoom-in-95 duration-300 shadow-2xl bg-white/95 backdrop-blur-xl max-h-[90vh] overflow-y-auto">
-        <CardContent className="p-6">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300 -mt-30">
+      <div className="w-full max-w-2xl h-screen animate-in fade-in zoom-in-95 duration-300 shadow-2xl bg-[#1F2128] backdrop-blur-xl rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto border border-[#313442]">
+        <div className="p-6">
+          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-br from-green-100 to-emerald-100 rounded-lg">
-                <CheckCircle className="w-6 h-6 text-green-600" />
+              <div className="p-2 rounded-xl bg-green-500/10">
+                <CheckCircle className="w-6 h-6 text-green-500" />
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-slate-800">
+                <h3 className="text-xl font-semibold text-white">
                   Valider la facture
                 </h3>
-                <p className="text-sm text-slate-600">
+                <p className="text-sm text-slate-400">
                   Complétez les informations de paiement
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-slate-100 rounded-xl transition-all duration-200 hover:scale-110"
+              className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 hover:scale-110"
             >
-              <X className="w-5 h-5 text-slate-600" />
+              <X className="w-5 h-5 text-slate-400" />
             </button>
           </div>
 
-          {/* Informations de la facture */}
-          <div className="mb-6 p-4 bg-gradient-to-r from-violet-50 to-purple-50 rounded-xl border border-violet-200">
-            <h4 className="font-semibold text-violet-900 mb-3">
-              Informations de la facture
-            </h4>
-            <div className="grid grid-cols-2 gap-3 text-sm">
-              <div>
-                <span className="text-slate-600">Référence:</span>
-                <p className="font-medium text-slate-800">
-                  {invoice.reference}
-                </p>
+          {/* Détails de la facture (style harmonisé) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            {/* Carte Référence & Période */}
+            <div className="p-4 bg-[#0F0F12] rounded-xl border border-[#313442]">
+              <div className="flex items-center gap-2 mb-2 text-violet-400">
+                <FileText className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  Référence & Période
+                </span>
               </div>
-              <div>
-                <span className="text-slate-600">Période:</span>
-                <p className="font-medium text-slate-800">
-                  {getMonthName(invoice.month)} {invoice.year}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <span className="text-slate-600">Statut actuel:</span>
-                <p className="font-medium text-slate-800">
-                  {invoice.status === "pending"
-                    ? "En attente"
-                    : invoice.status === "paid"
-                      ? "Payée"
-                      : "Non payée"}
-                </p>
-              </div>
+              <p className="text-white font-medium">{invoice.reference}</p>
+              <p className="text-sm text-slate-400">
+                {getMonthName(invoice.month)} {invoice.year}
+              </p>
             </div>
-          </div>
 
-          <form onSubmit={handleSubmit} className="space-y-5">
-            {/* Montant */}
-            <div>
-              <span className="text-slate-600">Montant:</span>
-              <p className="font-medium text-slate-800">
+            {/* Carte Montant & Statut actuel */}
+            <div className="p-4 bg-[#0F0F12] rounded-xl border border-[#313442]">
+              <div className="flex items-center gap-2 mb-2 text-blue-400">
+                <DollarSign className="w-4 h-4" />
+                <span className="text-xs font-bold uppercase tracking-wider">
+                  Montant & Statut
+                </span>
+              </div>
+              <p className="text-white font-medium">
                 {invoice.amount
                   ? invoice.amount.toLocaleString("fr-FR") + " Ar"
                   : "Non défini"}
               </p>
+              <p className="text-sm text-slate-400">
+                Statut actuel :{" "}
+                {invoice.status === "pending"
+                  ? "En attente"
+                  : invoice.status === "paid"
+                  ? "Payée"
+                  : "Non payée"}
+              </p>
             </div>
+          </div>
+
+          {/* Formulaire de validation */}
+          <form onSubmit={handleSubmit} className="space-y-5">
             {/* Date de paiement */}
             <div className="space-y-2">
-              <Label
-                htmlFor="paymentDate"
-                className="text-slate-700 font-medium"
-              >
-                Date de paiement <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="paymentDate"
+              <label className="text-white text-sm font-medium block">
+                Date de paiement <span className="text-red-400">*</span>
+              </label>
+              <input
                 type="date"
                 value={paymentDate}
                 onChange={(e) => setPaymentDate(e.target.value)}
                 required
-                className="transition-all duration-300 focus:scale-[1.01] border-slate-300 focus:border-green-500 focus:ring-green-500 bg-white"
+                className="w-full bg-[#0F0F12] border border-transparent focus:border-purple-500 text-white p-3 rounded-xl outline-none transition-colors [color-scheme:dark]"
               />
               <p className="text-xs text-slate-500">
                 Date à laquelle le paiement a été effectué
@@ -172,96 +146,84 @@ export function ValidateInvoiceModal({
 
             {/* Référence de virement */}
             <div className="space-y-2">
-              <Label
-                htmlFor="transferReference"
-                className="text-slate-700 font-medium"
-              >
-                Référence de virement <span className="text-red-500">*</span>
-              </Label>
-              <Input
-                id="transferReference"
+              <label className="text-white text-sm font-medium block">
+                Référence de virement <span className="text-red-400">*</span>
+              </label>
+              <input
                 type="text"
                 placeholder="VIR-2025-001234"
                 value={transferReference}
                 onChange={(e) => setTransferReference(e.target.value)}
                 required
-                className="transition-all duration-300 focus:scale-[1.01] border-slate-300 focus:border-green-500 focus:ring-green-500 bg-white"
+                className="w-full bg-[#0F0F12] border border-transparent focus:border-purple-500 text-white p-3 rounded-xl outline-none transition-colors placeholder:text-slate-600"
               />
               <p className="text-xs text-slate-500">
                 Numéro de référence du virement bancaire
               </p>
             </div>
 
-            {/* Statut - Simplifié avec seulement payée/non payée */}
+            {/* Statut (select natif stylisé) */}
             <div className="space-y-2">
-              <Label htmlFor="status" className="text-slate-700 font-medium">
-                Statut <span className="text-red-500">*</span>
-              </Label>
-              <Select value={status} onValueChange={setStatus}>
-                <SelectTrigger className="transition-all duration-300 focus:scale-[1.01] border-slate-300 focus:border-green-500 bg-white">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="paid">
-                    <div className="flex items-center gap-2">
-                      <CheckCircle className="w-4 h-4 text-green-600" />
-                      <span>Payée</span>
-                    </div>
-                  </SelectItem>
-                  <SelectItem value="unpaid">
-                    <div className="flex items-center gap-2">
-                      <XCircle className="w-4 h-4 text-red-600" />
-                      <span>Non payée</span>
-                    </div>
-                  </SelectItem>
-                </SelectContent>
-              </Select>
+              <label className="text-white text-sm font-medium block">
+                Statut <span className="text-red-400">*</span>
+              </label>
+              <div className="relative">
+                <select
+                  value={status}
+                  onChange={(e) => setStatus(e.target.value)}
+                  className="w-full bg-[#0F0F12] border border-transparent focus:border-purple-500 text-white p-3 rounded-xl outline-none transition-colors appearance-none"
+                >
+                  <option value="paid" className="bg-[#1F2128] text-white">
+                    Payée
+                  </option>
+                  <option value="unpaid" className="bg-[#1F2128] text-white">
+                    Non payée
+                  </option>
+                </select>
+                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
+              </div>
               <p className="text-xs text-slate-500">
                 Statut de paiement de la facture
               </p>
             </div>
 
             {/* Avertissement */}
-            <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg">
-              <p className="text-sm text-amber-800">
-                ⚠️ <strong>Important:</strong> L'agent sera automatiquement
-                notifié de cette validation par email et notification.
+            <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl mb-6">
+              <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+              <p className="text-xs text-amber-200/80 leading-relaxed">
+                <strong>Notification automatique :</strong> L'agent sera
+                automatiquement notifié de cette validation par email et
+                notification.
               </p>
             </div>
 
             {/* Actions */}
-            <div className="flex gap-3 pt-4">
-              <Button
+            <div className="flex gap-3">
+              <button
                 type="submit"
-                disabled={
-                  isLoading || !amount || !paymentDate || !transferReference
-                }
-                className="flex-1 bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 text-white shadow-lg shadow-green-500/30 hover:shadow-xl transition-all duration-300 hover:scale-105"
+                disabled={isLoading || !paymentDate || !transferReference}
+                className="flex-[2] py-3 rounded-xl font-semibold text-white bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-lg shadow-green-900/20 transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 {isLoading ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                    Validation...
-                  </>
+                  <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
                 ) : (
                   <>
-                    <CheckCircle className="w-4 h-4 mr-2" />
+                    <CheckCircle className="w-5 h-5" />
                     Valider la facture
                   </>
                 )}
-              </Button>
-              <Button
+              </button>
+              <button
                 type="button"
                 onClick={onClose}
-                variant="outline"
-                className="flex-1 text-slate-600 border-slate-300 hover:bg-slate-50 transition-all duration-200 bg-transparent"
+                className="flex-1 bg-transparent border border-[#313442] text-slate-300 hover:bg-white/5 py-3 rounded-xl font-medium transition-all duration-300"
               >
                 Annuler
-              </Button>
+              </button>
             </div>
           </form>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   );
-}
+} 

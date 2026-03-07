@@ -240,11 +240,6 @@ export function FacturesSection({
                       <p className="text-sm text-[#F1F1F1]">
                         {invoice.reference}
                       </p>
-                      {invoice.amount && (
-                        <p className="text-sm font-medium text-violet-600 mt-1">
-                          {invoice.amount.toLocaleString("fr-FR")} Ar
-                        </p>
-                      )}
                       {invoice.paymentDate && (
                         <p className="text-xs text-[#F1F1F1]">
                           Payé le{" "}
