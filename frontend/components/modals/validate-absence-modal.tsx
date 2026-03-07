@@ -1,11 +1,7 @@
 "use client"
 
 import { useState } from "react"
-import { X, CheckCircle, XCircle, Calendar, User } from "lucide-react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
+import { X, CheckCircle, XCircle, Calendar, User, AlertTriangle } from "lucide-react"
 import type { Absence } from "@/lib/absence-service"
 
 interface ValidateAbsenceModalProps {
@@ -14,7 +10,7 @@ interface ValidateAbsenceModalProps {
   absence: Absence
   onValidate: (data: { status: string; adminReason: string }) => void
   isLoading: boolean
-  actionType: "approve" | "reject" | null // Nouveau prop pour spécifier l'action
+  actionType: "approve" | "reject" | null
 }
 
 export function ValidateAbsenceModal({
@@ -23,7 +19,7 @@ export function ValidateAbsenceModal({
   absence,
   onValidate,
   isLoading,
-  actionType, // Nouveau prop
+  actionType,
 }: ValidateAbsenceModalProps) {
   const [adminReason, setAdminReason] = useState("")
 
@@ -31,12 +27,6 @@ export function ValidateAbsenceModal({
 
   const handleSubmit = () => {
     if (!actionType) return
-
-    if (actionType === "reject" && !adminReason.trim()) {
-      alert("Veuillez fournir une raison pour le rejet")
-      return
-    }
-
     onValidate({
       status: actionType === "approve" ? "approved" : "rejected",
       adminReason: adminReason.trim(),
@@ -50,13 +40,6 @@ export function ValidateAbsenceModal({
     return "Agent inconnu"
   }
 
-  const getAgentEmail = () => {
-    if (typeof absence.agentId === "object" && absence.agentId.email) {
-      return absence.agentId.email
-    }
-    return ""
-  }
-
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("fr-FR", {
       day: "numeric",
@@ -65,169 +48,116 @@ export function ValidateAbsenceModal({
     })
   }
 
-  const calculateDuration = () => {
-    const start = new Date(absence.startDate)
-    const end = new Date(absence.endDate)
-    const diffTime = Math.abs(end.getTime() - start.getTime())
-    const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) + 1
-    return `${diffDays} jour${diffDays > 1 ? "s" : ""}`
-  }
-
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-      <Card className="w-full max-w-2xl border-slate-200/50 animate-in fade-in zoom-in-95 duration-300 shadow-2xl bg-white/95 backdrop-blur-xl max-h-[90vh] overflow-y-auto">
-        <CardContent className="p-6">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300 -mt-90">
+      <div className="w-full max-w-2xl animate-in fade-in zoom-in-95 duration-300 shadow-2xl bg-[#1F2128] backdrop-blur-xl rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto border border-[#313442]">
+        <div className="p-6">
+          {/* Header */}
           <div className="flex items-center justify-between mb-6">
             <div className="flex items-center gap-3">
-              <div className={`p-2 rounded-lg ${
-                actionType === "approve" 
-                  ? "bg-gradient-to-br from-green-100 to-emerald-100" 
-                  : "bg-gradient-to-br from-red-100 to-rose-100"
+              <div className={`p-2 rounded-xl ${
+                actionType === "approve" ? "bg-green-500/10" : "bg-red-500/10"
               }`}>
                 {actionType === "approve" ? (
-                  <CheckCircle className="w-6 h-6 text-green-600" />
+                  <CheckCircle className="w-6 h-6 text-green-500" />
                 ) : (
-                  <XCircle className="w-6 h-6 text-red-600" />
+                  <XCircle className="w-6 h-6 text-red-500" />
                 )}
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-slate-800">
+                <h3 className="text-xl font-semibold text-white">
                   {actionType === "approve" ? "Approuver la demande" : "Rejeter la demande"}
                 </h3>
-                <p className="text-sm text-slate-600">
-                  {actionType === "approve" 
-                    ? "Confirmez l'approbation de cette demande d'absence" 
-                    : "Indiquez la raison du rejet de cette demande"}
+                <p className="text-sm text-slate-400">
+                  {getAgentName()} — {formatDate(absence.startDate)}
                 </p>
               </div>
             </div>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-slate-100 rounded-xl transition-all duration-200 hover:scale-110"
+              className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 hover:scale-110"
             >
-              <X className="w-5 h-5 text-slate-600" />
+              <X className="w-5 h-5 text-slate-400" />
             </button>
           </div>
 
-          {/* Informations de l'absence */}
-          <div className="mb-6 space-y-4">
-            <div className="p-4 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-xl border border-purple-200">
-              <h4 className="font-semibold text-purple-900 mb-3 flex items-center gap-2">
-                <User className="w-4 h-4" />
-                Informations de l'agent
-              </h4>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="text-slate-600">Nom:</span>
-                  <p className="font-medium text-slate-800">{getAgentName()}</p>
-                </div>
-                <div>
-                  <span className="text-slate-600">Email:</span>
-                  <p className="font-medium text-slate-800">{getAgentEmail()}</p>
-                </div>
-              </div>
+          {/* Détails de l'absence (Style harmonisé avec le dark theme) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+            <div className="p-4 bg-[#0F0F12] rounded-xl border border-[#313442]">
+               <div className="flex items-center gap-2 mb-2 text-violet-400">
+                  <User className="w-4 h-4" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Agent</span>
+               </div>
+               <p className="text-white font-medium">{getAgentName()}</p>
+               <p className="text-xs text-slate-500">Backup: {absence.backupPerson}</p>
             </div>
 
-            <div className="p-4 bg-gradient-to-r from-blue-50 to-cyan-50 rounded-xl border border-blue-200">
-              <h4 className="font-semibold text-blue-900 mb-3 flex items-center gap-2">
-                <Calendar className="w-4 h-4" />
-                Détails de l'absence
-              </h4>
-              <div className="grid grid-cols-2 gap-3 text-sm">
-                <div>
-                  <span className="text-slate-600">Date de début:</span>
-                  <p className="font-medium text-slate-800">{formatDate(absence.startDate)}</p>
-                </div>
-                <div>
-                  <span className="text-slate-600">Date de fin:</span>
-                  <p className="font-medium text-slate-800">{formatDate(absence.endDate)}</p>
-                </div>
-                <div>
-                  <span className="text-slate-600">Durée:</span>
-                  <p className="font-medium text-slate-800">{calculateDuration()}</p>
-                </div>
-                <div>
-                  <span className="text-slate-600">Personne de backup:</span>
-                  <p className="font-medium text-slate-800">{absence.backupPerson}</p>
-                </div>
-                <div className="col-span-2">
-                  <span className="text-slate-600">Raison:</span>
-                  <p className="mt-1 font-medium text-slate-800 p-3 bg-white rounded-lg border border-slate-200">
-                    {absence.reason}
-                  </p>
-                </div>
-              </div>
+            <div className="p-4 bg-[#0F0F12] rounded-xl border border-[#313442]">
+               <div className="flex items-center gap-2 mb-2 text-blue-400">
+                  <Calendar className="w-4 h-4" />
+                  <span className="text-xs font-bold uppercase tracking-wider">Période</span>
+               </div>
+               <p className="text-white font-medium">Du {formatDate(absence.startDate)}</p>
+               <p className="text-white font-medium">Au {formatDate(absence.endDate)}</p>
+            </div>
+
+            <div className="md:col-span-2 p-4 bg-[#0F0F12] rounded-xl border border-[#313442]">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-500 block mb-1">Raison de l'absence</span>
+              <p className="text-sm text-slate-300 italic">"{absence.reason}"</p>
             </div>
           </div>
 
-          {/* Commentaire admin */}
+          {/* Commentaire Admin */}
           <div className="space-y-2 mb-6">
-            <Label htmlFor="adminReason" className="text-slate-700 font-medium">
-              {actionType === "approve" ? "Message (optionnel)" : "Raison du rejet (optionnel)"}
-            </Label>
-            <Textarea
-              id="adminReason"
+            <label className="text-white text-sm font-medium block">
+              {actionType === "approve" ? "Message à l'agent (optionnel)" : "Motif du rejet"}
+            </label>
+            <textarea
               value={adminReason}
               onChange={(e) => setAdminReason(e.target.value)}
-              placeholder={
-                actionType === "approve"
-                  ? "Ajoutez un message optionnel pour l'agent..."
-                  : "Expliquez la raison du rejet (optionnel)..."
-              }
-              className="min-h-[100px] transition-all duration-300 focus:scale-[1.01] border-slate-300 focus:border-purple-500 focus:ring-purple-500 bg-white"
+              placeholder={actionType === "approve" ? "Bonnes vacances !" : "Poste non pourvu durant cette période..."}
+              rows={3}
+              className="w-full bg-[#0F0F12] border border-transparent focus:border-purple-500 text-white p-3 rounded-xl outline-none transition-colors resize-none placeholder:text-slate-600"
             />
-            <p className="text-xs text-slate-500">
-              {actionType === "approve" 
-                ? "Le message est optionnel pour une approbation"
-                : "La raison du rejet est optionnelle"
-              }
-            </p>
           </div>
 
-          {/* Avertissement */}
-          <div className="p-4 bg-amber-50 border border-amber-200 rounded-lg mb-6">
-            <p className="text-sm text-amber-800">
-              ⚠️ <strong>Important:</strong> L'agent sera automatiquement notifié de votre décision par email et notification.
+          {/* Warning */}
+          <div className="flex items-start gap-3 p-4 bg-amber-500/10 border border-amber-500/20 rounded-xl mb-6">
+            <AlertTriangle className="w-5 h-5 text-amber-500 shrink-0 mt-0.5" />
+            <p className="text-xs text-amber-200/80 leading-relaxed">
+              <strong>Notification automatique :</strong> En validant, un email sera envoyé à l'agent pour l'informer de votre décision. Cette action est irréversible.
             </p>
           </div>
 
           {/* Actions */}
           <div className="flex gap-3">
-            <Button
+            <button
               onClick={handleSubmit}
               disabled={isLoading}
-              className={`flex-1 text-white shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 ${
+              className={`flex-[2] py-3 rounded-xl font-semibold text-white transition-all duration-300 active:scale-95 flex items-center justify-center gap-2 ${
                 actionType === "approve"
-                  ? "bg-gradient-to-r from-green-600 to-emerald-600 hover:from-green-700 hover:to-emerald-700 shadow-green-500/30"
-                  : "bg-gradient-to-r from-red-600 to-rose-600 hover:from-red-700 hover:to-rose-700 shadow-red-500/30"
+                  ? "bg-green-600 hover:bg-green-700 shadow-lg shadow-green-900/20"
+                  : "bg-red-600 hover:bg-red-700 shadow-lg shadow-red-900/20"
               }`}
             >
               {isLoading ? (
-                <>
-                  <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                  {actionType === "approve" ? "Approbation..." : "Rejet..."}
-                </>
+                <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-white"></div>
               ) : (
                 <>
-                  {actionType === "approve" ? (
-                    <CheckCircle className="w-4 h-4 mr-2" />
-                  ) : (
-                    <XCircle className="w-4 h-4 mr-2" />
-                  )}
-                  {actionType === "approve" ? "Approuver" : "Rejeter"}
+                  {actionType === "approve" ? <CheckCircle className="w-5 h-5" /> : <XCircle className="w-5 h-5" />}
+                  {actionType === "approve" ? "Confirmer l'approbation" : "Confirmer le rejet"}
                 </>
               )}
-            </Button>
-            <Button
+            </button>
+            <button
               onClick={onClose}
-              variant="outline"
-              className="flex-1 text-slate-600 border-slate-300 hover:bg-slate-50 transition-all duration-200 bg-transparent"
+              className="flex-1 bg-transparent border border-[#313442] text-slate-300 hover:bg-white/5 py-3 rounded-xl font-medium transition-all duration-300"
             >
               Annuler
-            </Button>
+            </button>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </div>
     </div>
   )
 }
