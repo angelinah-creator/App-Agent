@@ -292,7 +292,7 @@ export function FacturesSection({
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-        <Card className="border-[#313442] hover:shadow-xl hover:shadow-violet-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
           <CardContent className="p-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-violet-500 to-violet-600 flex items-center justify-center">
@@ -310,7 +310,7 @@ export function FacturesSection({
           </CardContent>
         </Card>
 
-        <Card className="border-[#313442] hover:shadow-xl hover:shadow-orange-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
           <CardContent className="p-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-orange-500 to-orange-600 flex items-center justify-center">
@@ -326,7 +326,7 @@ export function FacturesSection({
           </CardContent>
         </Card>
 
-        <Card className="border-[#313442] hover:shadow-xl hover:shadow-green-200/50 transition-all duration-300 hover:scale-105 bg-[#1F2128] backdrop-blur-sm">
+        <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
           <CardContent className="p-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-green-500 to-green-600 flex items-center justify-center">
