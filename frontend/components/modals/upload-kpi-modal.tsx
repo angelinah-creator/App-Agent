@@ -12,7 +12,7 @@ interface UploadKPIModalProps {
   uploadData: CreateKPIDto
   onUploadDataChange: (data: CreateKPIDto) => void
   selectedFile: File | null
-  onFileSelect: (e: React.ChangeEvent<HTMLDivElement>) => void
+  onFileSelect: (e: React.ChangeEvent<HTMLInputElement>) => void
   onUpload: () => void
   isLoading: boolean
 }
