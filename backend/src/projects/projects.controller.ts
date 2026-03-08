@@ -108,53 +108,6 @@ export class ProjectsController {
     );
   }
 
-  @Delete(':id')
-  @HttpCode(HttpStatus.NO_CONTENT)
-  remove(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
-    return this.projectsService.remove(id, req.user.userId, req.user.role);
-  }
-
-  // ─── GESTION DES FICHIERS ─────────────────────────────────────────────────────
-
-  @Post(':id/files')
-  @UseInterceptors(FileInterceptor('file'))
-  uploadFile(
-    @Param('id') id: string,
-    @UploadedFile() file: Express.Multer.File,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    if (!file) {
-      throw new BadRequestException('Aucun fichier fourni');
-    }
-    // Max 50MB
-    if (file.size > 50 * 1024 * 1024) {
-      throw new BadRequestException('Fichier trop volumineux (max 50MB)');
-    }
-    return this.projectsService.uploadFile(
-      id,
-      file,
-      req.user.userId,
-      req.user.role,
-    );
-  }
-
-  @Delete(':id/files/:publicId')
-  deleteFile(
-    @Param('id') id: string,
-    @Param('publicId') publicId: string,
-    @Req() req: AuthenticatedRequest,
-  ) {
-    // Décoder le publicId car il peut contenir des slashes
-    const decodedPublicId = decodeURIComponent(publicId);
-    return this.projectsService.deleteFile(
-      id,
-      decodedPublicId,
-      req.user.userId,
-      req.user.role,
-    );
-  }
-
-
   @Get(':id/files/:publicId/download')
   async downloadFile(
     @Param('id') id: string,
