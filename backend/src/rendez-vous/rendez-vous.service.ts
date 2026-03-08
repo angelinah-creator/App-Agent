@@ -24,13 +24,17 @@ export class RendezVousService {
     userRole: string,
     dto: CreateRendezVousDto,
   ): Promise<RendezVousDocument> {
-    if (userRole !== 'admin' && userRole !== 'manager') {
+    // Maintenant les collaborateurs peuvent aussi ajouter un lien
+    if (
+      userRole !== 'admin' &&
+      userRole !== 'manager' &&
+      userRole !== 'collaborateur'
+    ) {
       throw new ForbiddenException(
-        'Seuls les admins et managers peuvent ajouter un lien Calendly',
+        'Seuls les admins, managers et collaborateurs peuvent ajouter un lien Calendly',
       );
     }
 
-    // Récupérer nom/prenoms depuis la BDD
     const user = await this.usersService.findOne(userId);
     if (!user) throw new NotFoundException('Utilisateur non trouvé');
 
@@ -50,6 +54,7 @@ export class RendezVousService {
       role: userRole,
       lienCalendly: dto.lienCalendly,
       description: dto.description,
+      socialLinks: dto.socialLinks || {},
     });
 
     return created.save();
@@ -61,7 +66,6 @@ export class RendezVousService {
       .sort({ createdAt: -1 })
       .exec();
 
-    // Enrichir chaque lien avec la photo à jour
     const enriched = await Promise.all(
       links.map(async (link) => {
         const user = await this.usersService.findOne(link.userId.toString());

@@ -30,6 +30,13 @@ export interface Video {
   updatedAt: string;
 }
 
+export interface VideoProgress {
+  watchedCount: number;
+  totalCount: number;
+  percentage: number;
+  watchedVideoIds: string[];
+}
+
 export interface CreateVideoData {
   title: string;
   description?: string;
@@ -77,6 +84,11 @@ class VideoService {
 
   async incrementViews(id: string): Promise<void> {
     await api.patch(`/videos/${id}/view`);
+  }
+
+  async getMyProgress(): Promise<VideoProgress> {
+    const response = await api.get('/videos/my-progress');
+    return response.data;
   }
 }
 

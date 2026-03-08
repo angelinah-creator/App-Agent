@@ -1,14 +1,27 @@
 import { api } from '@/lib/api-config';
 
+export interface SocialLinks {
+  facebook?: string;
+  instagram?: string;
+  linkedin?: string;
+  tiktok?: string;
+  x?: string;
+  whatsapp?: string;
+  youtube?: string;
+  github?: string;
+  website?: string;
+}
+
 export interface RendezVousLink {
   _id: string;
   userId: string;
   nom: string;
   prenoms: string;
-  role: 'admin' | 'manager';
+  role: 'admin' | 'manager' | 'collaborateur';
   lienCalendly: string;
   description?: string;
   isActive: boolean;
+  socialLinks?: SocialLinks;
   profilePhoto?: {
     url: string;
     publicId: string;
@@ -20,12 +33,14 @@ export interface RendezVousLink {
 export interface CreateRendezVousDto {
   lienCalendly: string;
   description?: string;
+  socialLinks?: SocialLinks;
 }
 
 export interface UpdateRendezVousDto {
   lienCalendly?: string;
   description?: string;
   isActive?: boolean;
+  socialLinks?: SocialLinks;
 }
 
 export const rendezVousService = {
@@ -35,8 +50,12 @@ export const rendezVousService = {
   },
 
   async getMyLink(): Promise<RendezVousLink | null> {
-    const response = await api.get('/rendez-vous/me');
-    return response.data;
+    try {
+      const response = await api.get('/rendez-vous/me');
+      return response.data;
+    } catch {
+      return null;
+    }
   },
 
   async createLink(dto: CreateRendezVousDto): Promise<RendezVousLink> {

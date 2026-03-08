@@ -25,7 +25,6 @@ import { ManagerGuard } from '../auth/guards/manager.guard';
 export class VideosController {
   constructor(private readonly videosService: VideosService) {}
 
-  // Upload - Admin et Manager seulement
   @Post('upload')
   @UseGuards(JwtAuthGuard, ManagerGuard)
   @UseInterceptors(FileInterceptor('video'))
@@ -57,36 +56,44 @@ export class VideosController {
     return this.videosService.create(createVideoDto, file, user.userId);
   }
 
-  // Récupérer toutes les vidéos actives (collaborateurs)
   @Get()
   @UseGuards(JwtAuthGuard)
   async findAll(): Promise<Video[]> {
     return this.videosService.findAll();
   }
 
-  // Récupérer toutes les vidéos (admin - inclut inactives)
   @Get('admin')
   @UseGuards(JwtAuthGuard, ManagerGuard)
   async findAllAdmin(): Promise<Video[]> {
     return this.videosService.findAllAdmin();
   }
 
-  // Récupérer une vidéo par ID
+  @Get('my-progress')
+  @UseGuards(JwtAuthGuard)
+  async getMyProgress(@Req() request: express.Request) {
+    const user = request.user as any;
+    return this.videosService.getUserProgress(user.userId);
+  }
+
   @Get(':id')
   @UseGuards(JwtAuthGuard)
   async findOne(@Param('id') id: string): Promise<Video> {
     return this.videosService.findOne(id);
   }
 
-  // Incrémenter les vues
   @Patch(':id/view')
   @UseGuards(JwtAuthGuard)
-  async incrementViews(@Param('id') id: string): Promise<{ message: string }> {
+  async incrementViews(
+    @Param('id') id: string,
+    @Req() request: express.Request,
+  ): Promise<{ message: string }> {
+    const user = request.user as any;
     await this.videosService.incrementViews(id);
+    // Marquer comme vue par cet utilisateur
+    await this.videosService.markVideoWatched(id, user.userId);
     return { message: 'Vue enregistrée' };
   }
 
-  // Modification - Admin et Manager seulement
   @Put(':id')
   @UseGuards(JwtAuthGuard, ManagerGuard)
   async update(
@@ -96,7 +103,6 @@ export class VideosController {
     return this.videosService.update(id, updateVideoDto);
   }
 
-  // Suppression - Admin et Manager seulement
   @Delete(':id')
   @UseGuards(JwtAuthGuard, ManagerGuard)
   async remove(@Param('id') id: string): Promise<{ message: string }> {

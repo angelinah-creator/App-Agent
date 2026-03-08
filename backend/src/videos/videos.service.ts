@@ -5,6 +5,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Video, VideoDocument } from './schemas/video.schema';
+import { VideoProgress, VideoProgressDocument } from './schemas/video-progress.schema';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
 import { CreateVideoDto, UpdateVideoDto } from './dto/create-video.dto';
 
@@ -12,6 +13,8 @@ import { CreateVideoDto, UpdateVideoDto } from './dto/create-video.dto';
 export class VideosService {
   constructor(
     @InjectModel(Video.name) private videoModel: Model<VideoDocument>,
+    @InjectModel(VideoProgress.name)
+    private videoProgressModel: Model<VideoProgressDocument>,
     private cloudinaryService: CloudinaryService,
   ) {}
 
@@ -20,7 +23,6 @@ export class VideosService {
     file: Express.Multer.File,
     userId: string,
   ): Promise<Video> {
-    // Upload vers Cloudinary
     const uploadResult = await this.cloudinaryService.uploadVideo(
       file.buffer,
       `${Date.now()}_${file.originalname}`,
@@ -97,4 +99,70 @@ export class VideosService {
     await this.cloudinaryService.deleteVideo(video.publicId);
     await this.videoModel.findByIdAndDelete(id);
   }
+
+  // ─── Progression ────────────────────────────────────────────────────────
+
+  /**
+   * Marquer une vidéo comme vue par un utilisateur
+   */
+  async markVideoWatched(videoId: string, userId: string): Promise<void> {
+    await this.videoProgressModel.findOneAndUpdate(
+      {
+        userId: new Types.ObjectId(userId),
+        videoId: new Types.ObjectId(videoId),
+      },
+      {
+        watched: true,
+        watchedAt: new Date(),
+      },
+      { upsert: true, new: true },
+    );
+  }
+
+  /**
+   * Récupérer la progression d'un utilisateur
+   * Retourne { watchedCount, totalCount, percentage, watchedVideoIds }
+   */
+  async getUserProgress(userId: string): Promise<{
+  watchedCount: number;
+  totalCount: number;
+  percentage: number;
+  watchedVideoIds: string[];
+}> {
+  const totalCount = await this.videoModel.countDocuments({ isActive: true });
+
+  const watchedRecords = await this.videoProgressModel
+    .find({
+      userId: new Types.ObjectId(userId),
+      watched: true,
+    })
+    .exec();
+
+  const activeVideos = await this.videoModel
+    .find({ isActive: true })
+    .select('_id')
+    .exec();
+
+  // Cast explicite pour résoudre l'erreur "unknown"
+  const activeIds = new Set(
+    activeVideos.map((v) => (v._id as Types.ObjectId).toString())
+  );
+
+  const validWatched = watchedRecords.filter((r) =>
+    activeIds.has((r.videoId as Types.ObjectId).toString()),
+  );
+
+  const watchedCount = validWatched.length;
+  const percentage =
+    totalCount > 0 ? Math.round((watchedCount / totalCount) * 100) : 0;
+
+  return {
+    watchedCount,
+    totalCount,
+    percentage,
+    watchedVideoIds: validWatched.map((r) =>
+      (r.videoId as Types.ObjectId).toString()
+    ),
+  };
+}
 }
