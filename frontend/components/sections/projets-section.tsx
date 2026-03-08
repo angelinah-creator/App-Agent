@@ -237,9 +237,9 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
                       {project.name}
                     </h3>
                   </div>
-
+              
                   {/* Menu contextuel */}
-                  <div className="relative ml-2">
+                  <div className="relative ml-2 z-10">
                     <button
                       onClick={(e) => {
                         e.stopPropagation();
