@@ -52,6 +52,12 @@ export interface UpdateProjectDto {
   invitedCollaborateurs?: string[];
 }
 
+
+export interface AvailableMembers {
+  managers: import("@/lib/users-service").Agent[];
+  collaborateurs: import("@/lib/users-service").Agent[];
+}
+
 export const projectService = {
   // ─── CRUD ────────────────────────────────────────────────────────────────────
 
@@ -137,6 +143,11 @@ export const projectService = {
     const response = await api.post(
       `/projects/${projectId}/invite-collaborateur/${collaborateurId}`,
     );
+    return response.data;
+  },
+
+  async getAvailableMembers(): Promise<AvailableMembers> {
+    const response = await api.get('/projects/available-members');
     return response.data;
   },
 

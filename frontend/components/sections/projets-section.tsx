@@ -62,11 +62,19 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
     queryFn: projectService.getAll,
   });
 
-  const { data: allUsers = [] } = useQuery<Agent[]>({
-    queryKey: ["agents", false],
-    queryFn: () => usersService.getAllAgents(false),
+  // Utilise la route /projects/available-members accessible aux managers ET admins
+  // (contrairement à GET /users qui est admin only)
+  const { data: availableMembers } = useQuery({
+    queryKey: ["available-members"],
+    queryFn: () => projectService.getAvailableMembers(),
     enabled: userRole === "admin" || userRole === "manager",
   });
+
+  // Fusionne managers + collaborateurs en un seul tableau pour les modals
+  const allUsers: Agent[] = [
+    ...(availableMembers?.managers || []),
+    ...(availableMembers?.collaborateurs || []),
+  ];
 
   // ─── Mutations ────────────────────────────────────────────────────────────────
 

@@ -8,6 +8,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { ProjectEntity, ProjectDocument } from './schemas/project.schema';
+import { User, UserDocument } from '../users/schemas/user.schema';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -17,6 +18,8 @@ export class ProjectsService {
   constructor(
     @InjectModel(ProjectEntity.name)
     private projectModel: Model<ProjectDocument>,
+    @InjectModel(User.name)
+    private userModel: Model<UserDocument>,
     private cloudinaryService: CloudinaryService,
   ) {}
 
@@ -378,6 +381,29 @@ export class ProjectsService {
       .exec();
 
     return this.findOne(projectId, userId, userRole);
+  }
+
+  // ─── MEMBRES DISPONIBLES ─────────────────────────────────────────────────────
+
+  /**
+   * Retourne tous les managers et collaborateurs actifs.
+   * Utilisé par les managers pour voir qui inviter dans leurs projets.
+   */
+  async getAvailableMembers(): Promise<{
+    managers: any[];
+    collaborateurs: any[];
+  }> {
+    const managers = await this.userModel
+      .find({ role: 'manager', archived: false })
+      .select('_id nom prenoms email role profile profilePhoto')
+      .exec();
+
+    const collaborateurs = await this.userModel
+      .find({ role: 'collaborateur', archived: false })
+      .select('_id nom prenoms email role profile profilePhoto')
+      .exec();
+
+    return { managers, collaborateurs };
   }
 
   // ─── HELPERS PRIVÉS ───────────────────────────────────────────────────────────

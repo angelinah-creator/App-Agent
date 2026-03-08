@@ -70,6 +70,15 @@ export class ProjectsController {
     throw new BadRequestException('Rôle non autorisé');
   }
 
+  @Get('available-members')
+  getAvailableMembers(@Req() req: AuthenticatedRequest) {
+    const { role } = req.user;
+    if (role !== 'admin' && role !== 'manager') {
+      throw new BadRequestException('Accès non autorisé');
+    }
+    return this.projectsService.getAvailableMembers();
+  }
+
   @Get(':id')
   findOne(@Param('id') id: string, @Req() req: AuthenticatedRequest) {
     return this.projectsService.findOne(id, req.user.userId, req.user.role);
