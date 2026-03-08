@@ -86,8 +86,14 @@ export const personalTaskService = {
     return response.data;
   },
 
-  async createSubtask(parentTaskId: string, data: CreateSubtaskDto): Promise<Task> {
-    const response = await api.post(`/personal/tasks/${parentTaskId}/subtasks`, data);
+  async createSubtask(
+    parentTaskId: string,
+    data: CreateSubtaskDto,
+  ): Promise<Task> {
+    const response = await api.post(
+      `/personal/tasks/${parentTaskId}/subtasks`,
+      data,
+    );
     return response.data;
   },
 
@@ -102,6 +108,7 @@ export const personalTaskService = {
     status?: TaskStatus;
     start_date?: string;
     end_date?: string;
+    includeArchived?: boolean;
   }): Promise<Task[]> {
     const params = new URLSearchParams();
     if (filters?.project_id) params.append("project_id", filters.project_id);
@@ -109,6 +116,7 @@ export const personalTaskService = {
     if (filters?.status) params.append("status", filters.status);
     if (filters?.start_date) params.append("start_date", filters.start_date);
     if (filters?.end_date) params.append("end_date", filters.end_date);
+    if (filters?.includeArchived) params.append("includeArchived", "true");
 
     const url = `/personal/tasks${params.toString() ? `?${params.toString()}` : ""}`;
     const response = await api.get(url);
@@ -137,6 +145,11 @@ export const personalTaskService = {
     const response = await api.get("/personal/tasks/stats");
     return response.data;
   },
+
+  async archiveCompletedTasks(): Promise<{ message: string }> {
+    const response = await api.post('/personal/tasks/archive-completed');
+    return response.data;
+  }
 };
 
 // Service pour les tâches partagées
@@ -146,13 +159,22 @@ export const sharedTaskService = {
     return response.data;
   },
 
-  async createSubtask(spaceId: string, parentTaskId: string, data: CreateSubtaskDto): Promise<Task> {
-    const response = await api.post(`/shared/spaces/${spaceId}/tasks/${parentTaskId}/subtasks`, data);
+  async createSubtask(
+    spaceId: string,
+    parentTaskId: string,
+    data: CreateSubtaskDto,
+  ): Promise<Task> {
+    const response = await api.post(
+      `/shared/spaces/${spaceId}/tasks/${parentTaskId}/subtasks`,
+      data,
+    );
     return response.data;
   },
 
   async getSubtasks(spaceId: string, parentTaskId: string): Promise<Task[]> {
-    const response = await api.get(`/shared/spaces/${spaceId}/tasks/${parentTaskId}/subtasks`);
+    const response = await api.get(
+      `/shared/spaces/${spaceId}/tasks/${parentTaskId}/subtasks`,
+    );
     return response.data;
   },
 
@@ -165,7 +187,7 @@ export const sharedTaskService = {
       status?: TaskStatus;
       start_date?: string;
       end_date?: string;
-    }
+    },
   ): Promise<Task[]> {
     const params = new URLSearchParams();
     if (filters?.assignee) params.append("assignee", filters.assignee);
@@ -188,11 +210,11 @@ export const sharedTaskService = {
   async update(
     spaceId: string,
     taskId: string,
-    data: UpdateTaskDto
+    data: UpdateTaskDto,
   ): Promise<Task> {
     const response = await api.put(
       `/shared/spaces/${spaceId}/tasks/${taskId}`,
-      data
+      data,
     );
     return response.data;
   },
@@ -210,11 +232,20 @@ export const sharedTaskService = {
     return response.data;
   },
 
-  // MODIFIÉ : utilise le nouvel endpoint backend
-  async getMySharedTasks(filters?: { status?: TaskStatus; spaceId?: string }): Promise<Task[]> {
+  async getMySharedTasks(filters?: {
+    status?: TaskStatus;
+    spaceId?: string;
+  }): Promise<Task[]> {
     const params = new URLSearchParams();
-    if (filters?.status) params.append('status', filters.status);
-    const response = await api.get(`/shared/tasks/my-assigned?${params.toString()}`);
+    if (filters?.status) params.append("status", filters.status);
+    const response = await api.get(
+      `/shared/tasks/my-assigned?${params.toString()}`,
+    );
     return response.data;
-  }
+  },
+
+  async archiveCompletedTasks(): Promise<{ message: string }> {
+    const response = await api.post("/personal/tasks/archive-completed");
+    return response.data;
+  },
 };

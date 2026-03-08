@@ -236,12 +236,16 @@ export class PersonalTasksService {
   async getUserPersonalTasks(
     userId: string,
     filters?: any,
+    includeArchived: boolean = false,
   ): Promise<PersonalTaskDocument[]> {
     const query: any = {
       personalUserId: new Types.ObjectId(userId),
       parentTaskId: null, // Ne retourner que les tâches parentes par défaut
     };
 
+    if (!includeArchived) {
+      query.archivedAt = null;
+    }
     // Appliquer les filtres
     if (filters.project_id) {
       query.project_id = new Types.ObjectId(filters.project_id);
@@ -391,5 +395,27 @@ export class PersonalTasksService {
       .populate('project_id', 'name description')
       .sort({ createdAt: 1 })
       .exec();
+  }
+
+  async archiveOldCompletedTasks(
+    userId: string,
+    daysOld: number = 20,
+  ): Promise<number> {
+    const cutoffDate = new Date();
+    cutoffDate.setDate(cutoffDate.getDate() - daysOld);
+
+    const result = await this.personalTaskModel.updateMany(
+      {
+        personalUserId: new Types.ObjectId(userId),
+        status: TaskStatus.TERMINEE,
+        updatedAt: { $lt: cutoffDate },
+        archivedAt: null,
+      },
+      {
+        $set: { archivedAt: new Date() },
+      },
+    );
+
+    return result.modifiedCount;
   }
 }

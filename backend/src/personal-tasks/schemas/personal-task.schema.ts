@@ -51,6 +51,9 @@ export class PersonalTask {
 
   @Prop({ type: Types.ObjectId, ref: 'Project' })
   project_id?: Types.ObjectId;
+
+  @Prop()
+  archivedAt?: Date;
 }
 
 export const PersonalTaskSchema = SchemaFactory.createForClass(PersonalTask);

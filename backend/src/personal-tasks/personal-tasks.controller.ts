@@ -65,11 +65,9 @@ export class PersonalTasksController {
   }
 
   @Get()
-  getMyTasks(@Req() req: AuthenticatedRequest, @Query() filters: any) {
-    return this.personalTasksService.getUserPersonalTasks(
-      req.user.userId,
-      filters,
-    );
+  getMyTasks(@Req() req: AuthenticatedRequest, @Query() filters: any, @Query('includeArchived') includeArchived?: string) {
+    const include = includeArchived === 'true';
+    return this.personalTasksService.getUserPersonalTasks(req.user.userId, filters, include);
   }
 
   @Get('stats')
@@ -150,5 +148,14 @@ export class PersonalTasksController {
       req.user.userId,
       req.user.role,
     );
+  }
+
+  @Post('archive-completed')
+  @UseGuards(JwtAuthGuard)
+  async archiveCompletedTasks(@Req() req: AuthenticatedRequest) {
+    const count = await this.personalTasksService.archiveOldCompletedTasks(
+      req.user.userId,
+    );
+    return { message: `${count} tâches archivées` };
   }
 }

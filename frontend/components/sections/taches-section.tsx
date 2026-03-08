@@ -9,6 +9,7 @@ import {
   Calendar,
   Flag,
   Plus,
+  Archive,
 } from "lucide-react";
 import {
   DndContext,
@@ -46,6 +47,7 @@ import TaskDetailModal from "./kanban/TaskDetailModal";
 import ProjectFilter from "./kanban/ProjectFilter";
 import PriorityFilter from "./kanban/PriorityFilter";
 import SubtaskDetailModal from "./kanban/SubtaskDetailModal";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 export function TachesSection() {
   const [userData, setUserData] = useState<any>(null);
@@ -55,11 +57,10 @@ export function TachesSection() {
   const [selectedPriority, setSelectedPriority] = useState<
     TaskPriority | "all"
   >("all");
+  const [showArchived, setShowArchived] = useState(false);
 
-  const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<any[]>([]);
-  const [loading, setLoading] = useState(true);
 
   const [subtasksMap, setSubtasksMap] = useState<Record<string, Task[]>>({});
   const [selectedSubtask, setSelectedSubtask] = useState<Task | null>(null);
@@ -73,7 +74,7 @@ export function TachesSection() {
         return saved ? JSON.parse(saved) : {};
       }
       return {};
-    }
+    },
   );
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -84,10 +85,11 @@ export function TachesSection() {
     isShared: boolean;
   } | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-
   const [defaultStatusForNewTask, setDefaultStatusForNewTask] = useState<
     TaskStatus | undefined
   >(undefined);
+
+  const queryClient = useQueryClient();
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -97,55 +99,65 @@ export function TachesSection() {
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
-  // Charger les données
+  // Charger les données utilisateur
   useEffect(() => {
     const storedUserData = localStorage.getItem("userData");
     if (storedUserData) {
       setUserData(JSON.parse(storedUserData));
     }
+  }, []);
+
+  // Charger les projets et utilisateurs une fois
+  useEffect(() => {
+    const loadData = async () => {
+      try {
+        const [projectsData, usersData] = await Promise.all([
+          projectService.getAll(),
+          usersService.searchUsers({ role: "collaborateur" }),
+        ]);
+        setProjects(projectsData);
+        setUsers(usersData);
+      } catch (error) {
+        console.error("Erreur chargement données de base:", error);
+      }
+    };
     loadData();
   }, []);
+
+  // Requête des tâches avec prise en compte du filtre d'archivage
+  const { data: tasks = [], isLoading } = useQuery({
+    queryKey: ["personalTasks", showArchived],
+    queryFn: () =>
+      personalTaskService.getMyTasks({
+        includeArchived: showArchived,
+      }),
+  });
+
+  // Mutation pour l'archivage automatique
+  const archiveCompletedMutation = useMutation({
+    mutationFn: personalTaskService.archiveCompletedTasks,
+    onSuccess: (data: { message: string }) => {
+      queryClient.invalidateQueries({ queryKey: ["personalTasks"] });
+      alert(data.message || "Tâches archivées avec succès");
+    },
+    onError: (error) => {
+      console.error("Erreur archivage:", error);
+      alert("Erreur lors de l'archivage des tâches terminées");
+    },
+  });
 
   // Sauvegarder l'état des tâches déployées
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem(
         "expanded_tasks_personal",
-        JSON.stringify(expandedTasks)
+        JSON.stringify(expandedTasks),
       );
     }
   }, [expandedTasks]);
-
-  const loadData = async () => {
-    try {
-      setLoading(true);
-      const [tasksData, projectsData, usersData] = await Promise.all([
-        personalTaskService.getMyTasks(),
-        projectService.getAll(),
-        usersService.searchUsers({ role: "collaborateur" }),
-      ]);
-
-      setTasks(tasksData);
-      setProjects(projectsData);
-      setUsers(usersData);
-
-      // Charger les sous-tâches pour les tâches déjà déployées
-      const promises = [];
-      for (const taskId in expandedTasks) {
-        if (expandedTasks[taskId]) {
-          promises.push(loadSubtasks(taskId));
-        }
-      }
-      await Promise.all(promises);
-    } catch (error) {
-      console.error("Erreur chargement données:", error);
-    } finally {
-      setLoading(false);
-    }
-  };
 
   // Charger les sous-tâches pour une tâche spécifique
   const loadSubtasks = async (taskId: string) => {
@@ -171,7 +183,7 @@ export function TachesSection() {
     }
   };
 
-  // Filtrer les tâches
+  // Filtrer les tâches selon la recherche, projet et priorité
   const filteredTasks = tasks.filter((task) => {
     if (
       searchTerm &&
@@ -195,7 +207,7 @@ export function TachesSection() {
       const task = tasks.find((t) => t._id === event.active.id);
       setActiveTask(task || null);
     },
-    [tasks]
+    [tasks],
   );
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -212,10 +224,10 @@ export function TachesSection() {
 
     try {
       // Mettre à jour le statut dans l'UI immédiatement
-      setTasks((prev) =>
-        prev.map((task) =>
-          task._id === taskId ? { ...task, status: newStatus } : task
-        )
+      queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
+        old?.map((task) =>
+          task._id === taskId ? { ...task, status: newStatus } : task,
+        ),
       );
 
       // Si c'est une tâche parente, mettre à jour aussi les sous-tâches
@@ -233,8 +245,7 @@ export function TachesSection() {
       await personalTaskService.update(taskId, { status: newStatus });
     } catch (error) {
       console.error("Erreur mise à jour statut:", error);
-      // Revert en cas d'erreur
-      loadData();
+      queryClient.invalidateQueries({ queryKey: ["personalTasks"] });
     } finally {
       setActiveId(null);
       setActiveTask(null);
@@ -245,7 +256,10 @@ export function TachesSection() {
   const handleCreateTask = async (data: CreateTaskDto) => {
     try {
       const newTask = await personalTaskService.create(data);
-      setTasks((prev) => [...prev, newTask]);
+      queryClient.setQueryData<Task[]>(
+        ["personalTasks", showArchived],
+        (old) => [...(old || []), newTask],
+      );
       setShowTaskForm(false);
     } catch (error) {
       console.error("Erreur création tâche:", error);
@@ -255,23 +269,21 @@ export function TachesSection() {
   // Créer une sous-tâche
   const handleCreateSubtask = async (
     parentTaskId: string,
-    data: CreateSubtaskDto
+    data: CreateSubtaskDto,
   ) => {
     try {
       const newSubtask = await personalTaskService.createSubtask(
         parentTaskId,
-        data
+        data,
       );
 
-      // Mettre à jour les sous-tâches dans la map
       setSubtasksMap((prev) => ({
         ...prev,
         [parentTaskId]: [...(prev[parentTaskId] || []), newSubtask],
       }));
 
-      // Mettre à jour le nombre de sous-tâches dans la tâche parente
-      setTasks((prev) =>
-        prev.map((task) => {
+      queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
+        old?.map((task) => {
           if (task._id === parentTaskId) {
             return {
               ...task,
@@ -279,7 +291,7 @@ export function TachesSection() {
             };
           }
           return task;
-        })
+        }),
       );
 
       setShowSubtaskForm(null);
@@ -288,6 +300,7 @@ export function TachesSection() {
     }
   };
 
+  // Mettre à jour une tâche
   const handleUpdateTask = async (taskId: string, data: any) => {
     try {
       const updatedTask = await personalTaskService.update(taskId, data);
@@ -296,7 +309,6 @@ export function TachesSection() {
       let isSubtask = false;
       let parentId: string | undefined;
 
-      // Chercher dans les sous-tâches existantes
       for (const pid in subtasksMap) {
         const subtask = subtasksMap[pid].find((st) => st._id === taskId);
         if (subtask) {
@@ -307,21 +319,20 @@ export function TachesSection() {
       }
 
       if (isSubtask && parentId) {
-        // Mettre à jour dans la map des sous-tâches
         setSubtasksMap((prev) => ({
           ...prev,
           [parentId]: (prev[parentId] || []).map((st) =>
-            st._id === taskId ? { ...st, ...updatedTask } : st
+            st._id === taskId ? { ...st, ...updatedTask } : st,
           ),
         }));
-        // Fermer le modal des sous-tâches
         setSelectedSubtask(null);
       } else {
-        // Si c'est une tâche parente
-        setTasks((prev) =>
-          prev.map((task) =>
-            task._id === taskId ? { ...task, ...updatedTask } : task
-          )
+        queryClient.setQueryData<Task[]>(
+          ["personalTasks", showArchived],
+          (old) =>
+            old?.map((task) =>
+              task._id === taskId ? { ...task, ...updatedTask } : task,
+            ),
         );
         setSelectedTask(null);
       }
@@ -343,39 +354,37 @@ export function TachesSection() {
 
       if (!taskToDelete) return;
 
-      // Vérifier si c'est une sous-tâche
-      const isSubtask =
-        taskToDelete.parentTaskId !== undefined &&
-        taskToDelete.parentTaskId !== null;
+      const isSubtask = taskToDelete.parentTaskId != null;
 
       await personalTaskService.delete(taskId);
 
       if (isSubtask) {
-        // Supprimer de la map des sous-tâches
         const parentId = taskToDelete.parentTaskId as string;
         setSubtasksMap((prev) => ({
           ...prev,
           [parentId]: (prev[parentId] || []).filter((st) => st._id !== taskId),
         }));
 
-        // Mettre à jour la liste des sous-tâches dans la tâche parente
-        setTasks((prev) =>
-          prev.map((task) => {
-            if (task._id === parentId) {
-              return {
-                ...task,
-                sub_tasks: task.sub_tasks.filter((id) => id !== taskId),
-              };
-            }
-            return task;
-          })
+        queryClient.setQueryData<Task[]>(
+          ["personalTasks", showArchived],
+          (old) =>
+            old?.map((task) => {
+              if (task._id === parentId) {
+                return {
+                  ...task,
+                  sub_tasks: task.sub_tasks.filter((id) => id !== taskId),
+                };
+              }
+              return task;
+            }),
         );
 
-        // Fermer le modal des sous-tâches
         setSelectedSubtask(null);
       } else {
-        // Supprimer la tâche parente
-        setTasks((prev) => prev.filter((task) => task._id !== taskId));
+        queryClient.setQueryData<Task[]>(
+          ["personalTasks", showArchived],
+          (old) => old?.filter((task) => task._id !== taskId),
+        );
         setSelectedTask(null);
       }
     } catch (error) {
@@ -383,29 +392,23 @@ export function TachesSection() {
     }
   };
 
-  // Gérer l'édition d'une tâche
+  // Gérer l'édition
   const handleEditTask = (taskId: string) => {
-    console.log("handleEditTask appelé avec taskId:", taskId);
-
-    // D'abord chercher dans les sous-tâches
+    // Chercher dans les sous-tâches
     for (const parentId in subtasksMap) {
       const subtask = subtasksMap[parentId].find((st) => st._id === taskId);
       if (subtask) {
-        console.log("Sous-tâche trouvée:", subtask.title);
-        setSelectedSubtask(subtask); // Utiliser le nouveau state
+        setSelectedSubtask(subtask);
         return;
       }
     }
 
-    // Si pas trouvé dans les sous-tâches, chercher dans les tâches parentes
+    // Chercher dans les tâches parentes
     const parentTask = tasks.find((t) => t._id === taskId);
     if (parentTask) {
-      console.log("Tâche parente trouvée:", parentTask.title);
       setSelectedTask(parentTask);
       return;
     }
-
-    console.warn("Aucune tâche trouvée avec l'ID:", taskId);
   };
 
   // Gérer l'ajout d'une sous-tâche
@@ -416,7 +419,7 @@ export function TachesSection() {
     });
   };
 
-  // Colonnes Kanban (légèrement réduites en largeur)
+  // Colonnes Kanban
   const columns = [
     {
       id: TaskStatus.A_FAIRE,
@@ -444,7 +447,7 @@ export function TachesSection() {
     },
   ];
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0f0f10] text-gray-100">
         <div className="flex items-center justify-center h-64">
@@ -467,6 +470,28 @@ export function TachesSection() {
         </div>
 
         <div className="flex items-center gap-4">
+          {/* Bouton d'archivage */}
+          <button
+            onClick={() => archiveCompletedMutation.mutate()}
+            disabled={archiveCompletedMutation.isPending}
+            className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-xs disabled:opacity-50"
+          >
+            <Archive size={16} />
+            {archiveCompletedMutation.isPending
+              ? "Archivage..."
+              : "Nettoyer les terminées"}
+          </button>
+
+          {/* Bouton afficher/masquer archivées */}
+          <button
+            onClick={() => setShowArchived(!showArchived)}
+            className={`px-4 py-2 rounded-lg transition text-xs ${
+              showArchived ? "bg-purple-600" : "bg-gray-700 hover:bg-gray-600"
+            }`}
+          >
+            {showArchived ? "Masquer archivées" : "Voir archivées"}
+          </button>
+
           <button
             onClick={() => {
               setDefaultStatusForNewTask(undefined);
@@ -480,7 +505,7 @@ export function TachesSection() {
         </div>
       </div>
 
-      {/* Barre de contrôle - responsive */}
+      {/* Barre de contrôle */}
       <div className="mb-6 p-2 bg-[#1a1a1d] rounded-xl border border-gray-800">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
           {/* Mode d'affichage */}
@@ -546,7 +571,7 @@ export function TachesSection() {
         </div>
       </div>
 
-      {/* Tableau Kanban - avec scroll horizontal */}
+      {/* Tableau Kanban */}
       {viewMode === "kanban" && (
         <DndContext
           sensors={sensors}
@@ -584,7 +609,9 @@ export function TachesSection() {
                           key={task._id}
                           task={task}
                           subtasks={subtasksMap[task._id] || []}
-                          loadingSubtasks={loadingSubtasksMap[task._id] || false}
+                          loadingSubtasks={
+                            loadingSubtasksMap[task._id] || false
+                          }
                           isSubtasksExpanded={expandedTasks[task._id] || false}
                           onEdit={handleEditTask}
                           onDelete={handleDeleteTask}
@@ -614,7 +641,7 @@ export function TachesSection() {
         </DndContext>
       )}
 
-      {/* Vue Liste - avec table responsive */}
+      {/* Vue Liste */}
       {viewMode === "list" && (
         <div className="bg-[#1a1a1d] rounded-xl border border-gray-800 overflow-hidden">
           <div className="overflow-x-auto">
@@ -805,3 +832,4 @@ function StatusBadge({ status }: { status: TaskStatus }) {
     </span>
   );
 }
+
