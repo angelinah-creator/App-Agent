@@ -12,7 +12,8 @@ import {
   LogOut,
   Video,
   Clock,
-  CalendarCheck
+  CalendarCheck,
+  Briefcase
 } from "lucide-react";
 import { authService } from "@/lib/auth-service";
 import { useRouter } from "next/navigation";
@@ -49,6 +50,7 @@ export function Sidebar({
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
       { id: "absences", label: "Absences", icon: Calendar },
+      { id: "projets", label: "Projets", icon: Briefcase },
       { id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users },
       { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
       {
@@ -67,8 +69,8 @@ export function Sidebar({
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
       { id: "absences", label: "Demande d'Absences", icon: Calendar },
-      // { id: "projets", label: "Projets", icon: FileText },
       { id: "taches", label: "Espace Personnel", icon: Calendar },
+      { id: "projets", label: "Projets", icon: Briefcase },
       { id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users },
       { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
       { id: "timer", label: "Timer", icon: Clock },
@@ -93,7 +95,7 @@ export function Sidebar({
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
       { id: "absences", label: "Absences", icon: Calendar },
-
+      { id: "projets", label: "Projets", icon: Briefcase },
       { id: "taches", label: "Taches Personnelles", icon: Calendar },
       { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
       { id: "timer", label: "Timer", icon: Clock },

@@ -49,6 +49,7 @@ import { TimerSection } from "@/components/sections/timer-section";
 import { RapportSection } from "@/components/sections/rapport-section";
 import { RapportCollaboSection } from "@/components/sections/rapport_collabo-section";
 import { RendezVousSection } from "@/components/sections/rendez_vous-section";
+import { ProjetsSection } from "@/components/sections/projets-section";
 import { api } from "@/lib/api-config";
 
 function HomePage() {
@@ -991,6 +992,10 @@ function HomePage() {
                 )}
 
                 {activeSection === "profil" && <Profil />}
+
+                {activeSection === "projets" && (
+                  <ProjetsSection userRole="admin" />
+                )}
               </>
             )}
 
@@ -1072,6 +1077,10 @@ function HomePage() {
                 )}
 
                 {activeSection === "profil" && <Profil />}
+
+                {activeSection === "projets" && (
+                  <ProjetsSection userRole="collaborateur" />
+                )}
               </>
             )}
 
@@ -1157,6 +1166,10 @@ function HomePage() {
                 )}
 
                 {activeSection === "profil" && <Profil />}
+
+                {activeSection === "projets" && (
+                  <ProjetsSection userRole="manager" />
+                )}
               </>
             )}
 

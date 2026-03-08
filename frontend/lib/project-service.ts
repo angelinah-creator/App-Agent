@@ -1,25 +1,35 @@
-// lib/project-service.ts
+// frontend/lib/project-service.ts
 import { api } from './api-config';
+
+export interface ProjectMember {
+  _id: string;
+  nom: string;
+  prenoms: string;
+  email: string;
+  role: string;
+  profilePhoto?: { url: string; publicId: string };
+}
+
+export interface ProjectFile {
+  url: string;
+  publicId: string;
+  originalName: string;
+  mimeType: string;
+  size: number;
+  uploadedBy: ProjectMember;
+  uploadedAt: string;
+}
 
 export interface Project {
   _id: string;
   name: string;
   description?: string;
-  id_client: {
-    _id: string;
-    entreprise?: string;
-    nom: string;
-    prenoms: string;
-    email: string;
-  };
+  createdBy: ProjectMember;
   start_time?: string;
   end_time?: string;
-  agent_affectes: Array<{
-    _id: string;
-    nom: string;
-    prenoms: string;
-    email: string;
-  }>;
+  invitedManagers: ProjectMember[];
+  invitedCollaborateurs: ProjectMember[];
+  files: ProjectFile[];
   createdAt: string;
   updatedAt: string;
 }
@@ -27,48 +37,116 @@ export interface Project {
 export interface CreateProjectDto {
   name: string;
   description?: string;
-  id_client: string;
   start_time?: string;
   end_time?: string;
-  agent_affectes: string[];
+  invitedManagers?: string[];
+  invitedCollaborateurs?: string[];
 }
 
 export interface UpdateProjectDto {
   name?: string;
   description?: string;
-  id_client?: string;
   start_time?: string;
   end_time?: string;
-  agent_affectes?: string[];
+  invitedManagers?: string[];
+  invitedCollaborateurs?: string[];
 }
 
 export const projectService = {
-  // Créer un projet
+  // ─── CRUD ────────────────────────────────────────────────────────────────────
+
   async create(data: CreateProjectDto): Promise<Project> {
     const response = await api.post('/projects', data);
     return response.data;
   },
 
-  // Récupérer tous les projets
   async getAll(): Promise<Project[]> {
     const response = await api.get('/projects');
     return response.data;
   },
 
-  // Récupérer un projet par ID
   async getById(projectId: string): Promise<Project> {
     const response = await api.get(`/projects/${projectId}`);
     return response.data;
   },
 
-  // Mettre à jour un projet
   async update(projectId: string, data: UpdateProjectDto): Promise<Project> {
     const response = await api.patch(`/projects/${projectId}`, data);
     return response.data;
   },
 
-  // Supprimer un projet
   async delete(projectId: string): Promise<void> {
     await api.delete(`/projects/${projectId}`);
-  }
+  },
+
+  // ─── FICHIERS ─────────────────────────────────────────────────────────────────
+
+  async uploadFile(projectId: string, file: File): Promise<Project> {
+    const formData = new FormData();
+    formData.append('file', file);
+
+    const token = typeof window !== 'undefined' ? localStorage.getItem('authToken') : null;
+
+    const response = await fetch(
+      `${process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3001'}/projects/${projectId}/files`,
+      {
+        method: 'POST',
+        headers: {
+          ...(token && { Authorization: `Bearer ${token}` }),
+        },
+        body: formData,
+      },
+    );
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(errorData.message || 'Erreur lors de l\'upload du fichier');
+    }
+
+    return response.json();
+  },
+
+  async deleteFile(projectId: string, publicId: string): Promise<Project> {
+    const encodedPublicId = encodeURIComponent(publicId);
+    const response = await api.delete(
+      `/projects/${projectId}/files/${encodedPublicId}`,
+    );
+    return response.data;
+  },
+
+  // ─── MEMBRES ─────────────────────────────────────────────────────────────────
+
+  async inviteManager(projectId: string, managerId: string): Promise<Project> {
+    const response = await api.post(
+      `/projects/${projectId}/invite-manager/${managerId}`,
+    );
+    return response.data;
+  },
+
+  async removeManager(projectId: string, managerId: string): Promise<Project> {
+    const response = await api.delete(
+      `/projects/${projectId}/remove-manager/${managerId}`,
+    );
+    return response.data;
+  },
+
+  async inviteCollaborateur(
+    projectId: string,
+    collaborateurId: string,
+  ): Promise<Project> {
+    const response = await api.post(
+      `/projects/${projectId}/invite-collaborateur/${collaborateurId}`,
+    );
+    return response.data;
+  },
+
+  async removeCollaborateur(
+    projectId: string,
+    collaborateurId: string,
+  ): Promise<Project> {
+    const response = await api.delete(
+      `/projects/${projectId}/remove-collaborateur/${collaborateurId}`,
+    );
+    return response.data;
+  },
 };

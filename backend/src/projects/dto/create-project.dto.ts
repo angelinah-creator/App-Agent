@@ -1,5 +1,12 @@
-import { IsString, IsNotEmpty, IsOptional, IsDateString, IsArray, IsMongoId } from 'class-validator';
-import { Type } from 'class-transformer';
+// backend/src/projects/dto/create-project.dto.ts
+import {
+  IsString,
+  IsNotEmpty,
+  IsOptional,
+  IsDateString,
+  IsArray,
+  IsMongoId,
+} from 'class-validator';
 
 export class CreateProjectDto {
   @IsString()
@@ -10,20 +17,21 @@ export class CreateProjectDto {
   @IsOptional()
   description?: string;
 
-  @IsMongoId()
-  @IsNotEmpty()
-  id_client: string;
+  @IsDateString()
+  @IsOptional()
+  start_time?: string;
 
   @IsDateString()
   @IsOptional()
-  start_time?: Date;
-
-  @IsDateString()
-  @IsOptional()
-  end_time?: Date;
+  end_time?: string;
 
   @IsArray()
   @IsMongoId({ each: true })
-  @IsNotEmpty()
-  agent_affectes: string[];
+  @IsOptional()
+  invitedManagers?: string[];
+
+  @IsArray()
+  @IsMongoId({ each: true })
+  @IsOptional()
+  invitedCollaborateurs?: string[];
 }
