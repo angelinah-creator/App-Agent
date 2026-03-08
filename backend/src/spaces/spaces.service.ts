@@ -1,8 +1,9 @@
+// backend/src/spaces/spaces.service.ts
 import { Injectable, NotFoundException, ForbiddenException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
 import { Space, SpaceDocument } from './schemas/space.schema';
-import { SpacePermission, SpacePermissionDocument } from '../space-permissions/schemas/space-permission.schema';
+import { SpacePermission, SpacePermissionDocument, PermissionLevel } from '../space-permissions/schemas/space-permission.schema';
 import { CreateSpaceDto } from './dto/create-space.dto';
 import { UpdateSpaceDto } from './dto/update-space.dto';
 import { CloudinaryService } from '../cloudinary/cloudinary.service';
@@ -12,7 +13,7 @@ export class SpacesService {
   constructor(
     @InjectModel(Space.name) private spaceModel: Model<SpaceDocument>,
     @InjectModel(SpacePermission.name) private spacePermissionModel: Model<SpacePermissionDocument>,
-    private cloudinaryService: CloudinaryService, // AJOUT
+    private cloudinaryService: CloudinaryService,
   ) {}
 
   async createSpace(createSpaceDto: CreateSpaceDto, userId: string): Promise<SpaceDocument> {
@@ -20,7 +21,16 @@ export class SpacesService {
       ...createSpaceDto,
       createdBy: new Types.ObjectId(userId),
     });
-    return space.save();
+    const savedSpace = await space.save();
+
+    // Créer une permission SUPER_EDITOR pour le créateur
+    await this.spacePermissionModel.create({
+      spaceId: savedSpace._id,
+      userId: new Types.ObjectId(userId),
+      permissionLevel: PermissionLevel.SUPER_EDITOR,
+    });
+
+    return savedSpace;
   }
 
   async getUserSpaces(userId: string): Promise<SpaceDocument[]> {
@@ -76,14 +86,12 @@ export class SpacesService {
   async updateSpace(spaceId: string, updateSpaceDto: UpdateSpaceDto, userId: string): Promise<SpaceDocument> {
     const space = await this.getSpaceById(spaceId);
     
-    // Si on met à jour la photo et qu'il y avait déjà une photo, supprimer l'ancienne
     if (updateSpaceDto.photo && space.photo?.publicId) {
       try {
         await this.cloudinaryService.deleteImage(space.photo.publicId);
         console.log('Ancienne photo supprimée:', space.photo.publicId);
       } catch (error) {
         console.error('Erreur suppression ancienne photo:', error);
-        // On continue quand même la mise à jour
       }
     }
 
@@ -97,7 +105,6 @@ export class SpacesService {
   async deleteSpace(spaceId: string, userId: string): Promise<void> {
     const space = await this.getSpaceById(spaceId);
 
-    // Supprimer la photo de Cloudinary si elle existe
     if (space.photo?.publicId) {
       try {
         await this.cloudinaryService.deleteImage(space.photo.publicId);
@@ -122,7 +129,6 @@ export class SpacesService {
     .exec();
   }
 
-  // Méthode pour uploader une photo d'espace
   async uploadSpacePhoto(file: Express.Multer.File, spaceName: string): Promise<{ url: string; publicId: string }> {
     const fileName = `space_${spaceName.replace(/\s+/g, '_')}_${Date.now()}`;
     return this.cloudinaryService.uploadImage(file.buffer, fileName, 'agent_code_talent/spaces');

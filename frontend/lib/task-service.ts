@@ -1,4 +1,4 @@
-// lib/task-service.ts
+// frontend/lib/task-service.ts
 import { api } from "./api-config";
 import { spaceService } from "./space-service";
 
@@ -24,10 +24,10 @@ export interface Task {
   end_date?: string;
   priority: TaskPriority;
   status: TaskStatus;
-  assignees?: Array<{ // ICI: Rendre optionnel
+  assignees?: Array<{
     _id: string;
-    nom?: string; // Rendre optionnel
-    prenoms?: string; // Rendre optionnel
+    nom?: string;
+    prenoms?: string;
     email?: string;
   }>;
   sub_tasks: string[];
@@ -41,8 +41,8 @@ export interface Task {
   };
   createdBy?: {
     _id: string;
-    nom?: string; // Rendre optionnel
-    prenoms?: string; // Rendre optionnel
+    nom?: string;
+    prenoms?: string;
   };
   createdAt: string;
   updatedAt: string;
@@ -63,7 +63,7 @@ export interface CreateTaskDto {
 export interface CreateSubtaskDto {
   title: string;
   description?: string;
-  assignees?: string[]; // Uniquement pour les tâches partagées
+  assignees?: string[];
   priority?: TaskPriority;
 }
 
@@ -81,25 +81,21 @@ export interface UpdateTaskDto {
 
 // Service pour les tâches personnelles
 export const personalTaskService = {
-  // Créer une tâche personnelle
   async create(data: CreateTaskDto): Promise<Task> {
     const response = await api.post(`/personal/tasks`, data);
     return response.data;
   },
 
-  // Créer une sous-tâche
   async createSubtask(parentTaskId: string, data: CreateSubtaskDto): Promise<Task> {
     const response = await api.post(`/personal/tasks/${parentTaskId}/subtasks`, data);
     return response.data;
   },
 
-  // Récupérer les sous-tâches
   async getSubtasks(parentTaskId: string): Promise<Task[]> {
     const response = await api.get(`/personal/tasks/${parentTaskId}/subtasks`);
     return response.data;
   },
 
-  // Récupérer les tâches personnelles
   async getMyTasks(filters?: {
     project_id?: string;
     priority?: TaskPriority;
@@ -114,31 +110,25 @@ export const personalTaskService = {
     if (filters?.start_date) params.append("start_date", filters.start_date);
     if (filters?.end_date) params.append("end_date", filters.end_date);
 
-    const url = `/personal/tasks${
-      params.toString() ? `?${params.toString()}` : ""
-    }`;
+    const url = `/personal/tasks${params.toString() ? `?${params.toString()}` : ""}`;
     const response = await api.get(url);
     return response.data;
   },
 
-  // Récupérer une tâche spécifique
   async getById(taskId: string): Promise<Task> {
     const response = await api.get(`/personal/tasks/${taskId}`);
     return response.data;
   },
 
-  // Mettre à jour une tâche
   async update(taskId: string, data: UpdateTaskDto): Promise<Task> {
     const response = await api.put(`/personal/tasks/${taskId}`, data);
     return response.data;
   },
 
-  // Supprimer une tâche
   async delete(taskId: string): Promise<void> {
     await api.delete(`/personal/tasks/${taskId}`);
   },
 
-  // Statistiques
   async getStats(): Promise<{
     total: number;
     completed: number;
@@ -151,25 +141,21 @@ export const personalTaskService = {
 
 // Service pour les tâches partagées
 export const sharedTaskService = {
-  // Créer une tâche dans un espace
   async create(spaceId: string, data: CreateTaskDto): Promise<Task> {
     const response = await api.post(`/shared/spaces/${spaceId}/tasks`, data);
     return response.data;
   },
 
-  // Créer une sous-tâche
   async createSubtask(spaceId: string, parentTaskId: string, data: CreateSubtaskDto): Promise<Task> {
     const response = await api.post(`/shared/spaces/${spaceId}/tasks/${parentTaskId}/subtasks`, data);
     return response.data;
   },
 
-  // Récupérer les sous-tâches
   async getSubtasks(spaceId: string, parentTaskId: string): Promise<Task[]> {
     const response = await api.get(`/shared/spaces/${spaceId}/tasks/${parentTaskId}/subtasks`);
     return response.data;
   },
 
-  // Récupérer les tâches d'un espace
   async getSpaceTasks(
     spaceId: string,
     filters?: {
@@ -189,20 +175,16 @@ export const sharedTaskService = {
     if (filters?.start_date) params.append("start_date", filters.start_date);
     if (filters?.end_date) params.append("end_date", filters.end_date);
 
-    const url = `/shared/spaces/${spaceId}/tasks${
-      params.toString() ? `?${params.toString()}` : ""
-    }`;
+    const url = `/shared/spaces/${spaceId}/tasks${params.toString() ? `?${params.toString()}` : ""}`;
     const response = await api.get(url);
     return response.data;
   },
 
-  // Récupérer une tâche spécifique
   async getById(spaceId: string, taskId: string): Promise<Task> {
     const response = await api.get(`/shared/spaces/${spaceId}/tasks/${taskId}`);
     return response.data;
   },
 
-  // Mettre à jour une tâche
   async update(
     spaceId: string,
     taskId: string,
@@ -215,12 +197,10 @@ export const sharedTaskService = {
     return response.data;
   },
 
-  // Supprimer une tâche
   async delete(spaceId: string, taskId: string): Promise<void> {
     await api.delete(`/shared/spaces/${spaceId}/tasks/${taskId}`);
   },
 
-  // Statistiques d'un espace
   async getStats(spaceId: string): Promise<{
     total: number;
     completed: number;
@@ -230,20 +210,11 @@ export const sharedTaskService = {
     return response.data;
   },
 
-  async getMySharedTasks(filters?: {
-    status?: TaskStatus;
-    spaceId?: string;
-  }): Promise<Task[]> {
-    const mySpaces = await spaceService.getMySpaces();
-    const allTasks: Task[] = [];
-    
-    for (const space of mySpaces) {
-      const tasks = await sharedTaskService.getSpaceTasks(space._id, {
-        status: filters?.status || TaskStatus.EN_COURS,
-      });
-      allTasks.push(...tasks);
-    }
-    
-    return allTasks;
+  // MODIFIÉ : utilise le nouvel endpoint backend
+  async getMySharedTasks(filters?: { status?: TaskStatus; spaceId?: string }): Promise<Task[]> {
+    const params = new URLSearchParams();
+    if (filters?.status) params.append('status', filters.status);
+    const response = await api.get(`/shared/tasks/my-assigned?${params.toString()}`);
+    return response.data;
   }
 };

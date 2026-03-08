@@ -14,6 +14,6 @@ import { UsersModule } from '../users/users.module';
   ],
   controllers: [SpacePermissionsController],
   providers: [SpacePermissionsService],
-  exports: [SpacePermissionsService],
+  exports: [SpacePermissionsService, MongooseModule],
 })
 export class SpacePermissionsModule {}

@@ -1,3 +1,4 @@
+// backend/src/shared-tasks/shared-tasks.controller.ts
 import { Controller, Get, Post, Put, Delete, Param, Body, UseGuards, Req, Query } from '@nestjs/common';
 import { SharedTasksService } from './shared-tasks.service';
 import { CreateTaskDto } from './dto/create-task.dto';
@@ -6,6 +7,7 @@ import { JwtAuthGuard } from 'src/auth/guards/jwt-auth.guard';
 import { SpacePermissionGuard } from '../space-permissions/guards/space-permission.guard';
 import { Request } from 'express';
 import { CreateSubtaskDto } from './dto/create-subtask.dto';
+import { TaskStatus } from './schemas/shared-task.schema';
 
 interface AuthenticatedRequest extends Request {
   user: {

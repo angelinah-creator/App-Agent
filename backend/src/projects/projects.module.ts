@@ -6,6 +6,7 @@ import { ProjectsService } from './projects.service';
 import { Project, ProjectSchema } from './schemas/project.schema';
 import { User, UserSchema } from '../users/schemas/user.schema';
 import { CloudinaryModule } from '../cloudinary/cloudinary.module';
+import { UsersModule } from 'src/users/users.module';
 
 @Module({
   imports: [
@@ -14,6 +15,7 @@ import { CloudinaryModule } from '../cloudinary/cloudinary.module';
       { name: User.name, schema: UserSchema },
     ]),
     CloudinaryModule,
+    UsersModule,
   ],
   controllers: [ProjectsController],
   providers: [ProjectsService],

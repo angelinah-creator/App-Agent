@@ -5,6 +5,7 @@ import { SharedTasksService } from './shared-tasks.service';
 import { SharedTask, SharedTaskSchema } from './schemas/shared-task.schema';
 import { SpacePermissionsModule } from '../space-permissions/space-permissions.module';
 import { ProjectsModule } from '../projects/projects.module';
+import { SharedTasksUserController } from './shared-tasks-user.controller';
 
 @Module({
   imports: [
@@ -12,7 +13,7 @@ import { ProjectsModule } from '../projects/projects.module';
     SpacePermissionsModule,
     ProjectsModule,
   ],
-  controllers: [SharedTasksController],
+  controllers: [SharedTasksController, SharedTasksUserController],
   providers: [SharedTasksService],
   exports: [SharedTasksService],
 })

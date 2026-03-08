@@ -23,8 +23,6 @@ export class ProjectsService {
     private cloudinaryService: CloudinaryService,
   ) {}
 
-  // ─── CRÉATION ────────────────────────────────────────────────────────────────
-
   async create(
     createProjectDto: CreateProjectDto,
     creatorId: string,
@@ -40,14 +38,9 @@ export class ProjectsService {
       ),
     });
     const saved = await project.save();
-    return this.findOne((saved._id as Types.ObjectId).toString(), creatorId, 'admin'); // populate
+    return this.findOne((saved._id as Types.ObjectId).toString(), creatorId, 'admin');
   }
 
-  // ─── LECTURE ─────────────────────────────────────────────────────────────────
-
-  /**
-   * Admin : tous les projets
-   */
   async findAllForAdmin(): Promise<ProjectDocument[]> {
     return this.projectModel
       .find()
@@ -59,9 +52,6 @@ export class ProjectsService {
       .exec();
   }
 
-  /**
-   * Manager : ses propres projets + ceux où il est invité
-   */
   async findAllForManager(managerId: string): Promise<ProjectDocument[]> {
     const objectId = new Types.ObjectId(managerId);
     return this.projectModel
@@ -79,9 +69,6 @@ export class ProjectsService {
       .exec();
   }
 
-  /**
-   * Collaborateur : uniquement les projets où il est invité
-   */
   async findAllForCollaborateur(
     collaborateurId: string,
   ): Promise<ProjectDocument[]> {
@@ -96,9 +83,21 @@ export class ProjectsService {
       .exec();
   }
 
-  /**
-   * Récupérer un projet par ID avec vérification d'accès
-   */
+  // NOUVELLE MÉTHODE POUR RAPPORT COLLABORATEUR
+  async findAllForUser(targetUserId: string, targetUserRole: string): Promise<ProjectDocument[]> {
+    const objectId = new Types.ObjectId(targetUserId);
+
+    if (targetUserRole === 'admin') {
+      return this.findAllForAdmin();
+    } else if (targetUserRole === 'manager') {
+      return this.findAllForManager(targetUserId);
+    } else if (targetUserRole === 'collaborateur') {
+      return this.findAllForCollaborateur(targetUserId);
+    }
+
+    return [];
+  }
+
   async findOne(
     id: string,
     userId: string,
@@ -123,8 +122,6 @@ export class ProjectsService {
     this.checkAccess(project, userId, userRole);
     return project;
   }
-
-  // ─── MISE À JOUR ─────────────────────────────────────────────────────────────
 
   async update(
     id: string,
@@ -153,8 +150,6 @@ export class ProjectsService {
     return this.findOne(id, userId, userRole);
   }
 
-  // ─── GESTION DES MEMBRES ──────────────────────────────────────────────────────
-
   async inviteManager(
     projectId: string,
     managerId: string,
@@ -163,7 +158,6 @@ export class ProjectsService {
   ): Promise<ProjectDocument> {
     const project = await this.findOne(projectId, userId, userRole);
 
-    // Seul le créateur ou un admin peut inviter des managers
     const creatorId = this.getCreatorId(project);
     if (userRole !== 'admin' && creatorId !== userId) {
       throw new ForbiddenException(
@@ -173,7 +167,6 @@ export class ProjectsService {
 
     const managerObjectId = new Types.ObjectId(managerId);
 
-    // Vérifier qu'il n'est pas déjà invité
     const alreadyInvited = project.invitedManagers.some(
       (m: any) =>
         (m._id ? m._id.toString() : m.toString()) === managerId,
@@ -223,7 +216,6 @@ export class ProjectsService {
   ): Promise<ProjectDocument> {
     const project = await this.findOne(projectId, userId, userRole);
 
-    // Managers invités peuvent aussi inviter des collaborateurs
     const canInvite = this.canManageMembers(project, userId, userRole);
     if (!canInvite) {
       throw new ForbiddenException(
@@ -274,12 +266,6 @@ export class ProjectsService {
     return this.findOne(projectId, userId, userRole);
   }
 
-  // ─── MEMBRES DISPONIBLES ─────────────────────────────────────────────────────
-
-  /**
-   * Retourne tous les managers et collaborateurs actifs.
-   * Utilisé par les managers pour voir qui inviter dans leurs projets.
-   */
   async getAvailableMembers(): Promise<{
     managers: any[];
     collaborateurs: any[];
@@ -296,8 +282,6 @@ export class ProjectsService {
 
     return { managers, collaborateurs };
   }
-
-  // ─── HELPERS PRIVÉS ───────────────────────────────────────────────────────────
 
   private getCreatorId(project: ProjectDocument): string {
     const cb = project.createdBy as any;

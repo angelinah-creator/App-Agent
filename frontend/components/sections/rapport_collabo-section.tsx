@@ -1,3 +1,4 @@
+// frontend/components/sections/rapport_collabo-section.tsx
 "use client";
 
 import React, { useState, useMemo, useRef, useEffect } from "react";
@@ -41,62 +42,20 @@ import { fr } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { timerService, ReportData } from "@/lib/timer-service";
 import { usersService } from "@/lib/users-service";
+import { projectService } from "@/lib/project-service"; // AJOUT
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import domtoimage from "dom-to-image";
 
-// const COLORS = [
-//   "#9B59B6",
-//   "#E9B44C",
-//   "#3498DB",
-//   "#E74C3C",
-//   "#1ABC9C",
-//   "#95A5A6",
-//   "#F39C12",
-//   "#16A085",
-// ];
-
 const COLORS = [
-  "#1f77b4", // bleu
-  "#ff7f0e", // orange
-  "#2ca02c", // vert
-  "#d62728", // rouge
-  "#9467bd", // violet
-  "#8c564b", // brun
-  "#e377c2", // rose
-  "#7f7f7f", // gris
-  "#bcbd22", // jaune-vert
-  "#17becf", // cyan
-  "#aec7e8", // bleu clair
-  "#ffbb78", // orange pâle
-  "#98df8a", // vert clair
-  "#ff9896", // rouge clair
-  "#c5b0d5", // lavande
-  "#c49c94", // beige
-  "#f7b6d2", // rose clair
-  "#c7c7c7", // gris clair
-  "#dbdb8d", // jaune-vert pâle
-  "#9edae5", // turquoise clair
-  "#393b79", // bleu nuit
-  "#637939", // vert olive
-  "#8c6d31", // ocre
-  "#843c39", // bordeaux
-  "#7b4173", // prune
-  "#a55194", // violet moyen
-  "#ce6dbd", // orchidée
-  "#de9ed6", // mauve
-  "#3182bd", // bleu marine
-  "#6baed6", // bleu ciel
-  "#9ecae1", // bleu très clair
-  "#c6dbef", // bleu glacier
-  "#e6550d", // orange foncé
-  "#fd8d3c", // corail
-  "#fdae6b", // pêche
-  "#fdd0a2", // crème
-  "#31a354", // vert forêt
-  "#74c476", // vert pomme
-  "#a1d99b", // vert menthe
-  "#c7e9c0", // vert très clair
+  "#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd",
+  "#8c564b", "#e377c2", "#7f7f7f", "#bcbd22", "#17becf",
+  "#aec7e8", "#ffbb78", "#98df8a", "#ff9896", "#c5b0d5",
+  "#c49c94", "#f7b6d2", "#c7c7c7", "#dbdb8d", "#9edae5",
+  "#393b79", "#637939", "#8c6d31", "#843c39", "#7b4173",
+  "#a55194", "#ce6dbd", "#de9ed6", "#3182bd", "#6baed6",
+  "#9ecae1", "#c6dbef", "#e6550d", "#fd8d3c", "#fdae6b",
+  "#fdd0a2", "#31a354", "#74c476", "#a1d99b", "#c7e9c0"
 ];
 
 type PeriodType = "day" | "week" | "month" | "year" | "custom";
@@ -116,7 +75,7 @@ function formatDuration(hours: number): string {
   return `${h}h${m.toString().padStart(2, "0")}m`;
 }
 
-// ─── Composant ProjectFilter ──────────────────────────────────────────────────
+// Composant ProjectFilter (inchangé)
 function ProjectFilter({
   projects,
   selectedProjectIds,
@@ -241,7 +200,7 @@ function ProjectFilter({
   );
 }
 
-// ─── Composant PeriodSelector ─────────────────────────────────────────────────
+// Composant PeriodSelector (inchangé)
 function PeriodSelector({
   isOpen,
   onClose,
@@ -281,12 +240,12 @@ function PeriodSelector({
   if (!isOpen) return null;
 
   const shortcuts = [
-    { label: "Aujourd'hui", value: "day" as PeriodType },
-    { label: "Cette semaine", value: "week" as PeriodType },
-    { label: "Ce mois", value: "month" as PeriodType },
-    { label: "Cette année", value: "year" as PeriodType },
-    { label: "Semaine dernière", value: "last_week" as PeriodType },
-    { label: "Mois dernier", value: "last_month" as PeriodType },
+    { label: "Aujourd'hui", value: "day" },
+    { label: "Cette semaine", value: "week" },
+    { label: "Ce mois", value: "month" },
+    { label: "Cette année", value: "year" },
+    { label: "Semaine dernière", value: "last_week" },
+    { label: "Mois dernier", value: "last_month" },
   ];
 
   const handleShortcutClick = (value: string) => {
@@ -302,7 +261,7 @@ function PeriodSelector({
         onSelectPeriod(
           "custom",
           startOfWeek(addWeeks(now, -1), { weekStartsOn: 1 }),
-          endOfWeek(addWeeks(now, -1), { weekStartsOn: 1 }),
+          endOfWeek(addWeeks(now, -1), { weekStartsOn: 1 })
         );
         break;
       case "month":
@@ -312,7 +271,7 @@ function PeriodSelector({
         onSelectPeriod(
           "custom",
           startOfMonth(addMonths(now, -1)),
-          endOfMonth(addMonths(now, -1)),
+          endOfMonth(addMonths(now, -1))
         );
         break;
       case "year":
@@ -368,10 +327,7 @@ function PeriodSelector({
         </div>
         <div className="grid grid-cols-7 gap-0.5 mb-1 px-1">
           {["L", "M", "M", "J", "V", "S", "D"].map((d, idx) => (
-            <div
-              key={idx}
-              className="text-center text-[9px] text-gray-400 py-0.5"
-            >
+            <div key={idx} className="text-center text-[9px] text-gray-400 py-0.5">
               {d}
             </div>
           ))}
@@ -380,8 +336,7 @@ function PeriodSelector({
           {weeks.map((week, weekIdx) => (
             <div key={weekIdx} className="grid grid-cols-7 gap-0.5">
               {week.map((day, dayIdx) => {
-                const isCurrentMonth =
-                  day.getMonth() === currentMonth.getMonth();
+                const isCurrentMonth = day.getMonth() === currentMonth.getMonth();
                 const inRange = isInRange(day);
                 const isStartDay = customStart && isSameDay(day, customStart);
                 const isEndDay = customEnd && isSameDay(day, customEnd);
@@ -449,7 +404,7 @@ function PeriodSelector({
   );
 }
 
-// ─── Composant principal ──────────────────────────────────────────────────────
+// Composant principal
 export function RapportCollaboSection() {
   const [selectedUserId, setSelectedUserId] = useState<string>("");
   const [periodType, setPeriodType] = useState<PeriodType>("week");
@@ -458,18 +413,13 @@ export function RapportCollaboSection() {
   const [customEnd, setCustomEnd] = useState<Date | null>(null);
   const [isPeriodSelectorOpen, setIsPeriodSelectorOpen] = useState(false);
   const periodSelectorButtonRef = useRef<HTMLDivElement>(null);
-  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(
-    new Set(),
-  );
+  const [expandedProjects, setExpandedProjects] = useState<Set<string>>(new Set());
 
   // Refs pour les graphiques
   const barChartRef = useRef<HTMLDivElement>(null);
   const pieChartRef = useRef<HTMLDivElement>(null);
 
-  // Filtre projet
-  const [selectedProjectIds, setSelectedProjectIds] = useState<Set<string>>(
-    new Set(),
-  );
+  const [selectedProjectIds, setSelectedProjectIds] = useState<Set<string>>(new Set());
 
   const toggleProject = (projectId: string) => {
     setExpandedProjects((prev) => {
@@ -483,6 +433,13 @@ export function RapportCollaboSection() {
   const { data: users = [] } = useQuery({
     queryKey: ["users"],
     queryFn: () => usersService.searchUsers({ role: "collaborateur" }),
+  });
+
+  // NOUVEAU : récupération des projets accessibles à l'utilisateur sélectionné
+  const { data: userProjects = [] } = useQuery({
+    queryKey: ['userProjects', selectedUserId],
+    queryFn: () => projectService.getUserProjects(selectedUserId),
+    enabled: !!selectedUserId,
   });
 
   const { periodStart, periodEnd, displayText } = useMemo(() => {
@@ -503,9 +460,7 @@ export function RapportCollaboSection() {
           displayText: format(day, "dd MMM yyyy", { locale: fr }),
         };
       case "week":
-        const weekStart = startOfWeek(addWeeks(now, offset), {
-          weekStartsOn: 1,
-        });
+        const weekStart = startOfWeek(addWeeks(now, offset), { weekStartsOn: 1 });
         const weekEnd = endOfWeek(weekStart, { weekStartsOn: 1 });
         return {
           periodStart: weekStart,
@@ -547,24 +502,24 @@ export function RapportCollaboSection() {
     refetchInterval: 1000,
   });
 
+  // Liste des projets disponibles pour le filtre : on utilise userProjects au lieu de report.byProject
   const availableProjects = useMemo(() => {
-    return (report?.byProject || []).map((p) => ({
-      projectId: p.projectId,
-      projectName: p.projectName,
+    return userProjects.map(p => ({
+      projectId: p._id,
+      projectName: p.name,
     }));
-  }, [report]);
+  }, [userProjects]);
 
   const filteredReport = useMemo(() => {
     if (!report || selectedProjectIds.size === 0) return report;
 
     const filteredEntries = report.entries.filter((e) =>
-      selectedProjectIds.has(e.projectId ?? "no-project"),
+      selectedProjectIds.has(e.projectId ?? "no-project")
     );
     const filteredByProject = report.byProject.filter((p) =>
-      selectedProjectIds.has(p.projectId ?? "no-project"),
+      selectedProjectIds.has(p.projectId ?? "no-project")
     );
-    const totalHours =
-      filteredEntries.reduce((sum, e) => sum + (e.duration || 0), 0) / 3600;
+    const totalHours = filteredEntries.reduce((sum, e) => sum + (e.duration || 0), 0) / 3600;
 
     return {
       ...report,
@@ -580,21 +535,19 @@ export function RapportCollaboSection() {
 
   const dailyData = useMemo(() => {
     if (!filteredReport || !filteredReport.entries) return [];
-    return eachDayOfInterval({ start: periodStart, end: periodEnd }).map(
-      (day) => {
-        const dayKey = format(day, "yyyy-MM-dd");
-        const totalSeconds = filteredReport.entries
-          .filter((e) => format(new Date(e.startTime), "yyyy-MM-dd") === dayKey)
-          .reduce((sum, e) => sum + (e.duration || 0), 0);
-        const hours = totalSeconds / 3600;
-        return {
-          day: format(day, "EEE", { locale: fr }),
-          date: format(day, "dd/MM"),
-          hours,
-          formattedTime: formatHours(hours),
-        };
-      },
-    );
+    return eachDayOfInterval({ start: periodStart, end: periodEnd }).map((day) => {
+      const dayKey = format(day, "yyyy-MM-dd");
+      const totalSeconds = filteredReport.entries
+        .filter((e) => format(new Date(e.startTime), "yyyy-MM-dd") === dayKey)
+        .reduce((sum, e) => sum + (e.duration || 0), 0);
+      const hours = totalSeconds / 3600;
+      return {
+        day: format(day, "EEE", { locale: fr }),
+        date: format(day, "dd/MM"),
+        hours,
+        formattedTime: formatHours(hours),
+      };
+    });
   }, [filteredReport, periodStart, periodEnd]);
 
   const taskData = useMemo(() => {
@@ -606,10 +559,7 @@ export function RapportCollaboSection() {
       cur.duration += entry.duration || 0;
       taskMap.set(key, cur);
     });
-    const total = Array.from(taskMap.values()).reduce(
-      (s, t) => s + t.duration,
-      0,
-    );
+    const total = Array.from(taskMap.values()).reduce((s, t) => s + t.duration, 0);
     return Array.from(taskMap.values()).map((t) => ({
       name: t.title,
       value: t.duration / 3600,
@@ -627,10 +577,7 @@ export function RapportCollaboSection() {
     setIsPeriodSelectorOpen(false);
   };
 
-  const weekTotalHours = useMemo(
-    () => dailyData.reduce((s, d) => s + d.hours, 0),
-    [dailyData],
-  );
+  const weekTotalHours = useMemo(() => dailyData.reduce((s, d) => s + d.hours, 0), [dailyData]);
   const averageDailyHours = useMemo(() => {
     const daysWithData = dailyData.filter((d) => d.hours > 0).length;
     return daysWithData > 0 ? weekTotalHours / daysWithData : 0;
@@ -654,10 +601,8 @@ export function RapportCollaboSection() {
 
   const selectedUser = users.find((u) => u._id === selectedUserId);
 
-  // Fonction d'export PDF avec dom-to-image
   const handleExportPDF = async () => {
     if (!selectedUserId || !filteredReport) return;
-
     const selectedUser = users.find((u) => u._id === selectedUserId);
     if (!selectedUser) return;
 
@@ -670,8 +615,6 @@ export function RapportCollaboSection() {
     const pageWidth = doc.internal.pageSize.getWidth();
     let y = 20;
 
-    /* ================= HEADER ================= */
-
     doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
     doc.text("Activity Report", 14, y);
@@ -683,124 +626,70 @@ export function RapportCollaboSection() {
 
     doc.setDrawColor(230);
     doc.line(14, y + 10, pageWidth - 14, y + 10);
-
     y += 18;
-
-    /* ================= USER INFO ================= */
 
     doc.setFontSize(11);
     doc.setTextColor(40);
     doc.text(`${selectedUser.prenoms} ${selectedUser.nom}`, 14, y);
-
     doc.setTextColor(120);
     doc.text(selectedUser.email, 14, y + 5);
-
     y += 15;
-
-    /* ================= SUMMARY CARDS ================= */
 
     const cardWidth = (pageWidth - 40) / 2;
 
     const drawCard = (x: number, label: string, value: string) => {
       doc.setDrawColor(235);
       doc.roundedRect(x, y, cardWidth, 18, 3, 3);
-
       doc.setFontSize(9);
       doc.setTextColor(130);
       doc.text(label, x + 4, y + 6);
-
       doc.setFont("helvetica", "bold");
       doc.setFontSize(14);
       doc.setTextColor(30);
       doc.text(value, x + 4, y + 13);
-
       doc.setFont("helvetica", "normal");
     };
 
     drawCard(14, "Total Hours", formatHours(filteredReport.totalHours));
     drawCard(20 + cardWidth, "Average Daily", formatHours(averageDailyHours));
-
     y += 28;
-
-    /* ================= CAPTURE CHARTS ================= */
 
     let barChartImg = null;
     let pieChartImg = null;
 
     if (barChartRef.current)
-      barChartImg = await domtoimage.toPng(barChartRef.current, {
-        scale: 2,
-      } as any);
-
+      barChartImg = await domtoimage.toPng(barChartRef.current, { scale: 2 } as any);
     if (pieChartRef.current)
-      pieChartImg = await domtoimage.toPng(pieChartRef.current, {
-        scale: 2,
-      } as any);
-
-    /* ================= BAR CHART ================= */
+      pieChartImg = await domtoimage.toPng(pieChartRef.current, { scale: 2 } as any);
 
     if (barChartImg) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(13);
       doc.text("Duration by Day", 14, y);
-
       y += 4;
-
       doc.addImage(barChartImg, "PNG", 14, y, 180, 70);
-
       y += 80;
     }
-
-    /* ================= PIE CENTERED + LEGEND ================= */
 
     if (pieChartImg && taskData.length) {
       doc.setFont("helvetica", "bold");
       doc.setFontSize(13);
       doc.text("Task Distribution", pageWidth / 2, y, { align: "center" });
-
       y += 6;
 
-      // ✅ HEADER colonnes (Task % Time)
-      const legendStartX = pageWidth / 2 - 60;
-
-      doc.setFont("helvetica", "bold");
-      doc.setFontSize(10);
-      doc.setTextColor(120);
-
-      // ---- charger image pour ratio ----
       const img = new Image();
       img.src = pieChartImg;
-
-      await new Promise((resolve) => {
-        img.onload = resolve;
-      });
-
+      await new Promise((resolve) => { img.onload = resolve; });
       const ratio = img.height / img.width;
-
-      // ✅ camembert plus grand
       const pieWidth = 110;
       const pieHeight = pieWidth * ratio;
-
-      // ✅ centrer horizontalement
       const pieX = (pageWidth - pieWidth) / 2;
       const pieY = y;
 
       doc.addImage(pieChartImg, "PNG", pieX, pieY, pieWidth, pieHeight);
-
       y += pieHeight + 10;
 
-      /* ---------- LEGEND UNDER PIE ---------- */
-      doc.text("Task", legendStartX + 10, y);
-      doc.text("%", legendStartX + 90, y, { align: "right" });
-      doc.text("Time", legendStartX + 120, y, { align: "right" });
-
-      // petite ligne séparatrice
-      doc.setDrawColor(220);
-      doc.line(legendStartX, y + 2, legendStartX + 130, y + 2);
-
-      y += 8;
-
-      const legendLeft = 30; // ← renommé (était legendStartX)
+      const legendLeft = 30;
       const lineHeight = 6;
       const squareSize = 3.5;
 
@@ -809,33 +698,24 @@ export function RapportCollaboSection() {
 
       taskData.forEach((task, index) => {
         const color = COLORS[index % COLORS.length];
-
-        // convertir HEX -> RGB
         const r = parseInt(color.substring(1, 3), 16);
         const g = parseInt(color.substring(3, 5), 16);
         const b = parseInt(color.substring(5, 7), 16);
 
-        // carré couleur
         doc.setFillColor(r, g, b);
         doc.rect(legendLeft, y - 3, squareSize, squareSize, "F");
 
-        // texte tâche
         doc.setTextColor(40);
         doc.text(task.name, legendLeft + 6, y);
 
-        // pourcentage + durée alignés à droite
         const rightText = `${task.percentage.toFixed(1)}%   ${formatDuration(task.value)}`;
-
         doc.setTextColor(120);
         doc.text(rightText, pageWidth - 30, y, { align: "right" });
 
         y += lineHeight;
       });
-
       y += 8;
     }
-
-    /* ================= DETAIL TABLE ================= */
 
     doc.setFontSize(13);
     doc.text("Project Breakdown", 14, y);
@@ -845,7 +725,6 @@ export function RapportCollaboSection() {
       const project =
         filteredReport.byProject.find((p) => p.projectId === entry.projectId)
           ?.projectName || "No project";
-
       return [
         project,
         entry.taskTitle || "No task",
@@ -858,38 +737,21 @@ export function RapportCollaboSection() {
       head: [["Project", "Task", "Duration"]],
       body: rows,
       theme: "striped",
-      styles: {
-        fontSize: 9,
-        lineColor: [240, 240, 240],
-        lineWidth: 0.1,
-      },
-      headStyles: {
-        fillColor: [155, 89, 182],
-        textColor: 255,
-      },
-      alternateRowStyles: {
-        fillColor: [250, 250, 250],
-      },
+      styles: { fontSize: 9, lineColor: [240, 240, 240], lineWidth: 0.1 },
+      headStyles: { fillColor: [155, 89, 182], textColor: 255 },
+      alternateRowStyles: { fillColor: [250, 250, 250] },
     });
 
-    /* ================= FOOTER ================= */
-
     const pageHeight = doc.internal.pageSize.getHeight();
-
     doc.setFontSize(8);
     doc.setTextColor(150);
     doc.text("Generated automatically • Time Report", 14, pageHeight - 10);
-
     doc.text(`Page 1`, pageWidth - 20, pageHeight - 10);
-
-    doc.save(
-      `report_${selectedUser.prenoms}_${format(new Date(), "yyyy-MM-dd")}.pdf`,
-    );
+    doc.save(`report_${selectedUser.prenoms}_${format(new Date(), "yyyy-MM-dd")}.pdf`);
   };
 
   return (
     <div className="space-y-4 p-4 bg-[#0F0F12] -mt-8">
-      {/* Sélecteur d'utilisateur */}
       <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-3">
         <div className="flex items-center gap-2">
           <Users className="text-purple-400" size={16} />
@@ -928,14 +790,10 @@ export function RapportCollaboSection() {
         </div>
       ) : (
         <>
-          {/* EN-TÊTE */}
           <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-2 relative">
-                <button
-                  onClick={() => setOffset((o) => o - 1)}
-                  className="p-1 hover:bg-white/5 rounded transition"
-                >
+                <button onClick={() => setOffset((o) => o - 1)} className="p-1 hover:bg-white/5 rounded transition">
                   <ChevronLeft className="text-white" size={16} />
                 </button>
                 <div
@@ -944,9 +802,7 @@ export function RapportCollaboSection() {
                   className="flex items-center gap-1 bg-[#0F0F12] px-3 py-1 rounded cursor-pointer hover:bg-[#1a1a1f] transition"
                 >
                   <Calendar className="text-purple-400" size={14} />
-                  <span className="text-white text-xs font-medium">
-                    {displayText}
-                  </span>
+                  <span className="text-white text-xs font-medium">{displayText}</span>
                 </div>
                 <PeriodSelector
                   isOpen={isPeriodSelectorOpen}
@@ -955,18 +811,12 @@ export function RapportCollaboSection() {
                   currentPeriodType={periodType}
                   buttonRef={periodSelectorButtonRef}
                 />
-                <button
-                  onClick={() => setOffset((o) => o + 1)}
-                  className="p-1 hover:bg-white/5 rounded transition"
-                >
+                <button onClick={() => setOffset((o) => o + 1)} className="p-1 hover:bg-white/5 rounded transition">
                   <ChevronRight className="text-white" size={16} />
                 </button>
                 <select
                   value={periodType}
-                  onChange={(e) => {
-                    setPeriodType(e.target.value as PeriodType);
-                    setOffset(0);
-                  }}
+                  onChange={(e) => { setPeriodType(e.target.value as PeriodType); setOffset(0); }}
                   className="bg-[#0F0F12] text-white px-2 py-1 rounded border border-[#313442] text-xs"
                 >
                   <option value="day">Jour</option>
@@ -978,7 +828,7 @@ export function RapportCollaboSection() {
 
               <div className="flex items-center gap-2">
                 <ProjectFilter
-                  projects={availableProjects}
+                  projects={availableProjects} // ← maintenant basé sur userProjects
                   selectedProjectIds={selectedProjectIds}
                   onChange={setSelectedProjectIds}
                 />
@@ -992,7 +842,6 @@ export function RapportCollaboSection() {
               </div>
             </div>
 
-            {/* STATISTIQUES PRINCIPALES */}
             <div className="grid grid-cols-2 gap-3">
               <div className="bg-[#0F0F12] rounded p-3 border border-[#313442]">
                 <p className="text-gray-400 text-xs mb-0.5">Heures totales</p>
@@ -1009,30 +858,16 @@ export function RapportCollaboSection() {
             </div>
           </div>
 
-          {/* GRAPHIQUES */}
           <div className="grid grid-cols-3 gap-4">
             <div className="col-span-2 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-              <h3 className="text-white font-semibold text-sm mb-3">
-                Durée par jour
-              </h3>
+              <h3 className="text-white font-semibold text-sm mb-3">Durée par jour</h3>
               <div ref={barChartRef}>
                 <ResponsiveContainer width="100%" height={250}>
                   <BarChart data={dailyData}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#313442" />
-                    <XAxis
-                      dataKey="day"
-                      stroke="#9CA3AF"
-                      tick={{ fill: "#9CA3AF", fontSize: 10 }}
-                    />
-                    <YAxis
-                      stroke="#9CA3AF"
-                      tick={{ fill: "#9CA3AF", fontSize: 10 }}
-                      tickFormatter={(v) => `${v}h`}
-                    />
-                    <Tooltip
-                      content={<CustomTooltip />}
-                      cursor={{ fill: "rgba(139, 92, 246, 0.1)" }}
-                    />
+                    <XAxis dataKey="day" stroke="#9CA3AF" tick={{ fill: "#9CA3AF", fontSize: 10 }} />
+                    <YAxis stroke="#9CA3AF" tick={{ fill: "#9CA3AF", fontSize: 10 }} tickFormatter={(v) => `${v}h`} />
+                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "rgba(139, 92, 246, 0.1)" }} />
                     <Bar dataKey="hours" fill="#9B59B6" radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -1040,9 +875,7 @@ export function RapportCollaboSection() {
             </div>
 
             <div className="col-span-1 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-              <h3 className="text-white font-semibold text-sm mb-3">
-                Temps par tâche
-              </h3>
+              <h3 className="text-white font-semibold text-sm mb-3">Temps par tâche</h3>
               <div ref={pieChartRef}>
                 <ResponsiveContainer width="100%" height={150}>
                   <PieChart>
@@ -1056,10 +889,7 @@ export function RapportCollaboSection() {
                       dataKey="value"
                     >
                       {taskData.map((_, index) => (
-                        <Cell
-                          key={`cell-${index}`}
-                          fill={COLORS[index % COLORS.length]}
-                        />
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                       ))}
                     </Pie>
                     <Tooltip
@@ -1067,15 +897,9 @@ export function RapportCollaboSection() {
                         if (active && payload && payload.length) {
                           return (
                             <div className="bg-[#1F2128] border border-[#313442] rounded p-2 shadow">
-                              <p className="text-white text-xs font-medium">
-                                {payload[0].payload.name}
-                              </p>
-                              <p className="text-purple-400 font-mono text-xs">
-                                {formatDuration(payload[0].value)}
-                              </p>
-                              <p className="text-gray-400 text-[10px]">
-                                {payload[0].payload.percentage.toFixed(1)}%
-                              </p>
+                              <p className="text-white text-xs font-medium">{payload[0].payload.name}</p>
+                              <p className="text-purple-400 font-mono text-xs">{formatDuration(payload[0].value)}</p>
+                              <p className="text-gray-400 text-[10px]">{payload[0].payload.percentage.toFixed(1)}%</p>
                             </div>
                           );
                         }
@@ -1087,147 +911,72 @@ export function RapportCollaboSection() {
               </div>
               <div className="mt-3 space-y-1 max-h-[100px] overflow-y-auto">
                 {taskData.map((item, index) => (
-                  <div
-                    key={index}
-                    className="flex items-center justify-between text-xs"
-                  >
+                  <div key={index} className="flex items-center justify-between text-xs">
                     <div className="flex items-center gap-1 flex-1">
-                      <div
-                        className="w-2 h-2 rounded-sm"
-                        style={{
-                          backgroundColor: COLORS[index % COLORS.length],
-                        }}
-                      />
-                      <span className="text-gray-300 truncate text-[10px]">
-                        {item.name}
-                      </span>
+                      <div className="w-2 h-2 rounded-sm" style={{ backgroundColor: COLORS[index % COLORS.length] }} />
+                      <span className="text-gray-300 truncate text-[10px]">{item.name}</span>
                     </div>
-                    <span className="text-white font-medium text-[10px]">
-                      {item.percentage.toFixed(1)}%
-                    </span>
+                    <span className="text-white font-medium text-[10px]">{item.percentage.toFixed(1)}%</span>
                   </div>
                 ))}
               </div>
             </div>
           </div>
 
-          {/* TABLEAU DÉTAILLÉ */}
           <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-            <h3 className="text-white font-semibold text-sm mb-3">
-              Détails par projet
-            </h3>
+            <h3 className="text-white font-semibold text-sm mb-3">Détails par projet</h3>
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#313442]">
-                  <th className="text-left text-gray-400 font-medium py-2 px-3 text-xs">
-                    PROJET | TÂCHE
-                  </th>
-                  <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">
-                    DURÉE
-                  </th>
-                  <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">
-                    %
-                  </th>
-                  <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">
-                    ENTRÉES
-                  </th>
+                  <th className="text-left text-gray-400 font-medium py-2 px-3 text-xs">PROJET | TÂCHE</th>
+                  <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">DURÉE</th>
+                  <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">%</th>
+                  <th className="text-right text-gray-400 font-medium py-2 px-3 text-xs">ENTRÉES</th>
                 </tr>
               </thead>
               <tbody>
-                {(filteredReport?.byProject || []).map(
-                  (project, projectIndex) => {
-                    const isExpanded = expandedProjects.has(
-                      project.projectId || "no-project",
-                    );
-                    const projectEntries = (
-                      filteredReport?.entries || []
-                    ).filter(
-                      (e) => (e.projectId || null) === project.projectId,
-                    );
-                    return (
-                      <React.Fragment
-                        key={project.projectId || `no-project-${projectIndex}`}
+                {(filteredReport?.byProject || []).map((project, projectIndex) => {
+                  const isExpanded = expandedProjects.has(project.projectId || "no-project");
+                  const projectEntries = (filteredReport?.entries || []).filter(
+                    (e) => (e.projectId || null) === project.projectId
+                  );
+                  return (
+                    <React.Fragment key={project.projectId || `no-project-${projectIndex}`}>
+                      <tr
+                        className="border-b border-[#313442]/50 hover:bg-white/5 cursor-pointer"
+                        onClick={() => toggleProject(project.projectId || "no-project")}
                       >
-                        <tr
-                          className="border-b border-[#313442]/50 hover:bg-white/5 cursor-pointer"
-                          onClick={() =>
-                            toggleProject(project.projectId || "no-project")
-                          }
-                        >
-                          <td className="py-2 px-3 text-white flex items-center gap-1">
-                            <ChevronRight
-                              size={12}
-                              className={`transform transition-transform ${isExpanded ? "rotate-90" : ""}`}
-                            />
-                            <span className="text-xs font-medium">
-                              {project.projectName}
-                            </span>
-                            <span className="text-gray-400 text-[10px]">
-                              ({project.entriesCount})
-                            </span>
-                          </td>
-                          <td className="text-right py-2 px-3 text-white font-mono text-xs">
-                            {formatHours(project.hours)}
-                          </td>
-                          <td className="text-right py-2 px-3 text-white text-xs">
-                            {project.percentage.toFixed(1)}%
-                          </td>
-                          <td className="text-right py-2 px-3 text-white text-xs">
-                            {project.entriesCount}
-                          </td>
-                        </tr>
-                        {isExpanded &&
-                          projectEntries.map((entry, idx) => (
-                            <tr
-                              key={`${project.projectId}-entry-${idx}`}
-                              className="border-b border-[#313442]/30 bg-[#0F0F12]/50"
-                            >
-                              <td className="py-1 px-3 pl-8 text-gray-300 text-xs">
-                                <div>
-                                  {entry.taskTitle ||
-                                    entry.description ||
-                                    "Sans tâche"}
-                                </div>
-                                <div className="text-[10px] text-gray-500">
-                                  {format(
-                                    new Date(entry.startTime),
-                                    "dd MMM • HH:mm",
-                                    { locale: fr },
-                                  )}
-                                </div>
-                              </td>
-                              <td className="text-right py-1 px-3 text-gray-300 font-mono text-xs">
-                                {formatHours(entry.duration / 3600)}
-                              </td>
-                              <td className="text-right py-1 px-3 text-gray-300 text-xs">
-                                {(
-                                  (entry.duration / 3600 / project.hours) *
-                                  100
-                                ).toFixed(1)}
-                                %
-                              </td>
-                              <td className="text-right py-1 px-3 text-gray-300 text-xs">
-                                1
-                              </td>
-                            </tr>
-                          ))}
-                      </React.Fragment>
-                    );
-                  },
-                )}
+                        <td className="py-2 px-3 text-white flex items-center gap-1">
+                          <ChevronRight size={12} className={`transform transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                          <span className="text-xs font-medium">{project.projectName}</span>
+                          <span className="text-gray-400 text-[10px]">({project.entriesCount})</span>
+                        </td>
+                        <td className="text-right py-2 px-3 text-white font-mono text-xs">{formatHours(project.hours)}</td>
+                        <td className="text-right py-2 px-3 text-white text-xs">{project.percentage.toFixed(1)}%</td>
+                        <td className="text-right py-2 px-3 text-white text-xs">{project.entriesCount}</td>
+                      </tr>
+                      {isExpanded &&
+                        projectEntries.map((entry, idx) => (
+                          <tr key={`${project.projectId}-entry-${idx}`} className="border-b border-[#313442]/30 bg-[#0F0F12]/50">
+                            <td className="py-1 px-3 pl-8 text-gray-300 text-xs">
+                              <div>{entry.taskTitle || entry.description || "Sans tâche"}</div>
+                              <div className="text-[10px] text-gray-500">
+                                {format(new Date(entry.startTime), "dd MMM • HH:mm", { locale: fr })}
+                              </div>
+                            </td>
+                            <td className="text-right py-1 px-3 text-gray-300 font-mono text-xs">{formatHours(entry.duration / 3600)}</td>
+                            <td className="text-right py-1 px-3 text-gray-300 text-xs">{((entry.duration / 3600 / project.hours) * 100).toFixed(1)}%</td>
+                            <td className="text-right py-1 px-3 text-gray-300 text-xs">1</td>
+                          </tr>
+                        ))}
+                    </React.Fragment>
+                  );
+                })}
                 <tr className="border-t border-[#313442] bg-[#0F0F12]">
-                  <td className="py-2 px-3 text-white font-bold text-xs">
-                    TOTAL
-                  </td>
-                  <td className="text-right py-2 px-3 text-white font-mono font-bold text-xs">
-                    {formatHours(filteredReport?.totalHours || 0)}
-                  </td>
-                  <td className="text-right py-2 px-3 text-white font-bold text-xs">
-                    100%
-                  </td>
-                  <td className="text-right py-2 px-3 text-white font-bold text-xs">
-                    {filteredReport?.entriesCount || 0}
-                  </td>
+                  <td className="py-2 px-3 text-white font-bold text-xs">TOTAL</td>
+                  <td className="text-right py-2 px-3 text-white font-mono font-bold text-xs">{formatHours(filteredReport?.totalHours || 0)}</td>
+                  <td className="text-right py-2 px-3 text-white font-bold text-xs">100%</td>
+                  <td className="text-right py-2 px-3 text-white font-bold text-xs">{filteredReport?.entriesCount || 0}</td>
                 </tr>
               </tbody>
             </table>

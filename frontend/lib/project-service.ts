@@ -52,15 +52,12 @@ export interface UpdateProjectDto {
   invitedCollaborateurs?: string[];
 }
 
-
 export interface AvailableMembers {
   managers: import("@/lib/users-service").Agent[];
   collaborateurs: import("@/lib/users-service").Agent[];
 }
 
 export const projectService = {
-  // ─── CRUD ────────────────────────────────────────────────────────────────────
-
   async create(data: CreateProjectDto): Promise<Project> {
     const response = await api.post('/projects', data);
     return response.data;
@@ -85,7 +82,11 @@ export const projectService = {
     await api.delete(`/projects/${projectId}`);
   },
 
-  // ─── FICHIERS ─────────────────────────────────────────────────────────────────
+  // NOUVELLE MÉTHODE
+  async getUserProjects(userId: string): Promise<Project[]> {
+    const response = await api.get(`/projects/user/${userId}`);
+    return response.data;
+  },
 
   async uploadFile(projectId: string, file: File): Promise<Project> {
     const formData = new FormData();
@@ -119,8 +120,6 @@ export const projectService = {
     );
     return response.data;
   },
-
-  // ─── MEMBRES ─────────────────────────────────────────────────────────────────
 
   async inviteManager(projectId: string, managerId: string): Promise<Project> {
     const response = await api.post(

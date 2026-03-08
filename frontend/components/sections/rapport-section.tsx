@@ -39,6 +39,7 @@ import {
 import { fr } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { timerService, ReportData } from "@/lib/timer-service";
+import { projectService } from "@/lib/project-service"; // ← AJOUT
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import domtoimage from "dom-to-image";
@@ -557,13 +558,19 @@ export function RapportSection() {
     refetchInterval: 1000,
   });
 
-  // ── Liste de projets disponibles (pour le filtre) ──────────────────────────
-  const availableProjects = useMemo(() => {
-    return (report?.byProject || []).map((p) => ({
-      projectId: p.projectId,
-      projectName: p.projectName,
+  // ── Récupération des projets accessibles à l'utilisateur ────────────────────
+  const { data: userProjects = [] } = useQuery({
+    queryKey: ["myProjects"],
+    queryFn: () => projectService.getAll(),
+  });
+
+  // ── Liste de projets disponibles pour le filtre (tous les projets de l'utilisateur) ──
+  const projectOptions = useMemo(() => {
+    return userProjects.map((p) => ({
+      projectId: p._id,
+      projectName: p.name,
     }));
-  }, [report]);
+  }, [userProjects]);
 
   // ── Données filtrées par projet sélectionné ────────────────────────────────
   const filteredReport = useMemo(() => {
@@ -927,7 +934,7 @@ export function RapportSection() {
           {/* DROITE : filtre projet + export */}
           <div className="flex items-center gap-2">
             <ProjectFilter
-              projects={availableProjects}
+              projects={projectOptions} // ← REMPLACÉ
               selectedProjectIds={selectedProjectIds}
               onChange={setSelectedProjectIds}
             />

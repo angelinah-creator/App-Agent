@@ -30,7 +30,7 @@ import { projectService, Project } from "@/lib/project-service";
 import { usersService } from "@/lib/users-service";
 import KanbanColumn from "../kanban/KanbanColumn";
 import TaskCard from "../kanban/TaskCard";
-import QuickTaskForm from "../kanban/QuickTaskForm";
+import SharedQuickTaskForm from "./SharedQuickTaskForm";
 import AddSubtaskModal from "../kanban/AddSubtaskModal";
 import SpacePermissionsModal from "./PermissionsModal";
 import TaskDetailModal from "../kanban/TaskDetailModal";
@@ -54,12 +54,12 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     () => {
       if (typeof window !== "undefined") {
         const saved = localStorage.getItem(
-          `expanded_tasks_shared_${space._id}`
+          `expanded_tasks_shared_${space._id}`,
         );
         return saved ? JSON.parse(saved) : {};
       }
       return {};
-    }
+    },
   );
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
@@ -90,7 +90,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
 
   const canEdit = useMemo(
     () => userPermission === "editor" || userPermission === "super_editor",
-    [userPermission]
+    [userPermission],
   );
 
   // Sensors pour le drag & drop
@@ -102,7 +102,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
-    })
+    }),
   );
 
   useEffect(() => {
@@ -115,7 +115,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     if (typeof window !== "undefined") {
       localStorage.setItem(
         `expanded_tasks_shared_${space._id}`,
-        JSON.stringify(expandedTasks)
+        JSON.stringify(expandedTasks),
       );
     }
   }, [expandedTasks, space._id]);
@@ -187,8 +187,10 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
       const permissions = await spaceService.getPermissions(space._id);
 
       // Filtrer les permissions qui ont un userId valide
-      const validPermissions = permissions.filter((p: any) => p.userId && p.userId._id);
-      
+      const validPermissions = permissions.filter(
+        (p: any) => p.userId && p.userId._id,
+      );
+
       const userPerm = validPermissions.find((p: any) => {
         const permUserId = p.userId._id;
         return permUserId === userId;
@@ -244,7 +246,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
       const task = tasks.find((t) => t._id === taskId);
       setActiveTask(task || null);
     },
-    [tasks]
+    [tasks],
   );
 
   const handleDragEnd = async (event: DragEndEvent) => {
@@ -262,8 +264,8 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
       // Mettre à jour immédiatement l'UI
       setTasks((prev) =>
         prev.map((task) =>
-          task._id === taskId ? { ...task, status: newStatus } : task
-        )
+          task._id === taskId ? { ...task, status: newStatus } : task,
+        ),
       );
 
       // Si c'est une tâche parente, mettre à jour aussi les sous-tâches
@@ -302,7 +304,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
   // Créer une sous-tâche
   const handleCreateSubtask = async (
     parentTaskId: string,
-    data: CreateSubtaskDto
+    data: CreateSubtaskDto,
   ) => {
     if (!canEdit) return;
 
@@ -310,7 +312,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
       const newSubtask = await sharedTaskService.createSubtask(
         space._id,
         parentTaskId,
-        data
+        data,
       );
 
       // Mettre à jour les sous-tâches dans la map
@@ -329,7 +331,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
             };
           }
           return task;
-        })
+        }),
       );
 
       setShowSubtaskForm(null);
@@ -354,7 +356,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
       const updatedTask = await sharedTaskService.update(
         space._id,
         taskId,
-        data
+        data,
       );
 
       // Chercher si c'est une sous-tâche
@@ -382,15 +384,15 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
         setSubtasksMap((prev) => ({
           ...prev,
           [parentId]: (prev[parentId] || []).map((st) =>
-            st._id === taskId ? { ...st, ...updatedTask } : st
+            st._id === taskId ? { ...st, ...updatedTask } : st,
           ),
         }));
       } else {
         // Si c'est une tâche parente
         setTasks((prev) =>
           prev.map((task) =>
-            task._id === taskId ? { ...task, ...updatedTask } : task
-          )
+            task._id === taskId ? { ...task, ...updatedTask } : task,
+          ),
         );
 
         // Si le projet ou la deadline a changé, mettre à jour les sous-tâches
@@ -461,7 +463,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
               };
             }
             return task;
-          })
+          }),
         );
       } else {
         // Supprimer la tâche parente
@@ -578,7 +580,8 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
           <div className="flex items-center gap-2">
             <Users size={16} />
             <span>
-              Créé par {space.createdBy?.prenoms || ''} {space.createdBy?.nom || ''}
+              Créé par {space.createdBy?.prenoms || ""}{" "}
+              {space.createdBy?.nom || ""}
             </span>
           </div>
           <div>
@@ -670,11 +673,10 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
 
       {/* Form overlay pour nouvelle tâche */}
       {showTaskForm && canEdit && (
-        <QuickTaskForm
+        <SharedQuickTaskForm
+          spaceId={space._id}
           projects={projects}
-          users={users}
           currentUserId={userData?._id}
-          isShared={true}
           defaultStatus={defaultStatusForNewTask}
           defaultColumnStatus={defaultStatusForNewTask}
           onSubmit={handleCreateTask}
