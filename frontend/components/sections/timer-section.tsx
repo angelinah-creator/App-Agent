@@ -47,8 +47,9 @@ import { TimeGrid } from "./timer/time-grid";
 const HOURS = Array.from({ length: 24 }, (_, i) => i);
 const DAYS = ["Lun", "Mar", "Mer", "Jeu", "Ven", "Sam", "Dim"];
 const PIXELS_PER_HOUR = 48; // Réduit de 64 à 48
+const EDITABLE_DAYS = 7; // Nombre de jours pendant lesquels une entrée est modifiable
 
-// Composant WeekSelector
+// Composant WeekSelector (inchangé)
 function WeekSelector({
   isOpen,
   onClose,
@@ -220,6 +221,14 @@ export function TimerSection() {
     entry: null,
     mode: "create",
   });
+
+  // Date limite pour les modifications (aujourd'hui - EDITABLE_DAYS, à minuit)
+  const editableCutoff = useMemo(() => {
+    const date = new Date();
+    date.setDate(date.getDate() - EDITABLE_DAYS);
+    date.setHours(0, 0, 0, 0);
+    return date;
+  }, []);
 
   // Queries
   const { data: activeTimer, error: activeTimerError } = useQuery({
@@ -792,18 +801,6 @@ export function TimerSection() {
 
   return (
     <div className="flex flex-col h-[calc(100vh-100px)] bg-transparent -mb-8 -mt-8">
-      {/* Status de connexion */}
-      {/* <div
-        className={`fixed top-16 right-4 z-50 px-2 py-0.5 rounded-full text-[10px] font-medium ${isOnline ? "bg-green-500/20 text-green-400" : "bg-red-500/20 text-red-400"}`}
-      >
-        {isOnline ? (
-          <Wifi size={12} className="inline mr-1" />
-        ) : (
-          <WifiOff size={12} className="inline mr-1" />
-        )}
-        {isOnline ? "En ligne" : "Hors ligne"}
-      </div> */}
-
       {/* TOP BAR */}
       <div className="border-b px-4 py-2 flex items-center gap-3 bg-transparent z-30 flex-shrink-0">
         <div className="flex-1 relative" ref={taskSelectorRef}>
@@ -984,6 +981,8 @@ export function TimerSection() {
           <TimeGrid
             onCellClick={handleGridClick}
             pixelsPerHour={PIXELS_PER_HOUR}
+            editableCutoff={editableCutoff}
+            weekStart={weekStart}
           />
 
           {/* Marqueur de position actuelle */}
@@ -1017,6 +1016,7 @@ export function TimerSection() {
                   durationHours,
                 )
               }
+              editableCutoff={editableCutoff}
             />
           ))}
         </div>
@@ -1039,6 +1039,11 @@ export function TimerSection() {
             : undefined
         }
         mode={popupData.mode}
+        isEditable={
+          popupData.mode === "edit" && popupData.entry
+            ? !!popupData.entry.startTime && new Date(popupData.entry.startTime) >= editableCutoff
+            : true
+        }
       />
     </div>
   );

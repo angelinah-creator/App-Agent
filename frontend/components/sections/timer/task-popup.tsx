@@ -1,3 +1,4 @@
+// frontend/components/sections/timer/task-popup.tsx
 import { useState, useEffect, useRef } from 'react';
 import { X, ChevronDown } from 'lucide-react';
 import { TimeEntry } from '@/lib/timer-service';
@@ -12,6 +13,7 @@ interface TaskPopupProps {
   onSave: (data: Partial<TimeEntry>) => void;
   onDelete?: () => void;
   mode: 'create' | 'edit';
+  isEditable?: boolean; // seulement pour 'edit' (true par défaut)
 }
 
 export function TaskPopup({
@@ -24,6 +26,7 @@ export function TaskPopup({
   onSave,
   onDelete,
   mode,
+  isEditable = true,
 }: TaskPopupProps) {
   const [formData, setFormData] = useState<Partial<TimeEntry>>({});
   const [startTime, setStartTime] = useState('');
@@ -224,7 +227,8 @@ export function TaskPopup({
             <button
               type="button"
               onClick={() => setIsTaskSelectorOpen(!isTaskSelectorOpen)}
-              className="w-full bg-[#0F0F12] text-white px-2 py-1.5 rounded text-xs text-left flex items-center justify-between hover:bg-[#1a1a1f] transition"
+              className="w-full bg-[#0F0F12] text-white px-2 py-1.5 rounded text-xs text-left flex items-center justify-between hover:bg-[#1a1a1f] transition disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={mode === 'edit' && !isEditable}
             >
               <span className={formData.personalTaskId || formData.sharedTaskId ? 'text-white' : 'text-gray-500'}>
                 {getSelectedTaskName()}
@@ -297,7 +301,8 @@ export function TaskPopup({
             <select
               value={extractId(formData.projectId) || ''}
               onChange={(e) => setFormData({ ...formData, projectId: e.target.value || undefined })}
-              className="w-full bg-[#0F0F12] text-white px-2 py-1.5 rounded text-xs"
+              className="w-full bg-[#0F0F12] text-white px-2 py-1.5 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled={mode === 'edit' && !isEditable}
             >
               <option value="">Sans projet</option>
               {projects.map((p: any) => (
@@ -314,7 +319,8 @@ export function TaskPopup({
                 type="time"
                 value={startTime}
                 onChange={(e) => handleStartChange(e.target.value)}
-                className="w-full bg-[#0F0F12] text-white px-2 py-1.5 rounded text-xs"
+                className="w-full bg-[#0F0F12] text-white px-2 py-1.5 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={mode === 'edit' && !isEditable}
               />
             </div>
 
@@ -324,7 +330,8 @@ export function TaskPopup({
                 type="time"
                 value={endTime}
                 onChange={(e) => handleEndChange(e.target.value)}
-                className="w-full bg-[#0F0F12] text-white px-2 py-1.5 rounded text-xs"
+                className="w-full bg-[#0F0F12] text-white px-2 py-1.5 rounded text-xs disabled:opacity-50 disabled:cursor-not-allowed"
+                disabled={mode === 'edit' && !isEditable}
               />
             </div>
 
@@ -345,7 +352,8 @@ export function TaskPopup({
               <button
                 type="button"
                 onClick={onDelete}
-                className="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium"
+                disabled={!isEditable}
+                className="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Supprimer
               </button>
@@ -360,7 +368,8 @@ export function TaskPopup({
             <button
               type="button"
               onClick={handleSave}
-              className="flex-1 px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-medium"
+              disabled={mode === 'edit' && !isEditable}
+              className="flex-1 px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {mode === 'create' ? 'Créer' : 'Enregistrer'}
             </button>

@@ -3,6 +3,7 @@ import {
   NotFoundException,
   BadRequestException,
   ConflictException,
+  ForbiddenException,
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
@@ -29,12 +30,41 @@ import {
   endOfYear,
 } from 'date-fns';
 
+const EDITABLE_DAYS = 7; // Nombre de jours pendant lesquels une entrée est modifiable
+
 @Injectable()
 export class TimeEntriesService {
   constructor(
     @InjectModel(TimeEntry.name)
     private timeEntryModel: Model<TimeEntryDocument>,
   ) {}
+
+  // --- Vérification si une entrée est modifiable (pas trop ancienne) ---
+  private async checkIfEditable(entryId: string, userId: string): Promise<TimeEntryDocument> {
+    const entry = await this.timeEntryModel.findOne({
+      _id: entryId,
+      userId: new Types.ObjectId(userId),
+    });
+    if (!entry) {
+      throw new NotFoundException('Entrée non trouvée');
+    }
+
+    const now = new Date();
+    const limitDate = new Date();
+    limitDate.setDate(now.getDate() - EDITABLE_DAYS);
+    // Comparaison en ignorant l'heure (jour seulement)
+    const entryDate = new Date(entry.startTime);
+    entryDate.setHours(0, 0, 0, 0);
+    const limitDateStart = new Date(limitDate);
+    limitDateStart.setHours(0, 0, 0, 0);
+
+    if (entryDate < limitDateStart) {
+      throw new ForbiddenException(
+        `Cette entrée est trop ancienne pour être modifiée (> ${EDITABLE_DAYS} jours)`,
+      );
+    }
+    return entry;
+  }
 
   // Démarrer le timer
   async startTimer(
@@ -153,6 +183,21 @@ export class TimeEntriesService {
     userId: string,
     createDto: CreateTimeEntryDto,
   ): Promise<TimeEntryDocument> {
+    // Vérifier que la date n'est pas trop ancienne
+    const now = new Date();
+    const limitDate = new Date();
+    limitDate.setDate(now.getDate() - EDITABLE_DAYS);
+    limitDate.setHours(0, 0, 0, 0);
+
+    const startDate = new Date(createDto.startTime);
+    startDate.setHours(0, 0, 0, 0);
+
+    if (startDate < limitDate) {
+      throw new ForbiddenException(
+        `Impossible de créer une entrée sur une date de plus de ${EDITABLE_DAYS} jours`,
+      );
+    }
+
     const timeEntry = new this.timeEntryModel({
       userId: new Types.ObjectId(userId),
       projectId: createDto.projectId
@@ -178,46 +223,13 @@ export class TimeEntriesService {
   }
 
   // Mettre à jour une entrée
-  // async updateEntry(userId: string, entryId: string, updateDto: UpdateTimeEntryDto): Promise<TimeEntryDocument> {
-  //   const entry = await this.timeEntryModel.findOne({
-  //     _id: entryId,
-  //     userId: new Types.ObjectId(userId),
-  //   });
-
-  //   if (!entry) {
-  //     throw new NotFoundException('Entrée non trouvée');
-  //   }
-
-  //   Object.assign(entry, updateDto);
-
-  //   if (updateDto.startTime) {
-  //     entry.startTime = new Date(updateDto.startTime);
-  //     entry.date = startOfDay(new Date(updateDto.startTime));
-  //   }
-
-  //   if (updateDto.endTime) {
-  //     entry.endTime = new Date(updateDto.endTime);
-  //   }
-
-  //   return entry.save();
-  // }
-
-  // backend/src/time-entries/time-entries.service.ts
-  // Remplacez la méthode updateEntry par celle-ci :
-
   async updateEntry(
     userId: string,
     entryId: string,
     updateDto: UpdateTimeEntryDto,
   ): Promise<TimeEntryDocument> {
-    const entry = await this.timeEntryModel.findOne({
-      _id: entryId,
-      userId: new Types.ObjectId(userId),
-    });
-
-    if (!entry) {
-      throw new NotFoundException('Entrée non trouvée');
-    }
+    // Vérifier que l'entrée est modifiable (pas trop ancienne)
+    const entry = await this.checkIfEditable(entryId, userId);
 
     // Log pour debug
     console.log('📝 Update Entry - Données reçues:', updateDto);
@@ -273,6 +285,9 @@ export class TimeEntriesService {
 
   // Supprimer une entrée
   async deleteEntry(userId: string, entryId: string): Promise<void> {
+    // Vérifier que l'entrée est modifiable (pas trop ancienne)
+    await this.checkIfEditable(entryId, userId);
+
     const result = await this.timeEntryModel.findOneAndDelete({
       _id: entryId,
       userId: new Types.ObjectId(userId),
@@ -325,6 +340,19 @@ export class TimeEntriesService {
         if (existing) {
           continue; // Skip si déjà synchronisé
         }
+      }
+
+      // Vérifier que la date n'est pas trop ancienne avant de créer
+      const now = new Date();
+      const limitDate = new Date();
+      limitDate.setDate(now.getDate() - EDITABLE_DAYS);
+      limitDate.setHours(0, 0, 0, 0);
+      const startDate = new Date(entryDto.startTime);
+      startDate.setHours(0, 0, 0, 0);
+      if (startDate < limitDate) {
+        // On peut soit ignorer, soit rejeter l'entrée. Ici on ignore.
+        console.warn('Entrée trop ancienne ignorée lors de la synchro:', entryDto.offlineId);
+        continue;
       }
 
       const entry = await this.createEntry(userId, {
