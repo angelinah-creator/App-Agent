@@ -2,7 +2,7 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
 
-export type ProjectDocument = ProjectEntity & Document;
+export type ProjectDocument = Project & Document;
 
 export interface ProjectFile {
   url: string;
@@ -15,7 +15,7 @@ export interface ProjectFile {
 }
 
 @Schema({ timestamps: true })
-export class ProjectEntity {
+export class Project {
   @Prop({ required: true })
   name: string;
 
@@ -57,4 +57,4 @@ export class ProjectEntity {
   files: ProjectFile[];
 }
 
-export const ProjectSchema = SchemaFactory.createForClass(ProjectEntity);
+export const ProjectSchema = SchemaFactory.createForClass(Project);

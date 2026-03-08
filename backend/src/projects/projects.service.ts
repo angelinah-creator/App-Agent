@@ -7,7 +7,7 @@ import {
 } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model, Types } from 'mongoose';
-import { ProjectEntity, ProjectDocument } from './schemas/project.schema';
+import { Project, ProjectDocument } from './schemas/project.schema';
 import { User, UserDocument } from '../users/schemas/user.schema';
 import { CreateProjectDto } from './dto/create-project.dto';
 import { UpdateProjectDto } from './dto/update-project.dto';
@@ -16,7 +16,7 @@ import { CloudinaryService } from '../cloudinary/cloudinary.service';
 @Injectable()
 export class ProjectsService {
   constructor(
-    @InjectModel(ProjectEntity.name)
+    @InjectModel(Project.name)
     private projectModel: Model<ProjectDocument>,
     @InjectModel(User.name)
     private userModel: Model<UserDocument>,
