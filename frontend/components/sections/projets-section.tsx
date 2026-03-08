@@ -16,7 +16,6 @@ import {
   Filter,
   Calendar,
   Users,
-  FileText,
   MoreVertical,
   Trash2,
   Edit3,
@@ -31,6 +30,7 @@ import {
 import { ProjectModal } from "./projets/project-modal";
 import { ProjectDetailModal } from "./projets/project-detail-modal";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
+import { Button } from "../ui/button";
 
 interface ProjetsSectionProps {
   userRole: "admin" | "manager" | "collaborateur";
@@ -137,17 +137,6 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
   const canDeleteProject = (project: Project) =>
     userRole === "admin" || isOwner(project);
 
-  const getStatusColor = (project: Project) => {
-    const now = new Date();
-    if (project.end_time && new Date(project.end_time) < now) {
-      return { bg: "bg-red-500/10", text: "text-red-400", label: "Terminé" };
-    }
-    if (project.start_time && new Date(project.start_time) > now) {
-      return { bg: "bg-yellow-500/10", text: "text-yellow-400", label: "À venir" };
-    }
-    return { bg: "bg-emerald-500/10", text: "text-emerald-400", label: "En cours" };
-  };
-
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "—";
     return new Date(dateStr).toLocaleDateString("fr-FR", {
@@ -163,13 +152,13 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-6 -mt-8">
       {dialog}
 
       {/* Header */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-xl font-semibold text-white">
+          <h2 className="text-2xl font-extrabold text-white">
             {userRole === "collaborateur" ? "Mes Projets" : "Gestion des Projets"}
           </h2>
           <p className="text-sm text-gray-400 mt-0.5">
@@ -179,13 +168,13 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
           </p>
         </div>
         {canCreateProject && (
-          <button
+          <Button
             onClick={() => setShowCreateModal(true)}
-            className="flex items-center gap-2 px-4 py-2 bg-[#6C4EA8] hover:bg-[#7D5FBF] text-white rounded-lg text-sm font-medium transition-colors"
+            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105"
           >
             <Plus className="w-4 h-4" />
             Nouveau projet
-          </button>
+          </Button>
         )}
       </div>
 
@@ -214,32 +203,6 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
             </div>
           </div>
         </div>
-        <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-emerald-500/20 flex items-center justify-center">
-              <Clock className="w-4 h-4 text-emerald-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">
-                {filteredProjects.filter((p) => getStatusColor(p).label === "En cours").length}
-              </p>
-              <p className="text-xs text-gray-400">En cours</p>
-            </div>
-          </div>
-        </div>
-        <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-4">
-          <div className="flex items-center gap-3">
-            <div className="w-9 h-9 rounded-lg bg-blue-500/20 flex items-center justify-center">
-              <FileText className="w-4 h-4 text-blue-400" />
-            </div>
-            <div>
-              <p className="text-2xl font-bold text-white">
-                {filteredProjects.reduce((acc, p) => acc + p.files.length, 0)}
-              </p>
-              <p className="text-xs text-gray-400">Fichiers</p>
-            </div>
-          </div>
-        </div>
       </div>
 
       {/* Projects Grid */}
@@ -262,7 +225,6 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-4">
           {filteredProjects.map((project) => {
-            const status = getStatusColor(project);
             return (
               <div
                 key={project._id}
@@ -271,15 +233,7 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
                 {/* Header card */}
                 <div className="flex items-start justify-between mb-3">
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 mb-1">
-                      <span
-                        className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.text}`}
-                      >
-                        <span className={`w-1.5 h-1.5 rounded-full bg-current`} />
-                        {status.label}
-                      </span>
-                    </div>
-                    <h3 className="text-white font-semibold text-sm truncate">
+                    <h3 className="text-white font-semibold text-xl truncate">
                       {project.name}
                     </h3>
                   </div>
@@ -387,12 +341,6 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
                       {getMembersCount(project) + 1} membre
                       {getMembersCount(project) + 1 > 1 ? "s" : ""}
                     </span>
-                  </div>
-
-                  {/* Fichiers */}
-                  <div className="flex items-center gap-1 text-xs text-gray-500">
-                    <FileText className="w-3.5 h-3.5" />
-                    <span>{project.files.length}</span>
                   </div>
                 </div>
 

@@ -11,29 +11,21 @@ import {
 import type { Agent } from "@/lib/users-service";
 import {
   X,
-  FileText,
-  Upload,
   Trash2,
-  Download,
   Users,
   UserMinus,
   Search,
   Calendar,
   Briefcase,
-  File,
-  Image,
-  FileSpreadsheet,
-  Film,
-  Archive,
   Plus,
   Crown,
   Shield,
-  ExternalLink,
   Edit3,
   AlertTriangle,
 } from "lucide-react";
 import { useConfirmDialog } from "@/components/dialogs/confirm-dialog";
 import { ProjectModal } from "./project-modal";
+import { Button } from "@/components/ui/button";
 
 interface ProjectDetailModalProps {
   project: Project;
@@ -45,7 +37,7 @@ interface ProjectDetailModalProps {
   onDeleted?: () => void;
 }
 
-type TabType = "files" | "members" | "info";
+type TabType = "members" | "info";
 
 export function ProjectDetailModal({
   project,
@@ -60,7 +52,7 @@ export function ProjectDetailModal({
   const { confirm, dialog } = useConfirmDialog();
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const [activeTab, setActiveTab] = useState<TabType>("files");
+  const [activeTab, setActiveTab] = useState<TabType>("members");
   const [memberTab, setMemberTab] = useState<"managers" | "collaborateurs">("collaborateurs");
   const [searchTerm, setSearchTerm] = useState("");
   const [isDragOver, setIsDragOver] = useState(false);
@@ -166,17 +158,6 @@ export function ProjectDetailModal({
 
   // ─── Handlers ────────────────────────────────────────────────────────────────
 
-  const handleFileUpload = (files: FileList | null) => {
-    if (!files) return;
-    Array.from(files).forEach((file) => uploadMutation.mutate(file));
-  };
-
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragOver(false);
-    handleFileUpload(e.dataTransfer.files);
-  };
-
   const handleDeleteFile = (publicId: string, name: string) => {
     confirm({
       title: "Supprimer ce fichier",
@@ -200,22 +181,6 @@ export function ProjectDetailModal({
   };
 
   // ─── Helpers ─────────────────────────────────────────────────────────────────
-
-  const getFileIcon = (mimeType: string) => {
-    if (mimeType.startsWith("image/")) return Image;
-    if (mimeType.startsWith("video/")) return Film;
-    if (mimeType === "application/pdf") return FileText;
-    if (mimeType.includes("spreadsheet") || mimeType.includes("excel"))
-      return FileSpreadsheet;
-    if (mimeType.includes("zip") || mimeType.includes("rar")) return Archive;
-    return File;
-  };
-
-  const formatFileSize = (bytes: number) => {
-    if (bytes < 1024) return `${bytes} B`;
-    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
-    return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
-  };
 
   const formatDate = (dateStr?: string) => {
     if (!dateStr) return "—";
@@ -245,17 +210,6 @@ export function ProjectDetailModal({
       ) &&
       `${u.prenoms} ${u.nom}`.toLowerCase().includes(searchTerm.toLowerCase())
   );
-
-  const getStatusInfo = () => {
-    const now = new Date();
-    if (project.end_time && new Date(project.end_time) < now)
-      return { color: "text-red-400", bg: "bg-red-500/10", label: "Terminé" };
-    if (project.start_time && new Date(project.start_time) > now)
-      return { color: "text-yellow-400", bg: "bg-yellow-500/10", label: "À venir" };
-    return { color: "text-emerald-400", bg: "bg-emerald-500/10", label: "En cours" };
-  };
-
-  const status = getStatusInfo();
 
   // ─── Modal d'édition ─────────────────────────────────────────────────────────
 
@@ -291,15 +245,9 @@ export function ProjectDetailModal({
             </div>
             <div className="min-w-0">
               <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-white font-semibold text-base truncate">
+                <h2 className="text-white font-semibold text-xl truncate">
                   {project.name}
                 </h2>
-                <span
-                  className={`inline-flex items-center gap-1 px-2 py-0.5 rounded-full text-xs font-medium ${status.bg} ${status.color}`}
-                >
-                  <span className="w-1.5 h-1.5 rounded-full bg-current" />
-                  {status.label}
-                </span>
               </div>
               <div className="flex items-center gap-3 text-xs text-gray-500 mt-0.5">
                 <span className="flex items-center gap-1">
@@ -317,19 +265,19 @@ export function ProjectDetailModal({
           {/* Actions header */}
           <div className="flex items-center gap-2 ml-3 flex-shrink-0">
             {canEditProject && (
-              <button
+              <Button
                 onClick={() => setShowEditModal(true)}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-[#6C4EA8]/20 text-[#9B7FD4] hover:bg-[#6C4EA8]/40 transition-colors"
+                className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
               >
                 <Edit3 className="w-3.5 h-3.5" />
                 Modifier
-              </button>
+              </Button>
             )}
             {canDeleteProject && (
-              <button
+              <Button
                 onClick={handleDeleteProject}
                 disabled={deleteMutation.isPending}
-                className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-red-500/10 text-red-400 hover:bg-red-500/20 transition-colors disabled:opacity-50"
+                className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
               >
                 {deleteMutation.isPending ? (
                   <div className="w-3.5 h-3.5 border-2 border-red-400/30 border-t-red-400 rounded-full animate-spin" />
@@ -337,7 +285,7 @@ export function ProjectDetailModal({
                   <Trash2 className="w-3.5 h-3.5" />
                 )}
                 Supprimer
-              </button>
+              </Button>
             )}
             <button
               onClick={onClose}
@@ -351,7 +299,6 @@ export function ProjectDetailModal({
         {/* ── Tabs ──────────────────────────────────────────────────── */}
         <div className="flex gap-1 px-6 border-b border-[#313442]">
           {([
-            { id: "files", label: `Fichiers (${project.files.length})` },
             {
               id: "members",
               label: `Membres (${
@@ -376,123 +323,6 @@ export function ProjectDetailModal({
 
         {/* ── Body ──────────────────────────────────────────────────── */}
         <div className="flex-1 overflow-y-auto">
-
-          {/* ════ Fichiers ════ */}
-          {activeTab === "files" && (
-            <div className="p-6 space-y-4">
-              {canWrite && (
-                <div
-                  onDragOver={(e) => { e.preventDefault(); setIsDragOver(true); }}
-                  onDragLeave={() => setIsDragOver(false)}
-                  onDrop={handleDrop}
-                  className={`border-2 border-dashed rounded-xl p-8 text-center transition-colors cursor-pointer ${
-                    isDragOver
-                      ? "border-[#6C4EA8] bg-[#6C4EA8]/10"
-                      : "border-[#313442] hover:border-[#6C4EA8]/50"
-                  }`}
-                  onClick={() => fileInputRef.current?.click()}
-                >
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    multiple
-                    className="hidden"
-                    onChange={(e) => handleFileUpload(e.target.files)}
-                  />
-                  <Upload className="w-8 h-8 text-gray-600 mx-auto mb-2" />
-                  <p className="text-white text-sm font-medium">
-                    Glissez vos fichiers ici
-                  </p>
-                  <p className="text-gray-500 text-xs mt-1">
-                    ou cliquez pour parcourir — PDF, images, documents, vidéos (max 50MB)
-                  </p>
-                  {uploadMutation.isPending && (
-                    <div className="flex items-center justify-center gap-2 mt-3">
-                      <div className="w-4 h-4 border-2 border-[#6C4EA8] border-t-transparent rounded-full animate-spin" />
-                      <span className="text-xs text-gray-400">Upload en cours...</span>
-                    </div>
-                  )}
-                </div>
-              )}
-
-              {project.files.length === 0 ? (
-                <div className="text-center py-10">
-                  <File className="w-10 h-10 text-gray-700 mx-auto mb-2" />
-                  <p className="text-gray-500 text-sm">Aucun fichier</p>
-                  <p className="text-gray-600 text-xs mt-1">
-                    {canWrite
-                      ? "Uploadez votre premier fichier ci-dessus"
-                      : "Ce projet n'a pas encore de fichiers"}
-                  </p>
-                </div>
-              ) : (
-                <div className="space-y-2">
-                  {project.files.map((file, idx) => {
-                    const FileIcon = getFileIcon(file.mimeType);
-                    const isImage = file.mimeType.startsWith("image/");
-                    return (
-                      <div
-                        key={idx}
-                        className="flex items-center gap-3 p-3 bg-[#282B36] rounded-xl hover:bg-[#2D3040] transition-colors group"
-                      >
-                        <div className="w-10 h-10 rounded-lg overflow-hidden bg-[#1F2128] flex items-center justify-center flex-shrink-0">
-                          {isImage ? (
-                            <img src={file.url} alt={file.originalName} className="w-full h-full object-cover" />
-                          ) : (
-                            <FileIcon className="w-5 h-5 text-[#9B7FD4]" />
-                          )}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-white text-xs font-medium truncate">
-                            {file.originalName}
-                          </p>
-                          <div className="flex items-center gap-2 text-xs text-gray-500">
-                            <span>{formatFileSize(file.size)}</span>
-                            <span>•</span>
-                            <span>
-                              {file.uploadedBy?.prenoms} {file.uploadedBy?.nom}
-                            </span>
-                            <span>•</span>
-                            <span>{formatDate(file.uploadedAt)}</span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-                            title="Ouvrir"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </a>
-                          <a
-                            href={file.url}
-                            download={file.originalName}
-                            className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-white hover:bg-white/10 transition-colors"
-                            title="Télécharger"
-                          >
-                            <Download className="w-3.5 h-3.5" />
-                          </a>
-                          {canWrite && (
-                            <button
-                              onClick={() =>
-                                handleDeleteFile(file.publicId, file.originalName)
-                              }
-                              className="w-7 h-7 rounded-lg flex items-center justify-center text-gray-400 hover:text-red-400 hover:bg-red-500/10 transition-colors"
-                              title="Supprimer"
-                            >
-                              <Trash2 className="w-3.5 h-3.5" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-          )}
 
           {/* ════ Membres ════ */}
           {activeTab === "members" && (
@@ -670,58 +500,8 @@ export function ProjectDetailModal({
 
               {/* Stats */}
               <div className="grid grid-cols-3 gap-3">
-                <StatCard label="Fichiers" value={project.files.length} />
                 <StatCard label="Managers invités" value={project.invitedManagers.length} />
                 <StatCard label="Collaborateurs" value={project.invitedCollaborateurs.length} />
-              </div>
-
-              {/* Séparateur */}
-              <div className="h-px bg-[#313442]" />
-
-              {/* Liste des fichiers */}
-              <div>
-                <p className="text-xs font-medium text-gray-400 mb-3">
-                  Fichiers ({project.files.length})
-                </p>
-                {project.files.length === 0 ? (
-                  <div className="text-center py-6 bg-[#282B36] rounded-xl">
-                    <File className="w-8 h-8 text-gray-700 mx-auto mb-1.5" />
-                    <p className="text-gray-600 text-xs">Aucun fichier dans ce projet</p>
-                  </div>
-                ) : (
-                  <div className="space-y-2">
-                    {project.files.map((file, idx) => {
-                      const FileIcon = getFileIcon(file.mimeType);
-                      const isImage = file.mimeType.startsWith("image/");
-                      return (
-                        <div
-                          key={idx}
-                          className="flex items-center gap-3 p-2.5 bg-[#282B36] rounded-lg hover:bg-[#2D3040] transition-colors group"
-                        >
-                          <div className="w-8 h-8 rounded-lg overflow-hidden bg-[#1F2128] flex items-center justify-center flex-shrink-0">
-                            {isImage ? (
-                              <img src={file.url} alt={file.originalName} className="w-full h-full object-cover" />
-                            ) : (
-                              <FileIcon className="w-4 h-4 text-[#9B7FD4]" />
-                            )}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <p className="text-white text-xs truncate">{file.originalName}</p>
-                            <p className="text-gray-500 text-xs">{formatFileSize(file.size)}</p>
-                          </div>
-                          <a
-                            href={file.url}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="w-6 h-6 rounded flex items-center justify-center text-gray-500 hover:text-white transition-colors opacity-0 group-hover:opacity-100"
-                          >
-                            <ExternalLink className="w-3 h-3" />
-                          </a>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
               </div>
             </div>
           )}
@@ -858,17 +638,6 @@ function InviteRow({
         </p>
         <p className="text-gray-600 text-xs truncate">{user.email}</p>
       </div>
-      {user.profile && (
-        <span
-          className={`text-xs px-2 py-0.5 rounded-full flex-shrink-0 ${
-            accentColor === "blue"
-              ? "bg-blue-500/10 text-blue-400"
-              : "bg-emerald-500/10 text-emerald-400"
-          }`}
-        >
-          {user.profile}
-        </span>
-      )}
       <button
         onClick={onInvite}
         disabled={isPending}
