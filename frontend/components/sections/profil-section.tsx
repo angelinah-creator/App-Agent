@@ -23,6 +23,8 @@ import {
   Shield,
   PenLine,
   Eye,
+  AlertTriangle,
+  Loader2,
 } from "lucide-react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { authService } from "@/lib/auth-service";
@@ -70,6 +72,7 @@ export function Profil() {
 
   const [showPhotoViewer, setShowPhotoViewer] = useState(false);
   const [showSignatureViewer, setShowSignatureViewer] = useState(false);
+  const [showDeletePhotoConfirm, setShowDeletePhotoConfirm] = useState(false);
   const [editSection, setEditSection] = useState<EditSection>(null);
   const [changingPassword, setChangingPassword] = useState(false);
   const [toast, setToast] = useState<{ msg: string; ok: boolean } | null>(null);
@@ -139,9 +142,13 @@ export function Profil() {
     mutationFn: () => usersService.deleteProfilePhoto(user!._id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ["profile"] });
+      setShowDeletePhotoConfirm(false);
       showToast("Photo supprimée");
     },
-    onError: () => showToast("Erreur suppression photo", false),
+    onError: () => {
+      setShowDeletePhotoConfirm(false);
+      showToast("Erreur suppression photo", false);
+    },
   });
 
   const uploadSignatureMutation = useMutation({
@@ -344,6 +351,9 @@ export function Profil() {
   };
 
   const isPro = user?.role === "collaborateur" || user?.role === "manager";
+
+  const isPhotoLoading =
+    uploadPhotoMutation.isPending || deletePhotoMutation.isPending;
 
   if (isLoading || !user) {
     return (
@@ -620,6 +630,55 @@ export function Profil() {
         </div>
       )}
 
+      {/* Delete Photo Confirmation Modal */}
+      {showDeletePhotoConfirm && (
+        <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
+          <div className="bg-[#1a1a1d] border border-[#313442] rounded-xl w-full max-w-sm shadow-2xl">
+            <div className="p-5">
+              <div className="flex items-center gap-3 mb-3">
+                <div className="w-10 h-10 rounded-full bg-red-500/15 flex items-center justify-center flex-shrink-0">
+                  <AlertTriangle size={18} className="text-red-400" />
+                </div>
+                <div>
+                  <h3 className="text-sm font-semibold text-white">
+                    Supprimer la photo
+                  </h3>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Êtes-vous sûr de vouloir supprimer votre photo de profil ? 
+                  </p>
+                </div>
+              </div>
+            </div>
+            <div className="flex gap-2 px-5 pb-5">
+              <button
+                onClick={() => setShowDeletePhotoConfirm(false)}
+                disabled={deletePhotoMutation.isPending}
+                className="flex-1 px-3 py-2 text-xs text-gray-400 border border-[#313442] rounded-lg hover:bg-white/5 transition-colors disabled:opacity-50"
+              >
+                Annuler
+              </button>
+              <button
+                onClick={() => deletePhotoMutation.mutate()}
+                disabled={deletePhotoMutation.isPending}
+                className="flex-1 px-3 py-2 text-xs bg-red-500/80 hover:bg-red-500 text-white rounded-lg flex items-center justify-center gap-1.5 transition-colors disabled:opacity-50"
+              >
+                {deletePhotoMutation.isPending ? (
+                  <>
+                    <Loader2 size={12} className="animate-spin" />
+                    Suppression...
+                  </>
+                ) : (
+                  <>
+                    <Trash2 size={12} />
+                    Supprimer
+                  </>
+                )}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Edit Modal */}
       {editSection && (
         <div className="fixed inset-0 bg-black/80 z-50 flex items-center justify-center p-4">
@@ -669,36 +728,65 @@ export function Profil() {
           {/* Avatar */}
           <div className="relative flex-shrink-0">
             <div
-              className={`w-34 h-34 rounded-xl overflow-hidden border-4 border-[#1a1a1d] shadow-xl ${user.profilePhoto?.url ? "cursor-pointer" : ""}`}
-              onClick={() => user.profilePhoto?.url && setShowPhotoViewer(true)}
+              className={`w-34 h-34 rounded-xl overflow-hidden border-4 border-[#1a1a1d] shadow-xl relative ${user.profilePhoto?.url && !isPhotoLoading ? "cursor-pointer" : ""}`}
+              onClick={() =>
+                user.profilePhoto?.url &&
+                !isPhotoLoading &&
+                setShowPhotoViewer(true)
+              }
             >
+              {/* Loading overlay */}
+              {isPhotoLoading && (
+                <div className="absolute inset-0 z-10 bg-black/60 flex flex-col items-center justify-center gap-1.5 rounded-xl">
+                  <Loader2 size={22} className="text-white animate-spin" />
+                  <span className="text-[10px] text-white/80 font-medium">
+                    {uploadPhotoMutation.isPending ? "Upload..." : "Suppression..."}
+                  </span>
+                </div>
+              )}
+
               {user.profilePhoto?.url ? (
                 <img
                   src={user.profilePhoto.url}
                   alt="Avatar"
-                  className="w-full h-full object-cover"
+                  className={`w-full h-full object-cover transition-opacity duration-200 ${isPhotoLoading ? "opacity-40" : "opacity-100"}`}
                 />
               ) : (
-                <div className="w-full h-full bg-[#6C4EA8] flex items-center justify-center text-white text-2xl font-bold">
+                <div
+                  className={`w-full h-full bg-[#6C4EA8] flex items-center justify-center text-white text-2xl font-bold transition-opacity duration-200 ${isPhotoLoading ? "opacity-40" : "opacity-100"}`}
+                >
                   {getInitials()}
                 </div>
               )}
             </div>
+
             <div className="absolute -bottom-6 -right-2 flex gap-1">
               <button
-                onClick={() => fileInputRef.current?.click()}
-                className="w-7 h-7 bg-[#6C4EA8] hover:bg-[#5a3d8a] rounded-lg flex items-center justify-center shadow-lg transition-colors"
+                onClick={() => !isPhotoLoading && fileInputRef.current?.click()}
+                disabled={isPhotoLoading}
+                className="w-7 h-7 bg-[#6C4EA8] hover:bg-[#5a3d8a] rounded-lg flex items-center justify-center shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                 title="Modifier la photo"
               >
-                <Edit2 size={12} className="text-white" />
+                {uploadPhotoMutation.isPending ? (
+                  <Loader2 size={12} className="text-white animate-spin" />
+                ) : (
+                  <Edit2 size={12} className="text-white" />
+                )}
               </button>
               {user.profilePhoto?.url && (
                 <button
-                  onClick={() => deletePhotoMutation.mutate()}
-                  className="w-7 h-7 bg-red-500/80 hover:bg-red-500 rounded-lg flex items-center justify-center shadow-lg transition-colors"
+                  onClick={() =>
+                    !isPhotoLoading && setShowDeletePhotoConfirm(true)
+                  }
+                  disabled={isPhotoLoading}
+                  className="w-7 h-7 bg-red-500/80 hover:bg-red-500 rounded-lg flex items-center justify-center shadow-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
                   title="Supprimer la photo"
                 >
-                  <Trash2 size={12} className="text-white" />
+                  {deletePhotoMutation.isPending ? (
+                    <Loader2 size={12} className="text-white animate-spin" />
+                  ) : (
+                    <Trash2 size={12} className="text-white" />
+                  )}
                 </button>
               )}
             </div>
