@@ -1,21 +1,27 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
-import { Users, Settings, UserPlus, Plus } from "lucide-react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import { Users, UserPlus } from "lucide-react";
 import {
   DndContext,
   DragEndEvent,
   DragStartEvent,
+  DragOverEvent,
   DragOverlay,
-  closestCorners,
+  CollisionDetection,
+  closestCenter,
+  pointerWithin,
   PointerSensor,
   useSensor,
   useSensors,
   KeyboardSensor,
+  UniqueIdentifier,
+  MeasuringStrategy,
 } from "@dnd-kit/core";
 import {
   SortableContext,
   verticalListSortingStrategy,
+  arrayMove,
 } from "@dnd-kit/sortable";
 import { sortableKeyboardCoordinates } from "@dnd-kit/sortable";
 import { Space, spaceService } from "@/lib/space-service";
@@ -36,6 +42,43 @@ import SpacePermissionsModal from "./PermissionsModal";
 import TaskDetailModal from "../kanban/TaskDetailModal";
 import SubtaskDetailModal from "../kanban/SubtaskDetailModal";
 
+// ── Colonnes ────────────────────────────────────────────────────────────────
+const COLUMNS = [
+  {
+    id: TaskStatus.A_FAIRE,
+    title: "À FAIRE",
+    color: "border-[#313442]",
+    bg: "bg-gray-900/30",
+  },
+  {
+    id: TaskStatus.EN_COURS,
+    title: "EN COURS",
+    color: "border-[#313442]",
+    bg: "bg-[#6C4EA821]",
+  },
+  {
+    id: TaskStatus.TERMINEE,
+    title: "TERMINÉ",
+    color: "border-[#313442]",
+    bg: "bg-[#71D29121]",
+  },
+  {
+    id: TaskStatus.ANNULEE,
+    title: "ANNULÉ",
+    color: "border-[#313442]",
+    bg: "bg-red-900/20",
+  },
+];
+
+// ── Helper ───────────────────────────────────────────────────────────────────
+function getColumnIdFromId(id: UniqueIdentifier): TaskStatus | null {
+  const str = String(id);
+  if (str.startsWith("col-")) {
+    return str.replace("col-", "") as TaskStatus;
+  }
+  return null;
+}
+
 interface SharedSpaceKanbanProps {
   space: Space;
 }
@@ -45,6 +88,14 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<any[]>([]);
   const [loading, setLoading] = useState(true);
+
+  // ── columnTaskIds : même pattern que TachesSection ──────────────────────
+  const [columnTaskIds, setColumnTaskIds] = useState<Record<string, string[]>>({
+    [TaskStatus.A_FAIRE]: [],
+    [TaskStatus.EN_COURS]: [],
+    [TaskStatus.TERMINEE]: [],
+    [TaskStatus.ANNULEE]: [],
+  });
 
   const [subtasksMap, setSubtasksMap] = useState<Record<string, Task[]>>({});
   const [loadingSubtasksMap, setLoadingSubtasksMap] = useState<
@@ -73,12 +124,15 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
   const [showPermissions, setShowPermissions] = useState(false);
   const [userPermission, setUserPermission] = useState<string>("viewer");
   const [permissionsLoading, setPermissionsLoading] = useState(true);
-
   const [defaultStatusForNewTask, setDefaultStatusForNewTask] = useState<
     TaskStatus | undefined
   >(undefined);
 
-  // Récupérer userData de manière sécurisée
+  // Ref pour éviter les re-renders inutiles dans handleDragOver
+  const recentlyMovedToNewContainer = useRef(false);
+  const lastOverId = useRef<UniqueIdentifier | null>(null);
+
+  // ── userData ─────────────────────────────────────────────────────────────
   const userData = useMemo(() => {
     try {
       const data = localStorage.getItem("userData");
@@ -93,24 +147,22 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     [userPermission],
   );
 
-  // Sensors pour le drag & drop
+  // ── Sensors ───────────────────────────────────────────────────────────────
   const sensors = useSensors(
     useSensor(PointerSensor, {
-      activationConstraint: {
-        distance: 8,
-      },
+      activationConstraint: { distance: 5 },
     }),
     useSensor(KeyboardSensor, {
       coordinateGetter: sortableKeyboardCoordinates,
     }),
   );
 
+  // ── Init ──────────────────────────────────────────────────────────────────
   useEffect(() => {
     loadData();
     checkUserPermission();
   }, [space._id]);
 
-  // Sauvegarder l'état des tâches déployées
   useEffect(() => {
     if (typeof window !== "undefined") {
       localStorage.setItem(
@@ -120,6 +172,23 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     }
   }, [expandedTasks, space._id]);
 
+  // ── Sync columnTaskIds quand tasks change ────────────────────────────────
+  useEffect(() => {
+    const newMap: Record<string, string[]> = {
+      [TaskStatus.A_FAIRE]: [],
+      [TaskStatus.EN_COURS]: [],
+      [TaskStatus.TERMINEE]: [],
+      [TaskStatus.ANNULEE]: [],
+    };
+    tasks.forEach((task) => {
+      if (newMap[task.status] !== undefined) {
+        newMap[task.status].push(task._id);
+      }
+    });
+    setColumnTaskIds(newMap);
+  }, [tasks]);
+
+  // ── loadData ─────────────────────────────────────────────────────────────
   const loadData = async () => {
     try {
       setLoading(true);
@@ -128,12 +197,10 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
         projectService.getAll(),
         usersService.searchUsers({}),
       ]);
-
       setTasks(tasksData);
       setProjects(projectsData);
       setUsers(usersData);
 
-      // Charger les sous-tâches pour les tâches déjà déployées
       const promises = [];
       for (const taskId in expandedTasks) {
         if (expandedTasks[taskId]) {
@@ -148,60 +215,38 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     }
   };
 
+  // ── checkUserPermission ───────────────────────────────────────────────────
   const checkUserPermission = async () => {
     try {
       setPermissionsLoading(true);
-
       const userDataStr = localStorage.getItem("userData");
-
       if (!userDataStr) {
-        console.error("Aucune donnée utilisateur dans localStorage");
         setUserPermission("viewer");
         return;
       }
-
       const userData = JSON.parse(userDataStr);
       const userId = userData.userId || userData._id || userData.id;
 
       if (!userId) {
-        console.error("Impossible de trouver l'ID utilisateur");
         setUserPermission("viewer");
         return;
       }
-
-      // 1. Les admins et managers sont toujours super_editor
       if (userData.role === "admin" || userData.role === "manager") {
-        console.log("Admin/Manager détecté");
         setUserPermission("super_editor");
         return;
       }
-
-      // 2. Le créateur de l'espace est toujours super_editor
       if (space.createdBy?._id === userId) {
-        console.log("Créateur de l'espace détecté");
         setUserPermission("super_editor");
         return;
       }
-
-      // 3. Vérifier les permissions depuis l'API
       const permissions = await spaceService.getPermissions(space._id);
-
-      // Filtrer les permissions qui ont un userId valide
       const validPermissions = permissions.filter(
         (p: any) => p.userId && p.userId._id,
       );
-
-      const userPerm = validPermissions.find((p: any) => {
-        const permUserId = p.userId._id;
-        return permUserId === userId;
-      });
-
-      if (userPerm) {
-        setUserPermission(userPerm.permissionLevel);
-      } else {
-        console.warn("Aucune permission trouvée, défaut à viewer");
-        setUserPermission("viewer");
-      }
+      const userPerm = validPermissions.find(
+        (p: any) => p.userId._id === userId,
+      );
+      setUserPermission(userPerm ? userPerm.permissionLevel : "viewer");
     } catch (error) {
       console.error("Erreur vérification permission:", error);
       setUserPermission("viewer");
@@ -210,7 +255,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     }
   };
 
-  // Charger les sous-tâches pour une tâche spécifique
+  // ── loadSubtasks ──────────────────────────────────────────────────────────
   const loadSubtasks = async (taskId: string) => {
     setLoadingSubtasksMap((prev) => ({ ...prev, [taskId]: true }));
     try {
@@ -223,75 +268,211 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     }
   };
 
-  // Gérer le développement/réduction des sous-tâches
   const handleToggleSubtasks = (taskId: string, show: boolean) => {
-    const newExpandedTasks = { ...expandedTasks, [taskId]: show };
-    setExpandedTasks(newExpandedTasks);
-
-    // Si on développe et que les sous-tâches ne sont pas chargées, les charger
-    if (
-      show &&
-      canEdit &&
-      !subtasksMap[taskId] &&
-      !loadingSubtasksMap[taskId]
-    ) {
+    setExpandedTasks((prev) => ({ ...prev, [taskId]: show }));
+    if (show && !subtasksMap[taskId] && !loadingSubtasksMap[taskId]) {
       loadSubtasks(taskId);
     }
   };
 
-  // Gestion du drag start
+  // ── CollisionDetection (identique à TachesSection) ───────────────────────
+  const collisionDetectionStrategy: CollisionDetection = useCallback(
+    (args) => {
+      const { droppableContainers } = args;
+
+      // Prioriser les colonnes
+      const columnCollisions = pointerWithin({
+        ...args,
+        droppableContainers: droppableContainers.filter((c) =>
+          String(c.id).startsWith("col-"),
+        ),
+      });
+
+      if (columnCollisions.length > 0) {
+        const columnId = getColumnIdFromId(columnCollisions[0].id);
+        if (columnId) {
+          const tasksInColumn = droppableContainers.filter(
+            (c) =>
+              !String(c.id).startsWith("col-") &&
+              columnTaskIds[columnId]?.includes(String(c.id)),
+          );
+
+          if (tasksInColumn.length > 0) {
+            const closestTask = closestCenter({
+              ...args,
+              droppableContainers: tasksInColumn,
+            });
+            if (closestTask.length > 0) {
+              lastOverId.current = closestTask[0].id;
+              return closestTask;
+            }
+          }
+
+          lastOverId.current = columnCollisions[0].id;
+          return columnCollisions;
+        }
+      }
+
+      const allCollisions = closestCenter(args);
+      if (allCollisions.length > 0) {
+        lastOverId.current = allCollisions[0].id;
+      }
+      return allCollisions;
+    },
+    [columnTaskIds],
+  );
+
+  // ── handleDragStart ───────────────────────────────────────────────────────
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
-      const taskId = event.active.id as string;
-      const task = tasks.find((t) => t._id === taskId);
+      const task = tasks.find((t) => t._id === event.active.id);
       setActiveTask(task || null);
     },
     [tasks],
   );
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
+  // ── handleDragOver (déplacement inter-colonnes en temps réel) ────────────
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    if (!over || active.id === over.id || !canEdit) {
+      const activeId = String(active.id);
+      const overId = String(over.id);
+
+      let sourceColumnId: string | null = null;
+      let targetColumnId: string | null = null;
+
+      for (const [colId, ids] of Object.entries(columnTaskIds)) {
+        if (ids.includes(activeId)) {
+          sourceColumnId = colId;
+          break;
+        }
+      }
+
+      if (overId.startsWith("col-")) {
+        targetColumnId = overId.replace("col-", "");
+      } else {
+        for (const [colId, ids] of Object.entries(columnTaskIds)) {
+          if (ids.includes(overId)) {
+            targetColumnId = colId;
+            break;
+          }
+        }
+      }
+
+      if (!sourceColumnId || !targetColumnId) return;
+      if (sourceColumnId === targetColumnId) return; // géré dans onDragEnd
+
+      setColumnTaskIds((prev) => {
+        const sourceIds = [...(prev[sourceColumnId!] || [])];
+        const targetIds = [...(prev[targetColumnId!] || [])];
+
+        const activeIndex = sourceIds.indexOf(activeId);
+        if (activeIndex === -1) return prev;
+
+        sourceIds.splice(activeIndex, 1);
+
+        if (!overId.startsWith("col-")) {
+          const overIndex = targetIds.indexOf(overId);
+          if (overIndex >= 0) {
+            targetIds.splice(overIndex, 0, activeId);
+          } else {
+            targetIds.push(activeId);
+          }
+        } else {
+          targetIds.push(activeId);
+        }
+
+        recentlyMovedToNewContainer.current = true;
+
+        return {
+          ...prev,
+          [sourceColumnId!]: sourceIds,
+          [targetColumnId!]: targetIds,
+        };
+      });
+    },
+    [columnTaskIds],
+  );
+
+  // ── handleDragEnd ─────────────────────────────────────────────────────────
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
       setActiveTask(null);
-      return;
-    }
 
-    const taskId = active.id as string;
-    const newStatus = over.id as TaskStatus;
+      if (!over || !canEdit) return;
 
-    try {
-      // Mettre à jour immédiatement l'UI
+      const activeId = String(active.id);
+      const overId = String(over.id);
+
+      // Trouver la colonne cible finale
+      let targetColumnId: string | null = null;
+      if (overId.startsWith("col-")) {
+        targetColumnId = overId.replace("col-", "");
+      } else {
+        for (const [colId, ids] of Object.entries(columnTaskIds)) {
+          if (ids.includes(overId)) {
+            targetColumnId = colId;
+            break;
+          }
+        }
+      }
+
+      // Trouver la colonne source
+      let sourceColumnId: string | null = null;
+      for (const [colId, ids] of Object.entries(columnTaskIds)) {
+        if (ids.includes(activeId)) {
+          sourceColumnId = colId;
+          break;
+        }
+      }
+
+      if (!targetColumnId || !sourceColumnId) return;
+
+      // Réordonnancement dans la même colonne
+      if (sourceColumnId === targetColumnId) {
+        const colIds = [...columnTaskIds[sourceColumnId]];
+        const oldIndex = colIds.indexOf(activeId);
+        const newIndex = colIds.indexOf(overId);
+
+        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+          const newIds = arrayMove(colIds, oldIndex, newIndex);
+          setColumnTaskIds((prev) => ({
+            ...prev,
+            [sourceColumnId!]: newIds,
+          }));
+        }
+        return; // Pas de changement de statut
+      }
+
+      // Changement de colonne → mise à jour du statut
+      const newStatus = targetColumnId as TaskStatus;
+
+      // Mise à jour optimiste du state tasks
       setTasks((prev) =>
         prev.map((task) =>
-          task._id === taskId ? { ...task, status: newStatus } : task,
+          task._id === activeId ? { ...task, status: newStatus } : task,
         ),
       );
 
-      // Si c'est une tâche parente, mettre à jour aussi les sous-tâches
-      if (subtasksMap[taskId] && subtasksMap[taskId].length > 0) {
-        setSubtasksMap((prev) => ({
-          ...prev,
-          [taskId]: prev[taskId].map((subtask) => ({
-            ...subtask,
-            status: newStatus,
-          })),
-        }));
+      try {
+        await sharedTaskService.update(space._id, activeId, {
+          status: newStatus,
+        });
+      } catch (error) {
+        console.error("Erreur mise à jour statut:", error);
+        // Rollback : recharger depuis le serveur
+        loadData();
       }
+    },
+    [columnTaskIds, canEdit, space._id],
+  );
 
-      // Envoyer la mise à jour au backend
-      await sharedTaskService.update(space._id, taskId, { status: newStatus });
-    } catch (error) {
-      console.error("Erreur mise à jour statut:", error);
-      loadData(); // Recharger en cas d'erreur
-    } finally {
-      setActiveTask(null);
-    }
-  };
-
+  // ── CRUD ──────────────────────────────────────────────────────────────────
   const handleCreateTask = async (data: CreateTaskDto) => {
     if (!canEdit) return;
-
     try {
       const newTask = await sharedTaskService.create(space._id, data);
       setTasks((prev) => [...prev, newTask]);
@@ -301,57 +482,41 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     }
   };
 
-  // Créer une sous-tâche
   const handleCreateSubtask = async (
     parentTaskId: string,
     data: CreateSubtaskDto,
   ) => {
     if (!canEdit) return;
-
     try {
       const newSubtask = await sharedTaskService.createSubtask(
         space._id,
         parentTaskId,
         data,
       );
-
-      // Mettre à jour les sous-tâches dans la map
       setSubtasksMap((prev) => ({
         ...prev,
         [parentTaskId]: [...(prev[parentTaskId] || []), newSubtask],
       }));
-
-      // Mettre à jour le nombre de sous-tâches dans la tâche parente
       setTasks((prev) =>
-        prev.map((task) => {
-          if (task._id === parentTaskId) {
-            return {
-              ...task,
-              sub_tasks: [...task.sub_tasks, newSubtask._id],
-            };
-          }
-          return task;
-        }),
+        prev.map((task) =>
+          task._id === parentTaskId
+            ? { ...task, sub_tasks: [...task.sub_tasks, newSubtask._id] }
+            : task,
+        ),
       );
-
       setShowSubtaskForm(null);
     } catch (error) {
       console.error("Erreur création sous-tâche:", error);
     }
   };
 
-  // Gérer l'ajout d'une sous-tâche
   const handleAddSubtask = (taskId: string) => {
     if (!canEdit) return;
-    setShowSubtaskForm({
-      taskId,
-      isShared: true,
-    });
+    setShowSubtaskForm({ taskId, isShared: true });
   };
 
   const handleUpdateTask = async (taskId: string, data: any) => {
     if (!canEdit) return;
-
     try {
       const updatedTask = await sharedTaskService.update(
         space._id,
@@ -359,11 +524,9 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
         data,
       );
 
-      // Chercher si c'est une sous-tâche
       let isSubtask = false;
       let parentId: string | undefined;
 
-      // Chercher dans les sous-tâches existantes
       for (const pid in subtasksMap) {
         const subtask = subtasksMap[pid].find((st) => st._id === taskId);
         if (subtask) {
@@ -372,34 +535,26 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
           break;
         }
       }
-
-      // Si on ne l'a pas trouvé, vérifier dans la réponse
       if (!isSubtask && updatedTask.parentTaskId) {
         isSubtask = true;
         parentId = updatedTask.parentTaskId as string;
       }
 
       if (isSubtask && parentId) {
-        // Mettre à jour dans la map des sous-tâches
         setSubtasksMap((prev) => ({
           ...prev,
-          [parentId]: (prev[parentId] || []).map((st) =>
+          [parentId!]: (prev[parentId!] || []).map((st) =>
             st._id === taskId ? { ...st, ...updatedTask } : st,
           ),
         }));
+        setSelectedSubtask(null);
       } else {
-        // Si c'est une tâche parente
         setTasks((prev) =>
           prev.map((task) =>
             task._id === taskId ? { ...task, ...updatedTask } : task,
           ),
         );
-
-        // Si le projet ou la deadline a changé, mettre à jour les sous-tâches
-        if (
-          (data.project_id || data.end_date || data.status) &&
-          subtasksMap[taskId]
-        ) {
+        if ((data.project_id || data.end_date || data.status) && subtasksMap[taskId]) {
           setSubtasksMap((prev) => ({
             ...prev,
             [taskId]: prev[taskId].map((subtask) => ({
@@ -417,9 +572,8 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
             })),
           }));
         }
+        setSelectedTask(null);
       }
-
-      setSelectedTask(null);
     } catch (error) {
       console.error("Erreur mise à jour tâche:", error);
     }
@@ -428,17 +582,14 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
   const handleDeleteTask = async (taskId: string) => {
     if (!canEdit) return;
     if (!confirm("Supprimer cette tâche ?")) return;
-
     try {
       const taskToDelete =
         tasks.find((t) => t._id === taskId) ||
         Object.values(subtasksMap)
           .flat()
           .find((st) => st._id === taskId);
-
       if (!taskToDelete) return;
 
-      // Vérifier si c'est une sous-tâche
       const isSubtask =
         taskToDelete.parentTaskId !== undefined &&
         taskToDelete.parentTaskId !== null;
@@ -446,71 +597,62 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
       await sharedTaskService.delete(space._id, taskId);
 
       if (isSubtask) {
-        // Supprimer de la map des sous-tâches
         const parentId = taskToDelete.parentTaskId as string;
         setSubtasksMap((prev) => ({
           ...prev,
           [parentId]: (prev[parentId] || []).filter((st) => st._id !== taskId),
         }));
-
-        // Mettre à jour la liste des sous-tâches dans la tâche parente
         setTasks((prev) =>
-          prev.map((task) => {
-            if (task._id === parentId) {
-              return {
-                ...task,
-                sub_tasks: task.sub_tasks.filter((id) => id !== taskId),
-              };
-            }
-            return task;
-          }),
+          prev.map((task) =>
+            task._id === parentId
+              ? {
+                  ...task,
+                  sub_tasks: task.sub_tasks.filter((id) => id !== taskId),
+                }
+              : task,
+          ),
         );
       } else {
-        // Supprimer la tâche parente
         setTasks((prev) => prev.filter((task) => task._id !== taskId));
-
-        // Supprimer aussi ses sous-tâches de la map
         setSubtasksMap((prev) => {
           const newMap = { ...prev };
           delete newMap[taskId];
           return newMap;
         });
-
-        // Supprimer de l'état des tâches déployées
         setExpandedTasks((prev) => {
           const newState = { ...prev };
           delete newState[taskId];
           return newState;
         });
       }
-
       setSelectedTask(null);
     } catch (error) {
       console.error("Erreur suppression tâche:", error);
     }
   };
 
-  // Gérer l'édition d'une tâche
   const handleEditTask = (taskId: string) => {
     if (!canEdit) return;
-
-    // D'abord chercher dans les sous-tâches
     for (const parentId in subtasksMap) {
       const subtask = subtasksMap[parentId].find((st) => st._id === taskId);
       if (subtask) {
-        setSelectedSubtask(subtask); // Utiliser le state des sous-tâches
+        setSelectedSubtask(subtask);
         return;
       }
     }
-
-    // Si pas trouvé dans les sous-tâches, chercher dans les tâches parentes
     const parentTask = tasks.find((t) => t._id === taskId);
-    if (parentTask) {
-      setSelectedTask(parentTask);
-      return;
-    }
+    if (parentTask) setSelectedTask(parentTask);
   };
 
+  // ── Computed : tâches par colonne dans l'ordre de columnTaskIds ──────────
+  const getColumnTasks = (columnId: string): Task[] => {
+    const orderedIds = columnTaskIds[columnId] || [];
+    return orderedIds
+      .map((id) => tasks.find((t) => t._id === id))
+      .filter(Boolean) as Task[];
+  };
+
+  // ── Loading ───────────────────────────────────────────────────────────────
   if (loading || permissionsLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -522,36 +664,10 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
     );
   }
 
-  const columns = [
-    {
-      id: TaskStatus.A_FAIRE,
-      title: "À FAIRE",
-      color: "border-[#313442]",
-      bg: "bg-gray-900/30",
-    },
-    {
-      id: TaskStatus.EN_COURS,
-      title: "EN COURS",
-      color: "border-[#313442]",
-      bg: "bg-[#6C4EA821]",
-    },
-    {
-      id: TaskStatus.TERMINEE,
-      title: "TERMINÉ",
-      color: "border-[#313442]",
-      bg: "bg-[#71D29121]",
-    },
-    {
-      id: TaskStatus.ANNULEE,
-      title: "ANNULÉ",
-      color: "border-[#313442]",
-      bg: "bg-red-900/20",
-    },
-  ];
-
+  // ── Render ────────────────────────────────────────────────────────────────
   return (
     <div className="flex-1 p-6">
-      {/* En-tête de l'espace */}
+      {/* En-tête */}
       <div className="mb-8">
         <div className="flex items-center justify-between mb-4">
           <div>
@@ -560,9 +676,7 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
               <p className="text-gray-400 mt-1 text-xs">{space.description}</p>
             )}
           </div>
-
           <div className="flex items-center gap-3">
-            {/* Bouton inviter */}
             {userPermission === "super_editor" && (
               <button
                 onClick={() => setShowPermissions(true)}
@@ -574,8 +688,6 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
             )}
           </div>
         </div>
-
-        {/* Informations supplémentaires */}
         <div className="flex items-center gap-6 text-gray-400 text-xs">
           <div className="flex items-center gap-2">
             <Users size={16} />
@@ -584,13 +696,11 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
               {space.createdBy?.nom || ""}
             </span>
           </div>
-          <div>
-            <span>{tasks.length} tâches</span>
-          </div>
+          <span>{tasks.length} tâches</span>
         </div>
       </div>
 
-      {/* Bouton nouvelle tâche (seulement si on peut éditer) */}
+      {/* Bouton nouvelle tâche */}
       {canEdit && (
         <div className="mb-6">
           <button
@@ -605,38 +715,40 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
         </div>
       )}
 
-      {/* Tableau Kanban */}
+      {/* Kanban */}
       <DndContext
         sensors={sensors}
-        collisionDetection={closestCorners}
+        collisionDetection={collisionDetectionStrategy}
         onDragStart={handleDragStart}
+        onDragOver={handleDragOver}
         onDragEnd={handleDragEnd}
+        measuring={{
+          droppable: {
+            strategy: MeasuringStrategy.Always,
+          },
+        }}
       >
-        <div className="flex gap-4 overflow-x-auto pb-4">
-          {columns.map((column) => (
-            <KanbanColumn
-              key={column.id}
-              id={column.id}
-              title={column.title}
-              color={column.color}
-              bg={column.bg}
-              count={tasks.filter((t) => t.status === column.id).length}
-              onAddTask={(status) => {
-                if (canEdit) {
-                  setDefaultStatusForNewTask(status as TaskStatus);
-                  setShowTaskForm(true);
-                }
-              }}
-            >
-              <SortableContext
-                items={tasks
-                  .filter((t) => t.status === column.id)
-                  .map((t) => t._id)}
-                strategy={verticalListSortingStrategy}
-              >
-                {tasks
-                  .filter((task) => task.status === column.id)
-                  .map((task) => (
+        <div className="overflow-x-auto pb-4 -mx-2 px-2">
+          <div className="flex gap-3 min-w-max">
+            {COLUMNS.map((column) => {
+              const colTasks = getColumnTasks(column.id);
+              return (
+                <KanbanColumn
+                  key={column.id}
+                  id={column.id}
+                  title={column.title}
+                  color={column.color}
+                  bg={column.bg}
+                  count={colTasks.length}
+                  taskIds={colTasks.map((t) => t._id)}
+                  onAddTask={(status) => {
+                    if (canEdit) {
+                      setDefaultStatusForNewTask(status as TaskStatus);
+                      setShowTaskForm(true);
+                    }
+                  }}
+                >
+                  {colTasks.map((task) => (
                     <TaskCard
                       key={task._id}
                       task={task}
@@ -650,15 +762,21 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
                       disabled={!canEdit}
                     />
                   ))}
-              </SortableContext>
-            </KanbanColumn>
-          ))}
+                </KanbanColumn>
+              );
+            })}
+          </div>
         </div>
 
-        {/* DragOverlay pour un feedback visuel */}
-        <DragOverlay>
-          {activeTask && (
-            <div className="rotate-2 opacity-90">
+        {/* DragOverlay */}
+        <DragOverlay
+          dropAnimation={{
+            duration: 200,
+            easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)",
+          }}
+        >
+          {activeTask ? (
+            <div className="rotate-2 opacity-90 w-[230px] shadow-2xl">
               <TaskCard
                 task={activeTask}
                 onEdit={() => {}}
@@ -667,11 +785,11 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
                 onToggleSubtasks={() => {}}
               />
             </div>
-          )}
+          ) : null}
         </DragOverlay>
       </DndContext>
 
-      {/* Form overlay pour nouvelle tâche */}
+      {/* Modals */}
       {showTaskForm && canEdit && (
         <SharedQuickTaskForm
           spaceId={space._id}
@@ -687,17 +805,17 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
         />
       )}
 
-      {/* Modal ajout sous-tâche */}
       {showSubtaskForm && canEdit && (
         <AddSubtaskModal
           isShared={showSubtaskForm.isShared}
           assignees={users}
-          onSubmit={(data) => handleCreateSubtask(showSubtaskForm.taskId, data)}
+          onSubmit={(data) =>
+            handleCreateSubtask(showSubtaskForm.taskId, data)
+          }
           onCancel={() => setShowSubtaskForm(null)}
         />
       )}
 
-      {/* Modal détail sous-tâche */}
       {selectedSubtask && (
         <SubtaskDetailModal
           task={selectedSubtask}
@@ -709,7 +827,6 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
         />
       )}
 
-      {/* Modal détail tâche */}
       {selectedTask && (
         <TaskDetailModal
           task={selectedTask}
@@ -722,13 +839,11 @@ export default function SharedSpaceKanban({ space }: SharedSpaceKanbanProps) {
         />
       )}
 
-      {/* Modal permissions */}
       {showPermissions && (
         <SpacePermissionsModal
           space={space}
           onClose={() => {
             setShowPermissions(false);
-            // Recharger les permissions après fermeture du modal
             checkUserPermission();
           }}
         />
