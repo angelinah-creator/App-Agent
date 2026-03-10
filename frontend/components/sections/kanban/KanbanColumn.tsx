@@ -11,7 +11,7 @@ interface KanbanColumnProps {
   color: string;
   bg: string;
   count: number;
-  taskIds: string[]; // IDs des tâches dans cette colonne
+  taskIds?: string[]; // IDs des tâches dans cette colonne
   children: ReactNode;
   onAddTask: (status: string) => void;
 }
@@ -22,7 +22,7 @@ export default function KanbanColumn({
   color,
   bg,
   count,
-  taskIds,
+  taskIds = [],
   children,
   onAddTask,
 }: KanbanColumnProps) {
