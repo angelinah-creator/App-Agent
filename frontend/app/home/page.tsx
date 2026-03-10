@@ -85,11 +85,11 @@ function HomePage() {
   useEffect(() => {
     if (userData) {
       if (isAdmin) {
-        setActiveSection("agents");
+        setActiveSection("video_admin");
       } else if (isCollaborateur) {
-        setActiveSection("dashboard");
+        setActiveSection("video");
       } else if (isManager) {
-        setActiveSection("tableau_de_bord");
+        setActiveSection("video");
       } else if (isClient) {
         setActiveSection("profil");
       }
