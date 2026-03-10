@@ -17,9 +17,7 @@ import {
   DragOverEvent,
   closestCenter,
   pointerWithin,
-  rectIntersection,
   CollisionDetection,
-  getFirstCollision,
   UniqueIdentifier,
   MeasuringStrategy,
 } from "@dnd-kit/core";
@@ -84,10 +82,8 @@ const COLUMNS = [
 ];
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-/** Retourne l'ID de colonne à partir d'un ID de tâche ou d'une colonne */
 function getColumnIdFromDroppable(id: UniqueIdentifier): TaskStatus | null {
   const str = String(id);
-  // Les colonnes ont le préfixe "col-"
   if (str.startsWith("col-")) {
     return str.replace("col-", "") as TaskStatus;
   }
@@ -102,7 +98,6 @@ export function TachesSection() {
   const [selectedPriority, setSelectedPriority] = useState<TaskPriority | "all">("all");
   const [showArchived, setShowArchived] = useState(false);
 
-  // Map columnId → taskIds pour l'ordre local (optimistic UI)
   const [columnTaskIds, setColumnTaskIds] = useState<Record<string, string[]>>({
     [TaskStatus.A_FAIRE]: [],
     [TaskStatus.EN_COURS]: [],
@@ -130,7 +125,6 @@ export function TachesSection() {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [defaultStatusForNewTask, setDefaultStatusForNewTask] = useState<TaskStatus | undefined>(undefined);
 
-  // Ref pour tracker la dernière colonne survolée (utile pour les collisions)
   const lastOverId = useRef<UniqueIdentifier | null>(null);
   const recentlyMovedToNewContainer = useRef(false);
 
@@ -140,7 +134,7 @@ export function TachesSection() {
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 5, // 5px avant activation (évite les clics accidentels)
+        distance: 5,
       },
     }),
     useSensor(KeyboardSensor, {
@@ -176,7 +170,12 @@ export function TachesSection() {
     queryFn: () => personalTaskService.getMyTasks({ includeArchived: showArchived }),
   });
 
-  // Synchroniser columnTaskIds quand les tâches changent
+  // ─── FIX: Synchroniser columnTaskIds sans boucle infinie ────────────────────
+  // On dérive une string stable qui ne change que si les tâches ou leurs statuts changent réellement.
+  // Utiliser `tasks` directement comme dépendance provoque une boucle infinie car
+  // useQuery retourne un nouveau tableau à chaque render (nouvelle référence).
+  const taskStatuses = tasks.map((t) => `${t._id}:${t.status}`).join(",");
+
   useEffect(() => {
     const newMap: Record<string, string[]> = {
       [TaskStatus.A_FAIRE]: [],
@@ -190,7 +189,8 @@ export function TachesSection() {
       }
     });
     setColumnTaskIds(newMap);
-  }, [tasks]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [taskStatuses]); // ← string primitive : stable, pas de boucle infinie
 
   // Sauvegarder l'état des tâches dépliées
   useEffect(() => {
@@ -237,12 +237,10 @@ export function TachesSection() {
   });
 
   // ─── CollisionDetection personnalisée ───────────────────────────────────────
-  // Cette stratégie priorise les colonnes, puis les tâches à l'intérieur
   const collisionDetectionStrategy: CollisionDetection = useCallback(
     (args) => {
       const { active, droppableContainers } = args;
 
-      // Si l'élément actif est au-dessus d'une colonne (préfixe col-)
       const columnCollisions = pointerWithin({
         ...args,
         droppableContainers: droppableContainers.filter((c) =>
@@ -251,7 +249,6 @@ export function TachesSection() {
       });
 
       if (columnCollisions.length > 0) {
-        // On est dans une colonne, chercher la tâche la plus proche
         const columnId = getColumnIdFromDroppable(columnCollisions[0].id);
         if (columnId) {
           const tasksInColumn = droppableContainers.filter(
@@ -269,13 +266,11 @@ export function TachesSection() {
             }
           }
 
-          // Colonne vide ou pas de tâche proche → retourner la colonne
           lastOverId.current = columnCollisions[0].id;
           return columnCollisions;
         }
       }
 
-      // Fallback: closestCenter sur tout
       const allCollisions = closestCenter(args);
       if (allCollisions.length > 0) {
         lastOverId.current = allCollisions[0].id;
@@ -294,7 +289,7 @@ export function TachesSection() {
     [tasks]
   );
 
-  // ─── Drag Over (réordonnancement en temps réel) ───────────────────────────────
+  // ─── Drag Over ───────────────────────────────────────────────────────────────
   const handleDragOver = useCallback(
     (event: DragOverEvent) => {
       const { active, over } = event;
@@ -303,11 +298,9 @@ export function TachesSection() {
       const activeId = String(active.id);
       const overId = String(over.id);
 
-      // Trouver les colonnes source et destination
       let sourceColumnId: string | null = null;
       let targetColumnId: string | null = null;
 
-      // Chercher la colonne source (là où est la tâche active)
       for (const [colId, ids] of Object.entries(columnTaskIds)) {
         if (ids.includes(activeId)) {
           sourceColumnId = colId;
@@ -315,11 +308,9 @@ export function TachesSection() {
         }
       }
 
-      // Chercher la colonne cible
       if (overId.startsWith("col-")) {
         targetColumnId = overId.replace("col-", "");
       } else {
-        // over est une tâche, trouver sa colonne
         for (const [colId, ids] of Object.entries(columnTaskIds)) {
           if (ids.includes(overId)) {
             targetColumnId = colId;
@@ -329,9 +320,8 @@ export function TachesSection() {
       }
 
       if (!sourceColumnId || !targetColumnId) return;
-      if (sourceColumnId === targetColumnId) return; // Même colonne → géré par onDragEnd
+      if (sourceColumnId === targetColumnId) return;
 
-      // Déplacement inter-colonnes optimiste
       setColumnTaskIds((prev) => {
         const sourceIds = [...(prev[sourceColumnId!] || [])];
         const targetIds = [...(prev[targetColumnId!] || [])];
@@ -341,7 +331,6 @@ export function TachesSection() {
 
         sourceIds.splice(activeIndex, 1);
 
-        // Insérer après l'élément survolé si c'est une tâche
         if (!overId.startsWith("col-")) {
           const overIndex = targetIds.indexOf(overId);
           if (overIndex >= 0) {
@@ -376,7 +365,6 @@ export function TachesSection() {
       const activeId = String(active.id);
       const overId = String(over.id);
 
-      // Trouver la colonne cible finale
       let targetColumnId: string | null = null;
 
       if (overId.startsWith("col-")) {
@@ -390,7 +378,6 @@ export function TachesSection() {
         }
       }
 
-      // Réordonnancement dans la même colonne
       let sourceColumnId: string | null = null;
       for (const [colId, ids] of Object.entries(columnTaskIds)) {
         if (ids.includes(activeId)) {
@@ -402,7 +389,6 @@ export function TachesSection() {
       if (!targetColumnId || !sourceColumnId) return;
 
       if (sourceColumnId === targetColumnId) {
-        // Réordonnancement dans la même colonne
         const colIds = [...columnTaskIds[sourceColumnId]];
         const oldIndex = colIds.indexOf(activeId);
         const newIndex = colIds.indexOf(overId);
@@ -411,13 +397,11 @@ export function TachesSection() {
           const newIds = arrayMove(colIds, oldIndex, newIndex);
           setColumnTaskIds((prev) => ({ ...prev, [sourceColumnId!]: newIds }));
         }
-        return; // Pas de changement de statut
+        return;
       }
 
-      // Changement de colonne → mettre à jour le statut
       const newStatus = targetColumnId as TaskStatus;
 
-      // Mise à jour optimiste dans le cache React Query
       queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
         old?.map((task) =>
           task._id === activeId ? { ...task, status: newStatus } : task
@@ -428,7 +412,6 @@ export function TachesSection() {
         await personalTaskService.update(activeId, { status: newStatus });
       } catch (error) {
         console.error("Erreur mise à jour statut:", error);
-        // Rollback
         queryClient.invalidateQueries({ queryKey: ["personalTasks"] });
       }
     },
@@ -560,7 +543,6 @@ export function TachesSection() {
   };
 
   // ─── Computed: tâches filtrées par colonne ───────────────────────────────────
-  // On utilise columnTaskIds pour l'ordre, filteredTasks pour le contenu affiché
   const getColumnTasks = (columnId: string): Task[] => {
     const orderedIds = columnTaskIds[columnId] || [];
     return orderedIds
@@ -679,7 +661,7 @@ export function TachesSection() {
           onDragEnd={handleDragEnd}
           measuring={{
             droppable: {
-              strategy: MeasuringStrategy.Always, // Remesure à chaque frame
+              strategy: MeasuringStrategy.Always,
             },
           }}
         >
@@ -720,7 +702,6 @@ export function TachesSection() {
             </div>
           </div>
 
-          {/* Overlay de la tâche en cours de drag */}
           <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)" }}>
             {activeTask ? (
               <div className="rotate-2 opacity-90 w-[230px] shadow-2xl">
