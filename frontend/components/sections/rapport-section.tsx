@@ -44,17 +44,6 @@ import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import domtoimage from "dom-to-image";
 
-// const COLORS = [
-//   "#9B59B6",
-//   "#E9B44C",
-//   "#3498DB",
-//   "#E74C3C",
-//   "#1ABC9C",
-//   "#95A5A6",
-//   "#F39C12",
-//   "#16A085",
-// ];
-
 const COLORS = [
   "#1f77b4", // bleu
   "#ff7f0e", // orange

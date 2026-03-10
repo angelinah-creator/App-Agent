@@ -120,7 +120,7 @@ export function VideoSection() {
   }
 
   return (
-    <div className="w-full flex flex-col gap-6">
+    <div className="w-full flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* Barre de progression en haut */}
       {progress && videos.length > 0 && (
         <VideoProgressBar progress={progress} />

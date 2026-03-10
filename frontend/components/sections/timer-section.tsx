@@ -800,7 +800,7 @@ export function TimerSection() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] bg-transparent -mb-8 -mt-8">
+    <div className="flex flex-col h-[calc(100vh-100px)] bg-transparent -mb-8 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* TOP BAR */}
       <div className="border-b px-4 py-2 flex items-center gap-3 bg-transparent z-30 flex-shrink-0">
         <div className="flex-1 relative" ref={taskSelectorRef}>

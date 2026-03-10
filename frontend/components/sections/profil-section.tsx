@@ -571,7 +571,7 @@ export function Profil() {
   };
 
   return (
-    <div className=" mx-auto space-y-6 pb-10">
+    <div className=" mx-auto space-y-6 pb-10 ">
       {/* Toast */}
       {toast && (
         <div

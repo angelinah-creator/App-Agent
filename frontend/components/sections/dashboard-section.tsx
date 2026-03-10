@@ -83,7 +83,7 @@ export function DashboardSection({ onSectionChange }: DashboardSectionProps) {
   }, []);
 
   return (
-    <div className="p-4 text-gray-200">
+    <div className="p-4 text-gray-200 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* TITRE */}
       <div className="mb-6 flex justify-between items-center -mt-14">
         <div>
