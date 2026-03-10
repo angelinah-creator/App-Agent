@@ -46,7 +46,7 @@ export class AbsencesService {
     const startDate = new Date(createAbsenceDto.startDate);
     const endDate = new Date(createAbsenceDto.endDate);
 
-    if (startDate >= endDate) {
+    if (startDate > endDate) {
       throw new BadRequestException(
         'La date de fin doit être après la date de début',
       );
