@@ -13,7 +13,12 @@ import {
   Video,
   Clock,
   CalendarCheck,
-  Briefcase
+  Briefcase,
+  LayoutDashboard,
+  CalendarX,
+  CircleUser,
+  Handshake,
+  BarChart2
 } from "lucide-react";
 import { authService } from "@/lib/auth-service";
 import { useRouter } from "next/navigation";
@@ -50,15 +55,11 @@ export function Sidebar({
       { id: "documents", label: "Documents", icon: File },
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
-      { id: "absences", label: "Absences", icon: Calendar },
+      { id: "absences", label: "Absences", icon: CalendarX },
       { id: "projets", label: "Projets", icon: Briefcase },
       { id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users },
-      { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
-      {
-        id: "rapports_collabo",
-        label: "Rapports Collaborateur",
-        icon: FileText,
-      },
+      { id: "espaces_partages", label: "Espaces Partagés", icon: Handshake },
+      { id: "rapports_collabo", label: "Rapports Collaborateur", icon: BarChart2},
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
       {id: "profil", label: "Profil", icon: User}
     ];
@@ -69,13 +70,13 @@ export function Sidebar({
       { id: "documents", label: "Documents", icon: FileText },
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
-      { id: "absences", label: "Demande d'Absences", icon: Calendar },
-      { id: "taches", label: "Espace Personnel", icon: Calendar },
+      { id: "absences", label: "Demande d'Absences", icon: CalendarX },
+      { id: "taches", label: "Espace Personnel", icon: CircleUser },
       { id: "projets", label: "Projets", icon: Briefcase },
       { id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users },
-      { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
+      { id: "espaces_partages", label: "Espaces Partagés", icon: Handshake },
       { id: "timer", label: "Timer", icon: Clock },
-      { id: "rapports", label: "Rapports", icon: FileText },
+      { id: "rapports", label: "Rapports", icon: BarChart2 },
       {
         id: "rapports_collabo",
         label: "Rapports Collaborateur",
@@ -90,17 +91,17 @@ export function Sidebar({
     ];
 
     const collaborateurItems = [
-            { id: "video", label: "Onboarding", icon: Video },
-      { id: "dashboard", label: "Dashboard", icon: FileText },
+        { id: "video", label: "Onboarding", icon: Video },
+      { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
       { id: "documents", label: "Documents", icon: FileText },
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
-      { id: "absences", label: "Absences", icon: Calendar },
+      { id: "absences", label: "Absences", icon: CalendarX },
       { id: "projets", label: "Projets", icon: Briefcase },
-      { id: "taches", label: "Taches Personnelles", icon: Calendar },
-      { id: "espaces_partages", label: "Espaces Partagés", icon: Calendar },
+      { id: "taches", label: "Taches Personnelles", icon: CircleUser },
+      { id: "espaces_partages", label: "Espaces Partagés", icon: Handshake },
       { id: "timer", label: "Timer", icon: Clock },
-      { id: "rapports", label: "Rapports", icon: FileText },
+      { id: "rapports", label: "Rapports", icon: BarChart2 },
       // { id: "certifications", label: "Certifications", icon: FileText },
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
       {id: "profil", label: "Profil", icon: User}
