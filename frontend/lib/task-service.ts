@@ -1,6 +1,5 @@
 // frontend/lib/task-service.ts
 import { api } from "./api-config";
-import { spaceService } from "./space-service";
 
 export enum TaskPriority {
   URGENTE = "urgente",

@@ -43,6 +43,7 @@ export function Sidebar({
     ];
 
     const adminItems = [
+      { id: "video_admin", label: "Onboarding", icon: Video },
       { id: "agents", label: "Agents", icon: Users },
       { id: "contracts", label: "Contrats", icon: FileCheck },
       { id: "ndas", label: "NDAs", icon: FileCheck },
@@ -59,12 +60,12 @@ export function Sidebar({
         icon: FileText,
       },
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
-      { id: "video_admin", label: "Onboarding", icon: Video },
       {id: "profil", label: "Profil", icon: User}
     ];
 
     const managerItems = [
       // { id: "tableau_de_bord", label: "Tableau de bord", icon: FileText },
+      { id: "video", label: "Onboarding", icon: Video },
       { id: "documents", label: "Documents", icon: FileText },
       { id: "factures", label: "Factures", icon: Receipt },
       { id: "kpis", label: "KPIs", icon: BarChart3 },
@@ -81,7 +82,6 @@ export function Sidebar({
         icon: FileText,
       },
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
-      { id: "video", label: "Onboarding", icon: Video },
       {id: "profil", label: "Profil", icon: User}
       // { id: "certifications", label: "Certifications", icon: FileText },
       // { id: "suivi_des_agents", label: "Suivi des Agents", icon: Calendar },
@@ -90,6 +90,7 @@ export function Sidebar({
     ];
 
     const collaborateurItems = [
+            { id: "video", label: "Onboarding", icon: Video },
       { id: "dashboard", label: "Dashboard", icon: FileText },
       { id: "documents", label: "Documents", icon: FileText },
       { id: "factures", label: "Factures", icon: Receipt },
@@ -102,7 +103,6 @@ export function Sidebar({
       { id: "rapports", label: "Rapports", icon: FileText },
       // { id: "certifications", label: "Certifications", icon: FileText },
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
-      { id: "video", label: "Onboarding", icon: Video },
       {id: "profil", label: "Profil", icon: User}
     ];
 
