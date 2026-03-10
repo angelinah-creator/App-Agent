@@ -233,7 +233,7 @@ export function ProjectDetailModal({
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 mt-14">
       {dialog}
       <div className="bg-[#1F2128] border border-[#313442] rounded-2xl w-full max-w-3xl max-h-[90vh] flex flex-col shadow-2xl">
 
