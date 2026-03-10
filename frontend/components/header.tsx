@@ -1,9 +1,7 @@
 "use client"
 
-import { Settings, User, Camera } from "lucide-react"
 import type React from "react"
 import { useState } from "react"
-import { ProfileModal } from "./modals/profile-modal"
 import { useQuery } from "@tanstack/react-query"
 import { authService } from "@/lib/auth-service"
 
@@ -14,9 +12,7 @@ interface HeaderProps {
   onProfileClick?: () => void
 }
 
-export function Header({ title, subtitle, notificationBell, onProfileClick }: HeaderProps) {
-  const [showProfileModal, setShowProfileModal] = useState(false)
-  
+export function Header({ title, subtitle, notificationBell, onProfileClick }: HeaderProps) {  
   const { data: userProfile } = useQuery({
     queryKey: ['profile'],
     queryFn: authService.getProfile,
@@ -41,7 +37,7 @@ export function Header({ title, subtitle, notificationBell, onProfileClick }: He
           {notificationBell}
           
           <button
-            onClick={handleProfileClick} // Utilisez le nouveau handler
+            onClick={handleProfileClick}
             className="flex items-center gap-3 px-3 py-2 rounded-lg"
           >
             <div className="relative group">

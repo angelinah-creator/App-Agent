@@ -1,5 +1,6 @@
 "use client";
 
+import { useEffect, useState } from "react";
 import {
   CheckCircle,
   Clock,
@@ -9,18 +10,88 @@ import {
   FileText,
   GraduationCap,
 } from "lucide-react";
+import { personalTaskService, sharedTaskService, TaskStatus } from "@/lib/task-service";
+import { timerService } from "@/lib/timer-service";
 
-export function DashboardSection() {
+// Fonction pour obtenir les dates de la semaine courante (lundi -> dimanche)
+const getCurrentWeekDates = () => {
+  const now = new Date();
+  const dayOfWeek = now.getDay(); // 0 = dimanche, 1 = lundi, ...
+  const monday = new Date(now);
+  const diffToMonday = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
+  monday.setDate(now.getDate() - diffToMonday);
+  monday.setHours(0, 0, 0, 0);
+
+  const sunday = new Date(monday);
+  sunday.setDate(monday.getDate() + 6);
+  sunday.setHours(23, 59, 59, 999);
+
+  return {
+    start: monday.toISOString().split('T')[0],
+    end: sunday.toISOString().split('T')[0],
+  };
+};
+
+// Formatage des secondes en HH:MM:SS
+const formatDuration = (totalSeconds: number): string => {
+  const hours = Math.floor(totalSeconds / 3600);
+  const minutes = Math.floor((totalSeconds % 3600) / 60);
+  const seconds = totalSeconds % 60;
+  return [hours, minutes, seconds]
+    .map(v => v.toString().padStart(2, '0'))
+    .join(':');
+};
+
+interface DashboardSectionProps {
+  onSectionChange: (section: string) => void;
+}
+
+export function DashboardSection({ onSectionChange }: DashboardSectionProps) {
+  const [completedTasksCount, setCompletedTasksCount] = useState(0);
+  const [inProgressTasksCount, setInProgressTasksCount] = useState(0);
+  const [todoTasksCount, setTodoTasksCount] = useState(0);
+  const [weeklyHours, setWeeklyHours] = useState('00:00:00');
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchDashboardData = async () => {
+      setLoading(true);
+      try {
+        // Récupérer les tâches personnelles et partagées en parallèle
+        const [personalTasks, sharedTasks, timeEntries] = await Promise.all([
+          personalTaskService.getMyTasks(),
+          sharedTaskService.getMySharedTasks(),
+          timerService.getEntries(getCurrentWeekDates().start, getCurrentWeekDates().end),
+        ]);
+
+        const allTasks = [...personalTasks, ...sharedTasks];
+
+        setCompletedTasksCount(allTasks.filter(t => t.status === TaskStatus.TERMINEE).length);
+        setInProgressTasksCount(allTasks.filter(t => t.status === TaskStatus.EN_COURS).length);
+        setTodoTasksCount(allTasks.filter(t => t.status === TaskStatus.A_FAIRE).length);
+
+        const totalSeconds = timeEntries.reduce((sum, entry) => sum + entry.duration, 0);
+        setWeeklyHours(formatDuration(totalSeconds));
+      } catch (error) {
+        console.error('Erreur lors du chargement du dashboard:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchDashboardData();
+  }, []);
+
   return (
     <div className="p-4 text-gray-200">
       {/* TITRE */}
       <div className="mb-6 flex justify-between items-center -mt-14">
         <div>
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
-          <p className="text-gray-400 mt-1">Bienvenue, voici votre résumé</p>
+          <p className="text-gray-400 mt-1">Bienvenue, voici votre dashboard</p>
         </div>
         <div>
-          <button className="bg-[#6C4EA8] py-1.5 px-3 rounded-[6px] text-sm">
+          <button onClick={() => onSectionChange('timer')} className="bg-[#6C4EA8] py-1.5 px-3 rounded-[6px] text-sm">
             Commencer le shift
           </button>
         </div>
@@ -36,7 +107,11 @@ export function DashboardSection() {
             </div>
             <span className="text-sm font-medium">Taches complétées</span>
           </div>
-          <p className="text-2xl font-bold">0</p>
+          {loading ? (
+            <div className="h-8 w-12 bg-gray-700 animate-pulse rounded"></div>
+          ) : (
+            <p className="text-2xl font-bold">{completedTasksCount}</p>
+          )}
         </div>
 
         {/* Tâches en progression */}
@@ -47,7 +122,11 @@ export function DashboardSection() {
             </div>
             <span className="text-sm font-medium">Taches en progression</span>
           </div>
-          <p className="text-2xl font-bold">0</p>
+          {loading ? (
+            <div className="h-8 w-12 bg-gray-700 animate-pulse rounded"></div>
+          ) : (
+            <p className="text-2xl font-bold">{inProgressTasksCount}</p>
+          )}
         </div>
 
         {/* Tâches à faire */}
@@ -58,7 +137,11 @@ export function DashboardSection() {
             </div>
             <span className="text-sm font-medium">Taches à faire</span>
           </div>
-          <p className="text-2xl font-bold">0</p>
+          {loading ? (
+            <div className="h-8 w-12 bg-gray-700 animate-pulse rounded"></div>
+          ) : (
+            <p className="text-2xl font-bold">{todoTasksCount}</p>
+          )}
         </div>
 
         {/* Heures de travail */}
@@ -71,7 +154,11 @@ export function DashboardSection() {
               Heures de travail cette semaine
             </span>
           </div>
-          <p className="text-2xl font-bold">0</p>
+          {loading ? (
+            <div className="h-8 w-20 bg-gray-700 animate-pulse rounded"></div>
+          ) : (
+            <p className="text-2xl font-bold">{weeklyHours}</p>
+          )}
         </div>
       </div>
 
@@ -83,31 +170,30 @@ export function DashboardSection() {
 
           <div className="space-y-2">
             {/* Nouvelle tâche */}
-            <button className="flex items-center gap-2 bg-[#1F2128] hover:bg-[#262830] transition w-full p-3 rounded-lg border border-gray-700 text-left text-sm">
+            <button onClick={() => onSectionChange('taches')} className="flex items-center gap-2 bg-[#1F2128] hover:bg-[#262830] transition w-full p-3 rounded-lg border border-gray-700 text-left text-sm">
               <PlusCircle className="text-gray-300 w-4 h-4" />
               <span>Créer une nouvelle tache</span>
             </button>
 
             {/* Voir rapports */}
-            <button className="flex items-center gap-2 bg-[#1F2128] hover:bg-[#262830] transition w-full p-3 rounded-lg border border-gray-700 text-left text-sm">
+            <button onClick={() => onSectionChange('rapports')} className="flex items-center gap-2 bg-[#1F2128] hover:bg-[#262830] transition w-full p-3 rounded-lg border border-gray-700 text-left text-sm">
               <FileText className="text-gray-300 w-4 h-4" />
               <span>Voir les rapports</span>
             </button>
 
             {/* Formations */}
-            <button className="flex items-center gap-2 bg-[#1F2128] hover:bg-[#262830] transition w-full p-3 rounded-lg border border-gray-700 text-left text-sm">
+            {/* <button className="flex items-center gap-2 bg-[#1F2128] hover:bg-[#262830] transition w-full p-3 rounded-lg border border-gray-700 text-left text-sm">
               <GraduationCap className="text-gray-300 w-4 h-4" />
               <span>Formations & Certifications</span>
-            </button>
+            </button> */}
           </div>
         </div>
 
         {/* Activité récente */}
-        <div className="bg-[#1A1C22] rounded-xl p-4 border border-gray-800">
+        {/* <div className="bg-[#1A1C22] rounded-xl p-4 border border-gray-800">
           <h2 className="text-base font-semibold mb-3">Activité récente</h2>
 
           <div className="space-y-3">
-            {/* Item 1 */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <img
@@ -127,7 +213,6 @@ export function DashboardSection() {
               </div>
             </div>
 
-            {/* Item 2 */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <img
@@ -147,7 +232,6 @@ export function DashboardSection() {
               </div>
             </div>
 
-            {/* Item 3 */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <img
@@ -167,7 +251,6 @@ export function DashboardSection() {
               </div>
             </div>
 
-            {/* Item 4 */}
             <div className="flex justify-between items-center">
               <div className="flex items-center gap-2">
                 <img
@@ -187,7 +270,7 @@ export function DashboardSection() {
               </div>
             </div>
           </div>
-        </div>
+        </div> */}
       </div>
     </div>
   );

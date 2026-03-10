@@ -1060,7 +1060,7 @@ function HomePage() {
 
                 {activeSection === "video" && <VideoSection />}
 
-                {activeSection === "dashboard" && <DashboardSection />}
+                {activeSection === "dashboard" && <DashboardSection onSectionChange={setActiveSection}  />}
 
                 {activeSection === "taches" && <TachesSection />}
 
@@ -1141,7 +1141,7 @@ function HomePage() {
 
                 {activeSection === "video" && <VideoSection />}
 
-                {activeSection === "dashboard" && <DashboardSection />}
+                {activeSection === "dashboard" && <DashboardSection onSectionChange={setActiveSection}  />}
 
                 {activeSection === "taches" && <TachesSection />}
 
