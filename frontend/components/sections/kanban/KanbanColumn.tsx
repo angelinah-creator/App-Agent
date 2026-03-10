@@ -3,6 +3,7 @@
 import { ReactNode } from "react";
 import { Plus } from "lucide-react";
 import { useDroppable } from "@dnd-kit/core";
+import { SortableContext, verticalListSortingStrategy } from "@dnd-kit/sortable";
 
 interface KanbanColumnProps {
   id: string;
@@ -10,6 +11,7 @@ interface KanbanColumnProps {
   color: string;
   bg: string;
   count: number;
+  taskIds: string[]; // IDs des tâches dans cette colonne
   children: ReactNode;
   onAddTask: (status: string) => void;
 }
@@ -20,23 +22,26 @@ export default function KanbanColumn({
   color,
   bg,
   count,
+  taskIds,
   children,
   onAddTask,
 }: KanbanColumnProps) {
-  const { setNodeRef, isOver } = useDroppable({ 
-    id,
+  // La colonne elle-même est droppable
+  const { setNodeRef, isOver } = useDroppable({
+    id: `col-${id}`, // Préfixe pour distinguer colonne vs tâche
     data: {
-      type: 'column',
-      accepts: ['task']
-    }
+      type: "column",
+      columnId: id,
+    },
   });
 
   return (
     <div
-      ref={setNodeRef}
-      className={`flex-shrink-0 w-58 rounded-lg border ${color} ${isOver ? "ring-1 ring-purple-500 bg-purple-500/5" : ""}`}
+      className={`flex-shrink-0 w-58 rounded-lg border ${color} ${
+        isOver ? "ring-1 ring-purple-500 bg-purple-500/5" : ""
+      } transition-all duration-150`}
     >
-      {/* En-tête de colonne - ultra compact */}
+      {/* En-tête de colonne */}
       <div className={`p-2 rounded-t-lg ${bg}`}>
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
@@ -49,16 +54,35 @@ export default function KanbanColumn({
           <button
             onClick={() => onAddTask(id)}
             className="p-0.5 hover:bg-white/5 rounded text-gray-400 hover:text-white"
-            title="Ajouter une tâche"
           >
             <Plus size={14} />
           </button>
         </div>
       </div>
 
-      {/* Liste des tâches */}
-      <div className="p-1.5 space-y-1.5 max-h-[calc(100vh-280px)] overflow-y-auto">
-        {children}
+      {/* Zone droppable + liste triable */}
+      <div
+        ref={setNodeRef}
+        className="p-1.5 min-h-[80px] max-h-[calc(100vh-280px)] overflow-y-auto"
+      >
+        <SortableContext items={taskIds} strategy={verticalListSortingStrategy}>
+          <div className="space-y-1.5">
+            {children}
+          </div>
+        </SortableContext>
+
+        {/* Zone de drop visible quand la colonne est vide */}
+        {count === 0 && (
+          <div
+            className={`flex items-center justify-center h-16 rounded border-2 border-dashed transition-colors ${
+              isOver
+                ? "border-purple-500/60 bg-purple-500/10 text-purple-400"
+                : "border-gray-700/40 text-gray-600"
+            }`}
+          >
+            <span className="text-[10px]">Déposer ici</span>
+          </div>
+        )}
       </div>
 
       {/* Pied de colonne */}

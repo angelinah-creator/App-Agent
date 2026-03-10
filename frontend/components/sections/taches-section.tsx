@@ -1,13 +1,11 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import {
   List,
   LayoutGrid,
   Search,
-  Users,
   Calendar,
-  Flag,
   Plus,
   Archive,
 } from "lucide-react";
@@ -16,10 +14,18 @@ import {
   DragEndEvent,
   DragOverlay,
   DragStartEvent,
-  closestCorners,
+  DragOverEvent,
+  closestCenter,
+  pointerWithin,
+  rectIntersection,
+  CollisionDetection,
+  getFirstCollision,
+  UniqueIdentifier,
+  MeasuringStrategy,
 } from "@dnd-kit/core";
 import {
   SortableContext,
+  arrayMove,
   verticalListSortingStrategy,
 } from "@dnd-kit/sortable";
 import {
@@ -49,52 +55,92 @@ import PriorityFilter from "./kanban/PriorityFilter";
 import SubtaskDetailModal from "./kanban/SubtaskDetailModal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
+// ─── Colonnes Kanban ──────────────────────────────────────────────────────────
+const COLUMNS = [
+  {
+    id: TaskStatus.A_FAIRE,
+    title: "À FAIRE",
+    color: "border-[#313442]",
+    bg: "bg-gray-900/30",
+  },
+  {
+    id: TaskStatus.EN_COURS,
+    title: "EN COURS",
+    color: "border-[#313442]",
+    bg: "bg-[#6C4EA821]",
+  },
+  {
+    id: TaskStatus.TERMINEE,
+    title: "TERMINÉ",
+    color: "border-[#313442]",
+    bg: "bg-[#71D29121]",
+  },
+  {
+    id: TaskStatus.ANNULEE,
+    title: "ANNULÉ",
+    color: "border-[#313442]",
+    bg: "bg-red-900/20",
+  },
+];
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+/** Retourne l'ID de colonne à partir d'un ID de tâche ou d'une colonne */
+function getColumnIdFromDroppable(id: UniqueIdentifier): TaskStatus | null {
+  const str = String(id);
+  // Les colonnes ont le préfixe "col-"
+  if (str.startsWith("col-")) {
+    return str.replace("col-", "") as TaskStatus;
+  }
+  return null;
+}
+
 export function TachesSection() {
   const [userData, setUserData] = useState<any>(null);
   const [viewMode, setViewMode] = useState<"list" | "kanban">("kanban");
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedProject, setSelectedProject] = useState<string>("all");
-  const [selectedPriority, setSelectedPriority] = useState<
-    TaskPriority | "all"
-  >("all");
+  const [selectedPriority, setSelectedPriority] = useState<TaskPriority | "all">("all");
   const [showArchived, setShowArchived] = useState(false);
+
+  // Map columnId → taskIds pour l'ordre local (optimistic UI)
+  const [columnTaskIds, setColumnTaskIds] = useState<Record<string, string[]>>({
+    [TaskStatus.A_FAIRE]: [],
+    [TaskStatus.EN_COURS]: [],
+    [TaskStatus.TERMINEE]: [],
+    [TaskStatus.ANNULEE]: [],
+  });
 
   const [projects, setProjects] = useState<Project[]>([]);
   const [users, setUsers] = useState<any[]>([]);
 
   const [subtasksMap, setSubtasksMap] = useState<Record<string, Task[]>>({});
   const [selectedSubtask, setSelectedSubtask] = useState<Task | null>(null);
-  const [loadingSubtasksMap, setLoadingSubtasksMap] = useState<
-    Record<string, boolean>
-  >({});
-  const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>(
-    () => {
-      if (typeof window !== "undefined") {
-        const saved = localStorage.getItem("expanded_tasks_personal");
-        return saved ? JSON.parse(saved) : {};
-      }
-      return {};
-    },
-  );
+  const [loadingSubtasksMap, setLoadingSubtasksMap] = useState<Record<string, boolean>>({});
+  const [expandedTasks, setExpandedTasks] = useState<Record<string, boolean>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("expanded_tasks_personal");
+      return saved ? JSON.parse(saved) : {};
+    }
+    return {};
+  });
 
   const [activeTask, setActiveTask] = useState<Task | null>(null);
-  const [activeId, setActiveId] = useState<string | null>(null);
   const [showTaskForm, setShowTaskForm] = useState(false);
-  const [showSubtaskForm, setShowSubtaskForm] = useState<{
-    taskId: string;
-    isShared: boolean;
-  } | null>(null);
+  const [showSubtaskForm, setShowSubtaskForm] = useState<{ taskId: string; isShared: boolean } | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
-  const [defaultStatusForNewTask, setDefaultStatusForNewTask] = useState<
-    TaskStatus | undefined
-  >(undefined);
+  const [defaultStatusForNewTask, setDefaultStatusForNewTask] = useState<TaskStatus | undefined>(undefined);
+
+  // Ref pour tracker la dernière colonne survolée (utile pour les collisions)
+  const lastOverId = useRef<UniqueIdentifier | null>(null);
+  const recentlyMovedToNewContainer = useRef(false);
 
   const queryClient = useQueryClient();
 
+  // ─── Sensors ────────────────────────────────────────────────────────────────
   const sensors = useSensors(
     useSensor(PointerSensor, {
       activationConstraint: {
-        distance: 8,
+        distance: 5, // 5px avant activation (évite les clics accidentels)
       },
     }),
     useSensor(KeyboardSensor, {
@@ -102,15 +148,12 @@ export function TachesSection() {
     }),
   );
 
-  // Charger les données utilisateur
+  // ─── Init ───────────────────────────────────────────────────────────────────
   useEffect(() => {
     const storedUserData = localStorage.getItem("userData");
-    if (storedUserData) {
-      setUserData(JSON.parse(storedUserData));
-    }
+    if (storedUserData) setUserData(JSON.parse(storedUserData));
   }, []);
 
-  // Charger les projets et utilisateurs une fois
   useEffect(() => {
     const loadData = async () => {
       try {
@@ -121,45 +164,51 @@ export function TachesSection() {
         setProjects(projectsData);
         setUsers(usersData);
       } catch (error) {
-        console.error("Erreur chargement données de base:", error);
+        console.error("Erreur chargement données:", error);
       }
     };
     loadData();
   }, []);
 
-  // Requête des tâches avec prise en compte du filtre d'archivage
+  // ─── Queries ────────────────────────────────────────────────────────────────
   const { data: tasks = [], isLoading } = useQuery({
     queryKey: ["personalTasks", showArchived],
-    queryFn: () =>
-      personalTaskService.getMyTasks({
-        includeArchived: showArchived,
-      }),
+    queryFn: () => personalTaskService.getMyTasks({ includeArchived: showArchived }),
   });
 
-  // Mutation pour l'archivage automatique
+  // Synchroniser columnTaskIds quand les tâches changent
+  useEffect(() => {
+    const newMap: Record<string, string[]> = {
+      [TaskStatus.A_FAIRE]: [],
+      [TaskStatus.EN_COURS]: [],
+      [TaskStatus.TERMINEE]: [],
+      [TaskStatus.ANNULEE]: [],
+    };
+    tasks.forEach((task) => {
+      if (newMap[task.status] !== undefined) {
+        newMap[task.status].push(task._id);
+      }
+    });
+    setColumnTaskIds(newMap);
+  }, [tasks]);
+
+  // Sauvegarder l'état des tâches dépliées
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      localStorage.setItem("expanded_tasks_personal", JSON.stringify(expandedTasks));
+    }
+  }, [expandedTasks]);
+
+  // ─── Archive mutation ────────────────────────────────────────────────────────
   const archiveCompletedMutation = useMutation({
     mutationFn: personalTaskService.archiveCompletedTasks,
     onSuccess: (data: { message: string }) => {
       queryClient.invalidateQueries({ queryKey: ["personalTasks"] });
       alert(data.message || "Tâches archivées avec succès");
     },
-    onError: (error) => {
-      console.error("Erreur archivage:", error);
-      alert("Erreur lors de l'archivage des tâches terminées");
-    },
   });
 
-  // Sauvegarder l'état des tâches déployées
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      localStorage.setItem(
-        "expanded_tasks_personal",
-        JSON.stringify(expandedTasks),
-      );
-    }
-  }, [expandedTasks]);
-
-  // Charger les sous-tâches pour une tâche spécifique
+  // ─── Subtasks ────────────────────────────────────────────────────────────────
   const loadSubtasks = async (taskId: string) => {
     setLoadingSubtasksMap((prev) => ({ ...prev, [taskId]: true }));
     try {
@@ -172,140 +221,259 @@ export function TachesSection() {
     }
   };
 
-  // Gérer le développement/réduction des sous-tâches
   const handleToggleSubtasks = (taskId: string, show: boolean) => {
-    const newExpandedTasks = { ...expandedTasks, [taskId]: show };
-    setExpandedTasks(newExpandedTasks);
-
-    // Si on développe et que les sous-tâches ne sont pas chargées, les charger
+    setExpandedTasks((prev) => ({ ...prev, [taskId]: show }));
     if (show && !subtasksMap[taskId] && !loadingSubtasksMap[taskId]) {
       loadSubtasks(taskId);
     }
   };
 
-  // Filtrer les tâches selon la recherche, projet et priorité
+  // ─── Filtres ─────────────────────────────────────────────────────────────────
   const filteredTasks = tasks.filter((task) => {
-    if (
-      searchTerm &&
-      !task.title.toLowerCase().includes(searchTerm.toLowerCase())
-    ) {
-      return false;
-    }
-    if (selectedProject !== "all" && task.project_id?._id !== selectedProject) {
-      return false;
-    }
-    if (selectedPriority !== "all" && task.priority !== selectedPriority) {
-      return false;
-    }
+    if (searchTerm && !task.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
+    if (selectedProject !== "all" && task.project_id?._id !== selectedProject) return false;
+    if (selectedPriority !== "all" && task.priority !== selectedPriority) return false;
     return true;
   });
 
-  // Gestion drag & drop
+  // ─── CollisionDetection personnalisée ───────────────────────────────────────
+  // Cette stratégie priorise les colonnes, puis les tâches à l'intérieur
+  const collisionDetectionStrategy: CollisionDetection = useCallback(
+    (args) => {
+      const { active, droppableContainers } = args;
+
+      // Si l'élément actif est au-dessus d'une colonne (préfixe col-)
+      const columnCollisions = pointerWithin({
+        ...args,
+        droppableContainers: droppableContainers.filter((c) =>
+          String(c.id).startsWith("col-")
+        ),
+      });
+
+      if (columnCollisions.length > 0) {
+        // On est dans une colonne, chercher la tâche la plus proche
+        const columnId = getColumnIdFromDroppable(columnCollisions[0].id);
+        if (columnId) {
+          const tasksInColumn = droppableContainers.filter(
+            (c) => !String(c.id).startsWith("col-") && columnTaskIds[columnId]?.includes(String(c.id))
+          );
+
+          if (tasksInColumn.length > 0) {
+            const closestTask = closestCenter({
+              ...args,
+              droppableContainers: tasksInColumn,
+            });
+            if (closestTask.length > 0) {
+              lastOverId.current = closestTask[0].id;
+              return closestTask;
+            }
+          }
+
+          // Colonne vide ou pas de tâche proche → retourner la colonne
+          lastOverId.current = columnCollisions[0].id;
+          return columnCollisions;
+        }
+      }
+
+      // Fallback: closestCenter sur tout
+      const allCollisions = closestCenter(args);
+      if (allCollisions.length > 0) {
+        lastOverId.current = allCollisions[0].id;
+      }
+      return allCollisions;
+    },
+    [columnTaskIds]
+  );
+
+  // ─── Drag Start ──────────────────────────────────────────────────────────────
   const handleDragStart = useCallback(
     (event: DragStartEvent) => {
-      setActiveId(event.active.id as string);
       const task = tasks.find((t) => t._id === event.active.id);
       setActiveTask(task || null);
     },
-    [tasks],
+    [tasks]
   );
 
-  const handleDragEnd = async (event: DragEndEvent) => {
-    const { active, over } = event;
+  // ─── Drag Over (réordonnancement en temps réel) ───────────────────────────────
+  const handleDragOver = useCallback(
+    (event: DragOverEvent) => {
+      const { active, over } = event;
+      if (!over || active.id === over.id) return;
 
-    if (!over || active.id === over.id) {
-      setActiveId(null);
-      setActiveTask(null);
-      return;
-    }
+      const activeId = String(active.id);
+      const overId = String(over.id);
 
-    const taskId = active.id as string;
-    const newStatus = over.id as TaskStatus;
+      // Trouver les colonnes source et destination
+      let sourceColumnId: string | null = null;
+      let targetColumnId: string | null = null;
 
-    try {
-      // Mettre à jour le statut dans l'UI immédiatement
-      queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
-        old?.map((task) =>
-          task._id === taskId ? { ...task, status: newStatus } : task,
-        ),
-      );
-
-      // Si c'est une tâche parente, mettre à jour aussi les sous-tâches
-      if (subtasksMap[taskId] && subtasksMap[taskId].length > 0) {
-        setSubtasksMap((prev) => ({
-          ...prev,
-          [taskId]: prev[taskId].map((subtask) => ({
-            ...subtask,
-            status: newStatus,
-          })),
-        }));
+      // Chercher la colonne source (là où est la tâche active)
+      for (const [colId, ids] of Object.entries(columnTaskIds)) {
+        if (ids.includes(activeId)) {
+          sourceColumnId = colId;
+          break;
+        }
       }
 
-      // Envoyer la mise à jour au backend
-      await personalTaskService.update(taskId, { status: newStatus });
-    } catch (error) {
-      console.error("Erreur mise à jour statut:", error);
-      queryClient.invalidateQueries({ queryKey: ["personalTasks"] });
-    } finally {
-      setActiveId(null);
-      setActiveTask(null);
-    }
-  };
+      // Chercher la colonne cible
+      if (overId.startsWith("col-")) {
+        targetColumnId = overId.replace("col-", "");
+      } else {
+        // over est une tâche, trouver sa colonne
+        for (const [colId, ids] of Object.entries(columnTaskIds)) {
+          if (ids.includes(overId)) {
+            targetColumnId = colId;
+            break;
+          }
+        }
+      }
 
-  // Créer une tâche
+      if (!sourceColumnId || !targetColumnId) return;
+      if (sourceColumnId === targetColumnId) return; // Même colonne → géré par onDragEnd
+
+      // Déplacement inter-colonnes optimiste
+      setColumnTaskIds((prev) => {
+        const sourceIds = [...(prev[sourceColumnId!] || [])];
+        const targetIds = [...(prev[targetColumnId!] || [])];
+
+        const activeIndex = sourceIds.indexOf(activeId);
+        if (activeIndex === -1) return prev;
+
+        sourceIds.splice(activeIndex, 1);
+
+        // Insérer après l'élément survolé si c'est une tâche
+        if (!overId.startsWith("col-")) {
+          const overIndex = targetIds.indexOf(overId);
+          if (overIndex >= 0) {
+            targetIds.splice(overIndex, 0, activeId);
+          } else {
+            targetIds.push(activeId);
+          }
+        } else {
+          targetIds.push(activeId);
+        }
+
+        recentlyMovedToNewContainer.current = true;
+
+        return {
+          ...prev,
+          [sourceColumnId!]: sourceIds,
+          [targetColumnId!]: targetIds,
+        };
+      });
+    },
+    [columnTaskIds]
+  );
+
+  // ─── Drag End ────────────────────────────────────────────────────────────────
+  const handleDragEnd = useCallback(
+    async (event: DragEndEvent) => {
+      const { active, over } = event;
+      setActiveTask(null);
+
+      if (!over) return;
+
+      const activeId = String(active.id);
+      const overId = String(over.id);
+
+      // Trouver la colonne cible finale
+      let targetColumnId: string | null = null;
+
+      if (overId.startsWith("col-")) {
+        targetColumnId = overId.replace("col-", "");
+      } else {
+        for (const [colId, ids] of Object.entries(columnTaskIds)) {
+          if (ids.includes(overId)) {
+            targetColumnId = colId;
+            break;
+          }
+        }
+      }
+
+      // Réordonnancement dans la même colonne
+      let sourceColumnId: string | null = null;
+      for (const [colId, ids] of Object.entries(columnTaskIds)) {
+        if (ids.includes(activeId)) {
+          sourceColumnId = colId;
+          break;
+        }
+      }
+
+      if (!targetColumnId || !sourceColumnId) return;
+
+      if (sourceColumnId === targetColumnId) {
+        // Réordonnancement dans la même colonne
+        const colIds = [...columnTaskIds[sourceColumnId]];
+        const oldIndex = colIds.indexOf(activeId);
+        const newIndex = colIds.indexOf(overId);
+
+        if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
+          const newIds = arrayMove(colIds, oldIndex, newIndex);
+          setColumnTaskIds((prev) => ({ ...prev, [sourceColumnId!]: newIds }));
+        }
+        return; // Pas de changement de statut
+      }
+
+      // Changement de colonne → mettre à jour le statut
+      const newStatus = targetColumnId as TaskStatus;
+
+      // Mise à jour optimiste dans le cache React Query
+      queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
+        old?.map((task) =>
+          task._id === activeId ? { ...task, status: newStatus } : task
+        )
+      );
+
+      try {
+        await personalTaskService.update(activeId, { status: newStatus });
+      } catch (error) {
+        console.error("Erreur mise à jour statut:", error);
+        // Rollback
+        queryClient.invalidateQueries({ queryKey: ["personalTasks"] });
+      }
+    },
+    [columnTaskIds, queryClient, showArchived]
+  );
+
+  // ─── CRUD handlers ────────────────────────────────────────────────────────────
   const handleCreateTask = async (data: CreateTaskDto) => {
     try {
       const newTask = await personalTaskService.create(data);
-      queryClient.setQueryData<Task[]>(
-        ["personalTasks", showArchived],
-        (old) => [...(old || []), newTask],
-      );
+      queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) => [
+        ...(old || []),
+        newTask,
+      ]);
       setShowTaskForm(false);
     } catch (error) {
       console.error("Erreur création tâche:", error);
     }
   };
 
-  // Créer une sous-tâche
-  const handleCreateSubtask = async (
-    parentTaskId: string,
-    data: CreateSubtaskDto,
-  ) => {
+  const handleCreateSubtask = async (parentTaskId: string, data: CreateSubtaskDto) => {
     try {
-      const newSubtask = await personalTaskService.createSubtask(
-        parentTaskId,
-        data,
-      );
-
+      const newSubtask = await personalTaskService.createSubtask(parentTaskId, data);
       setSubtasksMap((prev) => ({
         ...prev,
         [parentTaskId]: [...(prev[parentTaskId] || []), newSubtask],
       }));
-
       queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
         old?.map((task) => {
           if (task._id === parentTaskId) {
-            return {
-              ...task,
-              sub_tasks: [...task.sub_tasks, newSubtask._id],
-            };
+            return { ...task, sub_tasks: [...task.sub_tasks, newSubtask._id] };
           }
           return task;
-        }),
+        })
       );
-
       setShowSubtaskForm(null);
     } catch (error) {
       console.error("Erreur création sous-tâche:", error);
     }
   };
 
-  // Mettre à jour une tâche
   const handleUpdateTask = async (taskId: string, data: any) => {
     try {
       const updatedTask = await personalTaskService.update(taskId, data);
 
-      // Chercher si c'est une sous-tâche
       let isSubtask = false;
       let parentId: string | undefined;
 
@@ -321,18 +489,14 @@ export function TachesSection() {
       if (isSubtask && parentId) {
         setSubtasksMap((prev) => ({
           ...prev,
-          [parentId]: (prev[parentId] || []).map((st) =>
-            st._id === taskId ? { ...st, ...updatedTask } : st,
+          [parentId!]: (prev[parentId!] || []).map((st) =>
+            st._id === taskId ? { ...st, ...updatedTask } : st
           ),
         }));
         setSelectedSubtask(null);
       } else {
-        queryClient.setQueryData<Task[]>(
-          ["personalTasks", showArchived],
-          (old) =>
-            old?.map((task) =>
-              task._id === taskId ? { ...task, ...updatedTask } : task,
-            ),
+        queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
+          old?.map((task) => (task._id === taskId ? { ...task, ...updatedTask } : task))
         );
         setSelectedTask(null);
       }
@@ -341,21 +505,16 @@ export function TachesSection() {
     }
   };
 
-  // Supprimer une tâche
   const handleDeleteTask = async (taskId: string) => {
     if (!confirm("Supprimer cette tâche ?")) return;
 
     try {
       const taskToDelete =
         tasks.find((t) => t._id === taskId) ||
-        Object.values(subtasksMap)
-          .flat()
-          .find((st) => st._id === taskId);
-
+        Object.values(subtasksMap).flat().find((st) => st._id === taskId);
       if (!taskToDelete) return;
 
       const isSubtask = taskToDelete.parentTaskId != null;
-
       await personalTaskService.delete(taskId);
 
       if (isSubtask) {
@@ -364,26 +523,18 @@ export function TachesSection() {
           ...prev,
           [parentId]: (prev[parentId] || []).filter((st) => st._id !== taskId),
         }));
-
-        queryClient.setQueryData<Task[]>(
-          ["personalTasks", showArchived],
-          (old) =>
-            old?.map((task) => {
-              if (task._id === parentId) {
-                return {
-                  ...task,
-                  sub_tasks: task.sub_tasks.filter((id) => id !== taskId),
-                };
-              }
-              return task;
-            }),
+        queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
+          old?.map((task) => {
+            if (task._id === parentId) {
+              return { ...task, sub_tasks: task.sub_tasks.filter((id) => id !== taskId) };
+            }
+            return task;
+          })
         );
-
         setSelectedSubtask(null);
       } else {
-        queryClient.setQueryData<Task[]>(
-          ["personalTasks", showArchived],
-          (old) => old?.filter((task) => task._id !== taskId),
+        queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
+          old?.filter((task) => task._id !== taskId)
         );
         setSelectedTask(null);
       }
@@ -392,9 +543,7 @@ export function TachesSection() {
     }
   };
 
-  // Gérer l'édition
   const handleEditTask = (taskId: string) => {
-    // Chercher dans les sous-tâches
     for (const parentId in subtasksMap) {
       const subtask = subtasksMap[parentId].find((st) => st._id === taskId);
       if (subtask) {
@@ -402,51 +551,24 @@ export function TachesSection() {
         return;
       }
     }
-
-    // Chercher dans les tâches parentes
     const parentTask = tasks.find((t) => t._id === taskId);
-    if (parentTask) {
-      setSelectedTask(parentTask);
-      return;
-    }
+    if (parentTask) setSelectedTask(parentTask);
   };
 
-  // Gérer l'ajout d'une sous-tâche
   const handleAddSubtask = (taskId: string) => {
-    setShowSubtaskForm({
-      taskId,
-      isShared: false,
-    });
+    setShowSubtaskForm({ taskId, isShared: false });
   };
 
-  // Colonnes Kanban
-  const columns = [
-    {
-      id: TaskStatus.A_FAIRE,
-      title: "À FAIRE",
-      color: "border-[#313442]",
-      bg: "bg-gray-900/30",
-    },
-    {
-      id: TaskStatus.EN_COURS,
-      title: "EN COURS",
-      color: "border-[#313442]",
-      bg: "bg-[#6C4EA821]",
-    },
-    {
-      id: TaskStatus.TERMINEE,
-      title: "TERMINÉ",
-      color: "border-[#313442]",
-      bg: "bg-[#71D29121]",
-    },
-    {
-      id: TaskStatus.ANNULEE,
-      title: "ANNULÉ",
-      color: "border-[#313442]",
-      bg: "bg-red-900/20",
-    },
-  ];
+  // ─── Computed: tâches filtrées par colonne ───────────────────────────────────
+  // On utilise columnTaskIds pour l'ordre, filteredTasks pour le contenu affiché
+  const getColumnTasks = (columnId: string): Task[] => {
+    const orderedIds = columnTaskIds[columnId] || [];
+    return orderedIds
+      .map((id) => filteredTasks.find((t) => t._id === id))
+      .filter(Boolean) as Task[];
+  };
 
+  // ─── Render ──────────────────────────────────────────────────────────────────
   if (isLoading) {
     return (
       <div className="min-h-screen bg-[#0f0f10] text-gray-100">
@@ -468,21 +590,15 @@ export function TachesSection() {
           <h1 className="text-2xl font-extrabold">Espace Personnel</h1>
           <p className="text-gray-400">Gère tes tâches et marque ton temps</p>
         </div>
-
         <div className="flex items-center gap-4">
-          {/* Bouton d'archivage */}
           <button
             onClick={() => archiveCompletedMutation.mutate()}
             disabled={archiveCompletedMutation.isPending}
             className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-xs disabled:opacity-50"
           >
             <Archive size={16} />
-            {archiveCompletedMutation.isPending
-              ? "Archivage..."
-              : "Nettoyer les terminées"}
+            {archiveCompletedMutation.isPending ? "Archivage..." : "Nettoyer les terminées"}
           </button>
-
-          {/* Bouton afficher/masquer archivées */}
           <button
             onClick={() => setShowArchived(!showArchived)}
             className={`px-4 py-2 rounded-lg transition text-xs ${
@@ -491,7 +607,6 @@ export function TachesSection() {
           >
             {showArchived ? "Masquer archivées" : "Voir archivées"}
           </button>
-
           <button
             onClick={() => {
               setDefaultStatusForNewTask(undefined);
@@ -508,14 +623,11 @@ export function TachesSection() {
       {/* Barre de contrôle */}
       <div className="mb-6 p-2 bg-[#1a1a1d] rounded-xl border border-gray-800">
         <div className="flex flex-col lg:flex-row items-start lg:items-center justify-between gap-4">
-          {/* Mode d'affichage */}
           <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode("kanban")}
               className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${
-                viewMode === "kanban"
-                  ? "bg-[#6C4EA8] text-white"
-                  : "bg-[#2a2a2d] text-gray-300"
+                viewMode === "kanban" ? "bg-[#6C4EA8] text-white" : "bg-[#2a2a2d] text-gray-300"
               }`}
             >
               <LayoutGrid size={16} />
@@ -524,24 +636,16 @@ export function TachesSection() {
             <button
               onClick={() => setViewMode("list")}
               className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${
-                viewMode === "list"
-                  ? "bg-[#6C4EA8] text-white"
-                  : "bg-[#2a2a2d] text-gray-300"
+                viewMode === "list" ? "bg-[#6C4EA8] text-white" : "bg-[#2a2a2d] text-gray-300"
               }`}
             >
               <List size={16} />
               Liste
             </button>
           </div>
-
-          {/* Filtres et recherche */}
           <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 w-full lg:w-auto">
-            {/* Recherche */}
             <div className="relative flex-1 md:w-48">
-              <Search
-                className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500"
-                size={16}
-              />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500" size={16} />
               <input
                 type="text"
                 placeholder="Rechercher une tâche..."
@@ -550,84 +654,76 @@ export function TachesSection() {
                 className="pl-10 pr-4 py-2 bg-[#2a2a2d] border border-gray-700 rounded-lg w-full focus:outline-none focus:border-purple-500 text-xs"
               />
             </div>
-
-            {/* Filtres */}
             <div className="flex flex-wrap gap-2">
-              <div className="w-full sm:w-auto">
-                <ProjectFilter
-                  projects={projects}
-                  selectedProject={selectedProject}
-                  onProjectChange={setSelectedProject}
-                />
-              </div>
-              <div className="w-full sm:w-auto">
-                <PriorityFilter
-                  selectedPriority={selectedPriority}
-                  onPriorityChange={setSelectedPriority}
-                />
-              </div>
+              <ProjectFilter
+                projects={projects}
+                selectedProject={selectedProject}
+                onProjectChange={setSelectedProject}
+              />
+              <PriorityFilter
+                selectedPriority={selectedPriority}
+                onPriorityChange={setSelectedPriority}
+              />
             </div>
           </div>
         </div>
       </div>
 
-      {/* Tableau Kanban */}
+      {/* ── Kanban ── */}
       {viewMode === "kanban" && (
         <DndContext
           sensors={sensors}
-          collisionDetection={closestCorners}
+          collisionDetection={collisionDetectionStrategy}
           onDragStart={handleDragStart}
+          onDragOver={handleDragOver}
           onDragEnd={handleDragEnd}
+          measuring={{
+            droppable: {
+              strategy: MeasuringStrategy.Always, // Remesure à chaque frame
+            },
+          }}
         >
           <div className="overflow-x-auto pb-4 -mx-2 px-2">
             <div className="flex gap-3 min-w-max">
-              {columns.map((column) => (
-                <KanbanColumn
-                  key={column.id}
-                  id={column.id}
-                  title={column.title}
-                  color={column.color}
-                  bg={column.bg}
-                  count={
-                    filteredTasks.filter((t) => t.status === column.id).length
-                  }
-                  onAddTask={(status) => {
-                    setDefaultStatusForNewTask(status as TaskStatus);
-                    setShowTaskForm(true);
-                  }}
-                >
-                  <SortableContext
-                    items={filteredTasks
-                      .filter((t) => t.status === column.id)
-                      .map((t) => t._id)}
-                    strategy={verticalListSortingStrategy}
+              {COLUMNS.map((column) => {
+                const colTasks = getColumnTasks(column.id);
+                return (
+                  <KanbanColumn
+                    key={column.id}
+                    id={column.id}
+                    title={column.title}
+                    color={column.color}
+                    bg={column.bg}
+                    count={colTasks.length}
+                    taskIds={colTasks.map((t) => t._id)}
+                    onAddTask={(status) => {
+                      setDefaultStatusForNewTask(status as TaskStatus);
+                      setShowTaskForm(true);
+                    }}
                   >
-                    {filteredTasks
-                      .filter((task) => task.status === column.id)
-                      .map((task) => (
-                        <TaskCard
-                          key={task._id}
-                          task={task}
-                          subtasks={subtasksMap[task._id] || []}
-                          loadingSubtasks={
-                            loadingSubtasksMap[task._id] || false
-                          }
-                          isSubtasksExpanded={expandedTasks[task._id] || false}
-                          onEdit={handleEditTask}
-                          onDelete={handleDeleteTask}
-                          onAddSubtask={handleAddSubtask}
-                          onToggleSubtasks={handleToggleSubtasks}
-                        />
-                      ))}
-                  </SortableContext>
-                </KanbanColumn>
-              ))}
+                    {colTasks.map((task) => (
+                      <TaskCard
+                        key={task._id}
+                        task={task}
+                        subtasks={subtasksMap[task._id] || []}
+                        loadingSubtasks={loadingSubtasksMap[task._id] || false}
+                        isSubtasksExpanded={expandedTasks[task._id] || false}
+                        onEdit={handleEditTask}
+                        onDelete={handleDeleteTask}
+                        onAddSubtask={handleAddSubtask}
+                        onToggleSubtasks={handleToggleSubtasks}
+                      />
+                    ))}
+                  </KanbanColumn>
+                );
+              })}
             </div>
           </div>
 
-          <DragOverlay>
-            {activeTask && (
-              <div className="rotate-3 opacity-90 w-72">
+          {/* Overlay de la tâche en cours de drag */}
+          <DragOverlay dropAnimation={{ duration: 200, easing: "cubic-bezier(0.18, 0.67, 0.6, 1.22)" }}>
+            {activeTask ? (
+              <div className="rotate-2 opacity-90 w-[230px] shadow-2xl">
                 <TaskCard
                   task={activeTask}
                   onEdit={() => {}}
@@ -636,12 +732,12 @@ export function TachesSection() {
                   onToggleSubtasks={() => {}}
                 />
               </div>
-            )}
+            ) : null}
           </DragOverlay>
         </DndContext>
       )}
 
-      {/* Vue Liste */}
+      {/* ── Vue Liste ── */}
       {viewMode === "list" && (
         <div className="bg-[#1a1a1d] rounded-xl border border-gray-800 overflow-hidden">
           <div className="overflow-x-auto">
@@ -652,23 +748,17 @@ export function TachesSection() {
                   <th className="text-left p-3 text-xs">Priorité</th>
                   <th className="text-left p-3 text-xs">Projet</th>
                   <th className="text-left p-3 text-xs">Deadline</th>
-                  <th className="text-left p-3 text-xs">Assignations</th>
                   <th className="text-left p-3 text-xs">Statut</th>
                   <th className="text-left p-3 text-xs">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredTasks.map((task) => (
-                  <tr
-                    key={task._id}
-                    className="border-t border-gray-800 hover:bg-gray-900/50"
-                  >
+                  <tr key={task._id} className="border-t border-gray-800 hover:bg-gray-900/50">
                     <td className="p-3">
                       <div className="font-medium text-xs">{task.title}</div>
                       {task.description && (
-                        <div className="text-xs text-gray-400 mt-1 truncate max-w-xs">
-                          {task.description}
-                        </div>
+                        <div className="text-xs text-gray-400 mt-1 truncate max-w-xs">{task.description}</div>
                       )}
                     </td>
                     <td className="p-3">
@@ -687,52 +777,21 @@ export function TachesSection() {
                       {task.end_date ? (
                         <div className="flex items-center gap-2 text-xs">
                           <Calendar size={12} />
-                          {new Date(task.end_date).toLocaleDateString("fr-FR", {
-                            day: "numeric",
-                            month: "short",
-                          })}
+                          {new Date(task.end_date).toLocaleDateString("fr-FR", { day: "numeric", month: "short" })}
                         </div>
                       ) : (
                         <span className="text-gray-500 text-xs">-</span>
                       )}
                     </td>
                     <td className="p-3">
-                      <div className="flex -space-x-2">
-                        {task.assignees?.slice(0, 3).map((user) => (
-                          <div
-                            key={user?._id || Math.random()}
-                            className="w-7 h-7 bg-purple-600 rounded-full flex items-center justify-center text-xs border-2 border-[#1a1a1d]"
-                            title={`${user?.prenoms || ""} ${user?.nom || ""}`}
-                          >
-                            {user?.prenoms?.charAt(0) || ""}
-                            {user?.nom?.charAt(0) || ""}
-                          </div>
-                        ))}
-                        {task.assignees &&
-                          task.assignees.filter((a) => a).length > 3 && (
-                            <div className="w-7 h-7 bg-gray-700 rounded-full flex items-center justify-center text-xs border-2 border-[#1a1a1d]">
-                              +{task.assignees.filter((a) => a).length - 3}
-                            </div>
-                          )}
-                      </div>
-                    </td>
-                    <td className="p-3">
                       <StatusBadge status={task.status} />
                     </td>
                     <td className="p-3">
                       <div className="flex gap-2">
-                        <button
-                          onClick={() => handleEditTask(task._id)}
-                          className="p-1 hover:bg-gray-700 rounded text-xs"
-                          title="Modifier"
-                        >
+                        <button onClick={() => handleEditTask(task._id)} className="p-1 hover:bg-gray-700 rounded text-xs">
                           Modifier
                         </button>
-                        <button
-                          onClick={() => handleDeleteTask(task._id)}
-                          className="p-1 hover:bg-red-900/30 rounded text-red-400 text-xs"
-                          title="Supprimer"
-                        >
+                        <button onClick={() => handleDeleteTask(task._id)} className="p-1 hover:bg-red-900/30 rounded text-red-400 text-xs">
                           Supprimer
                         </button>
                       </div>
@@ -745,7 +804,7 @@ export function TachesSection() {
         </div>
       )}
 
-      {/* Form overlay pour nouvelle tâche */}
+      {/* ── Modals ── */}
       {showTaskForm && (
         <QuickTaskForm
           projects={projects}
@@ -761,8 +820,6 @@ export function TachesSection() {
           }}
         />
       )}
-
-      {/* Modal ajout sous-tâche */}
       {showSubtaskForm && (
         <AddSubtaskModal
           isShared={showSubtaskForm.isShared}
@@ -771,8 +828,6 @@ export function TachesSection() {
           onCancel={() => setShowSubtaskForm(null)}
         />
       )}
-
-      {/* Modal détail sous-tâche */}
       {selectedSubtask && (
         <SubtaskDetailModal
           task={selectedSubtask}
@@ -783,8 +838,6 @@ export function TachesSection() {
           isShared={false}
         />
       )}
-
-      {/* Modal détail tâche */}
       {selectedTask && (
         <TaskDetailModal
           task={selectedTask}
@@ -800,36 +853,31 @@ export function TachesSection() {
   );
 }
 
-// Composants helper
+// ─── Badges ───────────────────────────────────────────────────────────────────
 function PriorityBadge({ priority }: { priority: TaskPriority }) {
-  const colors = {
+  const colors: Record<TaskPriority, string> = {
     [TaskPriority.URGENTE]: "bg-red-500/20 text-red-300 border-red-500",
     [TaskPriority.ELEVEE]: "bg-orange-500/20 text-orange-300 border-orange-500",
     [TaskPriority.NORMALE]: "bg-blue-500/20 text-blue-300 border-blue-500",
     [TaskPriority.BASSE]: "bg-gray-500/20 text-gray-300 border-gray-500",
   };
-
   return (
-    <span
-      className={`px-2 py-1 rounded-full text-xs border ${colors[priority]}`}
-    >
+    <span className={`px-2 py-1 rounded-full text-xs border ${colors[priority]}`}>
       {priority}
     </span>
   );
 }
 
 function StatusBadge({ status }: { status: TaskStatus }) {
-  const colors = {
+  const colors: Record<TaskStatus, string> = {
     [TaskStatus.A_FAIRE]: "bg-gray-500/20 text-gray-300",
     [TaskStatus.EN_COURS]: "bg-purple-500/20 text-purple-300",
     [TaskStatus.TERMINEE]: "bg-green-500/20 text-green-300",
     [TaskStatus.ANNULEE]: "bg-red-500/20 text-red-300",
   };
-
   return (
     <span className={`px-2 py-1 rounded-full text-xs ${colors[status]}`}>
       {status}
     </span>
   );
 }
-
