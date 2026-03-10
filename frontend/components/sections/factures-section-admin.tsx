@@ -266,7 +266,7 @@ export function FacturesSectionAdmin({
   const unpaidCount = invoices.filter((i) => i.status === "unpaid").length;
 
   return (
-    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 -mt-8">
       {/* En-tête avec statistiques */}
       <div className="flex justify-between">
         <div>

@@ -165,7 +165,7 @@ export function AbsencesSectionAdmin() {
   const rejectedCount = absences.filter((a) => a.status === "rejected").length;
 
   return (
-    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-6 -mt-8">
       {/* En-tête avec statistiques */}
       <div className="flex items-center justify-between">
         <div>

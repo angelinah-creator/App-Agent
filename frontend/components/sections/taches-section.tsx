@@ -565,7 +565,7 @@ export function TachesSection() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f10] text-gray-100 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="min-h-screen bg-[#0f0f10] text-gray-100 -mt-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
         <div>

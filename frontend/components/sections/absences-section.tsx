@@ -210,7 +210,7 @@ export function AbsencesSection() {
   }
 
   return (
-    <div className="space-y-3 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-3 -mt-8">
       {dialog}
       <Card className="bg-[#1F2128] border-[#313442]">
         <CardHeader>

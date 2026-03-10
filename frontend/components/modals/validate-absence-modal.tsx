@@ -49,7 +49,7 @@ export function ValidateAbsenceModal({
   }
 
   return (
-    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300 -mt-90">
+    <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
       <div className="w-full max-w-2xl animate-in fade-in zoom-in-95 duration-300 shadow-2xl bg-[#1F2128] backdrop-blur-xl rounded-2xl overflow-hidden max-h-[90vh] overflow-y-auto border border-[#313442]">
         <div className="p-6">
           {/* Header */}
