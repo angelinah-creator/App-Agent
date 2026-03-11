@@ -27,6 +27,7 @@ export interface SpacePermission {
   _id: string;
   spaceId: Space;
   userId: {
+    profilePhoto: any;
     _id: string;
     nom: string;
     prenoms: string;
