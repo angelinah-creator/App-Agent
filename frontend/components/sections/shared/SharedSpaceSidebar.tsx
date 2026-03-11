@@ -1,21 +1,21 @@
 "use client";
 
 import { useState, useEffect, useRef } from "react";
-import { 
-  Search, 
-  Plus, 
+import {
+  Search,
+  Plus,
   Globe,
-  Lock,
   Users,
   Camera,
   X,
   MoreVertical,
   Edit,
   Trash2,
-  AlertTriangle
+  AlertTriangle,
 } from "lucide-react";
 import { spaceService, Space, SpacePhoto } from "@/lib/space-service";
 import SharedSpaceKanban from "./SharedSpaceKanban";
+import { useQuery } from "@tanstack/react-query";
 
 export default function EspacesPartageSection() {
   const [spaces, setSpaces] = useState<Space[]>([]);
@@ -27,7 +27,7 @@ export default function EspacesPartageSection() {
   const [spaceToDelete, setSpaceToDelete] = useState<Space | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
-  
+
   // États pour l'upload
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [previewUrl, setPreviewUrl] = useState<string | null>(null);
@@ -35,6 +35,18 @@ export default function EspacesPartageSection() {
   const [deleting, setDeleting] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+
+  // Récupération des membres de l'espace sélectionné
+  const { data: members = [] } = useQuery({
+    queryKey: ["space-members", selectedSpace?._id],
+    queryFn: async () => {
+      if (!selectedSpace) return [];
+      const permissions = await spaceService.getPermissions(selectedSpace._id);
+      // Extraire les utilisateurs (userId est peuplé par le backend)
+      return permissions.map((p) => p.userId);
+    },
+    enabled: !!selectedSpace,
+  });
 
   useEffect(() => {
     loadSpaces();
@@ -48,25 +60,25 @@ export default function EspacesPartageSection() {
       }
     };
 
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
 
   const loadSpaces = async () => {
     try {
       setLoading(true);
       const userData = JSON.parse(localStorage.getItem("userData") || "{}");
-      
+
       let spacesData: Space[];
-      
+
       if (userData.role === "admin" || userData.role === "manager") {
         spacesData = await spaceService.getAll();
       } else {
         spacesData = await spaceService.getMySpaces();
       }
-      
+
       setSpaces(spacesData);
-      
+
       if (spacesData.length > 0 && !selectedSpace) {
         setSelectedSpace(spacesData[0]);
       }
@@ -82,21 +94,27 @@ export default function EspacesPartageSection() {
     if (!file) return;
 
     // Validation du type de fichier
-    const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/webp', 'image/gif'];
+    const allowedTypes = [
+      "image/jpeg",
+      "image/jpg",
+      "image/png",
+      "image/webp",
+      "image/gif",
+    ];
     if (!allowedTypes.includes(file.type)) {
-      alert('Type de fichier non autorisé. Utilisez JPG, PNG, WebP ou GIF.');
+      alert("Type de fichier non autorisé. Utilisez JPG, PNG, WebP ou GIF.");
       return;
     }
 
     // Validation de la taille (10MB max)
     const maxSize = 10 * 1024 * 1024; // 10MB
     if (file.size > maxSize) {
-      alert('Le fichier est trop volumineux. Taille maximale : 10MB');
+      alert("Le fichier est trop volumineux. Taille maximale : 10MB");
       return;
     }
 
     setSelectedFile(file);
-    
+
     // Créer l'aperçu
     const reader = new FileReader();
     reader.onloadend = () => {
@@ -109,7 +127,7 @@ export default function EspacesPartageSection() {
     setSelectedFile(null);
     setPreviewUrl(null);
     if (fileInputRef.current) {
-      fileInputRef.current.value = '';
+      fileInputRef.current.value = "";
     }
   };
 
@@ -123,13 +141,13 @@ export default function EspacesPartageSection() {
         photoData = await spaceService.uploadPhoto(selectedFile, name);
       }
 
-      const newSpace = await spaceService.create({ 
-        name, 
+      const newSpace = await spaceService.create({
+        name,
         description,
-        photo: photoData 
+        photo: photoData,
       });
-      
-      setSpaces(prev => [...prev, newSpace]);
+
+      setSpaces((prev) => [...prev, newSpace]);
       setSelectedSpace(newSpace);
       setShowSpaceForm(false);
       clearPhotoSelection();
@@ -141,7 +159,11 @@ export default function EspacesPartageSection() {
     }
   };
 
-  const handleUpdateSpace = async (spaceId: string, name: string, description?: string) => {
+  const handleUpdateSpace = async (
+    spaceId: string,
+    name: string,
+    description?: string,
+  ) => {
     try {
       let photoData: SpacePhoto | undefined = selectedSpace?.photo;
 
@@ -151,13 +173,15 @@ export default function EspacesPartageSection() {
         photoData = await spaceService.uploadPhoto(selectedFile, name);
       }
 
-      const updatedSpace = await spaceService.update(spaceId, { 
-        name, 
+      const updatedSpace = await spaceService.update(spaceId, {
+        name,
         description,
-        photo: photoData 
+        photo: photoData,
       });
-      
-      setSpaces(prev => prev.map(s => s._id === spaceId ? updatedSpace : s));
+
+      setSpaces((prev) =>
+        prev.map((s) => (s._id === spaceId ? updatedSpace : s)),
+      );
       setSelectedSpace(updatedSpace);
       setShowEditForm(false);
       clearPhotoSelection();
@@ -175,15 +199,17 @@ export default function EspacesPartageSection() {
     try {
       setDeleting(true);
       await spaceService.delete(spaceToDelete._id);
-      
-      setSpaces(prev => prev.filter(s => s._id !== spaceToDelete._id));
-      
+
+      setSpaces((prev) => prev.filter((s) => s._id !== spaceToDelete._id));
+
       // Si l'espace supprimé était sélectionné, sélectionner le premier disponible
       if (selectedSpace?._id === spaceToDelete._id) {
-        const remainingSpaces = spaces.filter(s => s._id !== spaceToDelete._id);
+        const remainingSpaces = spaces.filter(
+          (s) => s._id !== spaceToDelete._id,
+        );
         setSelectedSpace(remainingSpaces.length > 0 ? remainingSpaces[0] : null);
       }
-      
+
       setShowDeleteConfirm(false);
       setSpaceToDelete(null);
     } catch (error) {
@@ -206,21 +232,23 @@ export default function EspacesPartageSection() {
     setOpenMenuId(null);
   };
 
-  const filteredSpaces = spaces.filter(space =>
-    space.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    space.description?.toLowerCase().includes(searchTerm.toLowerCase())
+  const filteredSpaces = spaces.filter(
+    (space) =>
+      space.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      space.description?.toLowerCase().includes(searchTerm.toLowerCase()),
   );
 
   const getUserData = () => {
     try {
       return JSON.parse(localStorage.getItem("userData") || "{}");
     } catch {
-      return { role: 'collaborateur', prenoms: '', nom: '' };
+      return { role: "collaborateur", prenoms: "", nom: "" };
     }
   };
 
   const userData = getUserData();
-  const isAdminOrManager = userData.role === "admin" || userData.role === "manager";
+  const isAdminOrManager =
+    userData.role === "admin" || userData.role === "manager";
 
   // Fonction pour obtenir les initiales d'un espace
   const getSpaceInitials = (spaceName: string) => {
@@ -261,9 +289,12 @@ export default function EspacesPartageSection() {
               </button>
             )}
           </div>
-          
+
           <div className="relative">
-            <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" size={15} />
+            <Search
+              className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500"
+              size={15}
+            />
             <input
               type="text"
               placeholder="Rechercher un espace..."
@@ -305,35 +336,50 @@ export default function EspacesPartageSection() {
                     className="flex items-center gap-3 flex-1 min-w-0"
                   >
                     {/* Photo ou initiales */}
-                    <div className={`w-8 h-8 rounded flex items-center justify-center overflow-hidden flex-shrink-0 ${
-                      space.photo ? 'bg-transparent' : space.isActive ? "bg-purple-900" : "bg-gray-500/20"
-                    }`}>
+                    <div
+                      className={`w-8 h-8 rounded flex items-center justify-center overflow-hidden flex-shrink-0 ${
+                        space.photo
+                          ? "bg-transparent"
+                          : space.isActive
+                            ? "bg-purple-900"
+                            : "bg-gray-500/20"
+                      }`}
+                    >
                       {space.photo ? (
-                        <img 
-                          src={space.photo.url} 
+                        <img
+                          src={space.photo.url}
                           alt={space.name}
                           className="w-full h-full object-cover"
                         />
                       ) : (
-                        <span className={`font-semibold text-xs ${
-                          space.isActive ? "text-white" : "text-gray-400"
-                        }`}>
+                        <span
+                          className={`font-semibold text-xs ${
+                            space.isActive ? "text-white" : "text-gray-400"
+                          }`}
+                        >
                           {getSpaceInitials(space.name)}
                         </span>
                       )}
                     </div>
                     <div className="overflow-hidden">
-                      <div className="font-medium truncate text-sm">{space.name}</div>
+                      <div className="font-medium truncate text-sm">
+                        {space.name}
+                      </div>
                     </div>
                   </button>
 
                   {/* Menu 3 points (seulement pour admin/manager) */}
                   {isAdminOrManager && (
-                    <div className="relative" ref={openMenuId === space._id ? menuRef : null}>
+                    <div
+                      className="relative"
+                      ref={openMenuId === space._id ? menuRef : null}
+                    >
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          setOpenMenuId(openMenuId === space._id ? null : space._id);
+                          setOpenMenuId(
+                            openMenuId === space._id ? null : space._id,
+                          );
                         }}
                         className="p-1 hover:bg-gray-700 rounded transition"
                       >
@@ -371,21 +417,22 @@ export default function EspacesPartageSection() {
       {/* Contenu principal */}
       <div className="flex-1">
         {selectedSpace ? (
-          <SharedSpaceKanban space={selectedSpace} />
+          <SharedSpaceKanban space={selectedSpace} members={members} />
         ) : (
           <div className="h-full flex items-center justify-center p-8">
             <div className="text-center max-w-md">
               <div className="w-20 h-20 bg-[#1a1a1d] rounded-full flex items-center justify-center mx-auto mb-6">
                 <Globe className="w-10 h-10 text-gray-500" />
               </div>
-              <h3 className="text-xl font-semibold mb-2">Aucun espace sélectionné</h3>
+              <h3 className="text-xl font-semibold mb-2">
+                Aucun espace sélectionné
+              </h3>
               <p className="text-gray-400 mb-6">
-                {spaces.length === 0 
+                {spaces.length === 0
                   ? isAdminOrManager
                     ? "Créez votre premier espace partagé"
                     : "Vous n'êtes invité à aucun espace pour le moment"
-                  : "Sélectionnez un espace dans la sidebar pour commencer"
-                }
+                  : "Sélectionnez un espace dans la sidebar pour commencer"}
               </p>
               {isAdminOrManager && spaces.length === 0 && (
                 <button
@@ -406,11 +453,11 @@ export default function EspacesPartageSection() {
           <div className="bg-[#1a1a1d] rounded-xl w-full max-w-md border border-gray-700">
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
               <h3 className="font-semibold">Nouvel espace</h3>
-              <button 
+              <button
                 onClick={() => {
                   setShowSpaceForm(false);
                   clearPhotoSelection();
-                }} 
+                }}
                 className="p-1 hover:bg-gray-800 rounded"
               >
                 <X size={20} />
@@ -419,7 +466,9 @@ export default function EspacesPartageSection() {
             <div className="p-4">
               {/* Upload photo */}
               <div className="mb-4">
-                <label className="block text-sm text-gray-400 mb-2">Photo de l'espace</label>
+                <label className="block text-sm text-gray-400 mb-2">
+                  Photo de l'espace
+                </label>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -428,12 +477,12 @@ export default function EspacesPartageSection() {
                   className="hidden"
                   id="photo-upload"
                 />
-                
+
                 {previewUrl ? (
                   <div className="relative w-32 h-32 mx-auto">
-                    <img 
-                      src={previewUrl} 
-                      alt="Aperçu" 
+                    <img
+                      src={previewUrl}
+                      alt="Aperçu"
                       className="w-full h-full object-cover rounded"
                     />
                     <button
@@ -444,12 +493,14 @@ export default function EspacesPartageSection() {
                     </button>
                   </div>
                 ) : (
-                  <label 
+                  <label
                     htmlFor="photo-upload"
                     className="flex flex-col items-center justify-center w-32 h-32 mx-auto border-2 border-dashed border-gray-600 rounded cursor-pointer hover:border-purple-500 transition"
                   >
                     <Camera size={32} className="text-gray-500 mb-2" />
-                    <span className="text-xs text-gray-500">Ajouter une photo</span>
+                    <span className="text-xs text-gray-500">
+                      Ajouter une photo
+                    </span>
                   </label>
                 )}
               </div>
@@ -468,11 +519,15 @@ export default function EspacesPartageSection() {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    const nameInput = document.getElementById('spaceName') as HTMLInputElement;
-                    const descInput = document.getElementById('spaceDescription') as HTMLTextAreaElement;
-                    const name = nameInput?.value || '';
-                    const description = descInput?.value || '';
-                    
+                    const nameInput = document.getElementById(
+                      "spaceName",
+                    ) as HTMLInputElement;
+                    const descInput = document.getElementById(
+                      "spaceDescription",
+                    ) as HTMLTextAreaElement;
+                    const name = nameInput?.value || "";
+                    const description = descInput?.value || "";
+
                     if (name.trim()) {
                       handleCreateSpace(name, description);
                     }
@@ -480,7 +535,7 @@ export default function EspacesPartageSection() {
                   disabled={uploadingPhoto}
                   className="flex-1 bg-[#6C4EA8] hover:bg-[#5a3d8c] text-white py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {uploadingPhoto ? 'Upload en cours...' : 'Créer'}
+                  {uploadingPhoto ? "Upload en cours..." : "Créer"}
                 </button>
                 <button
                   onClick={() => {
@@ -503,11 +558,11 @@ export default function EspacesPartageSection() {
           <div className="bg-[#1a1a1d] rounded-xl w-full max-w-md border border-gray-700">
             <div className="p-4 border-b border-gray-700 flex items-center justify-between">
               <h3 className="font-semibold">Modifier l'espace</h3>
-              <button 
+              <button
                 onClick={() => {
                   setShowEditForm(false);
                   clearPhotoSelection();
-                }} 
+                }}
                 className="p-1 hover:bg-gray-800 rounded"
               >
                 <X size={20} />
@@ -516,7 +571,9 @@ export default function EspacesPartageSection() {
             <div className="p-4">
               {/* Upload photo */}
               <div className="mb-4">
-                <label className="block text-sm text-gray-400 mb-2">Photo de l'espace</label>
+                <label className="block text-sm text-gray-400 mb-2">
+                  Photo de l'espace
+                </label>
                 <input
                   ref={fileInputRef}
                   type="file"
@@ -525,12 +582,12 @@ export default function EspacesPartageSection() {
                   className="hidden"
                   id="photo-upload-edit"
                 />
-                
+
                 {previewUrl || selectedSpace.photo ? (
                   <div className="relative w-32 h-32 mx-auto">
-                    <img 
-                      src={previewUrl || selectedSpace.photo?.url} 
-                      alt="Aperçu" 
+                    <img
+                      src={previewUrl || selectedSpace.photo?.url}
+                      alt="Aperçu"
                       className="w-full h-full object-cover rounded"
                     />
                     <button
@@ -544,7 +601,7 @@ export default function EspacesPartageSection() {
                       <X size={16} />
                     </button>
                     {!previewUrl && (
-                      <label 
+                      <label
                         htmlFor="photo-upload-edit"
                         className="absolute inset-0 bg-black/50 flex items-center justify-center opacity-0 hover:opacity-100 transition cursor-pointer rounded"
                       >
@@ -553,12 +610,14 @@ export default function EspacesPartageSection() {
                     )}
                   </div>
                 ) : (
-                  <label 
+                  <label
                     htmlFor="photo-upload-edit"
                     className="flex flex-col items-center justify-center w-32 h-32 mx-auto border-2 border-dashed border-gray-600 rounded cursor-pointer hover:border-purple-500 transition"
                   >
                     <Camera size={32} className="text-gray-500 mb-2" />
-                    <span className="text-xs text-gray-500">Ajouter une photo</span>
+                    <span className="text-xs text-gray-500">
+                      Ajouter une photo
+                    </span>
                   </label>
                 )}
               </div>
@@ -579,11 +638,15 @@ export default function EspacesPartageSection() {
               <div className="flex gap-3">
                 <button
                   onClick={() => {
-                    const nameInput = document.getElementById('spaceNameEdit') as HTMLInputElement;
-                    const descInput = document.getElementById('spaceDescriptionEdit') as HTMLTextAreaElement;
-                    const name = nameInput?.value || '';
-                    const description = descInput?.value || '';
-                    
+                    const nameInput = document.getElementById(
+                      "spaceNameEdit",
+                    ) as HTMLInputElement;
+                    const descInput = document.getElementById(
+                      "spaceDescriptionEdit",
+                    ) as HTMLTextAreaElement;
+                    const name = nameInput?.value || "";
+                    const description = descInput?.value || "";
+
                     if (name.trim()) {
                       handleUpdateSpace(selectedSpace._id, name, description);
                     }
@@ -591,7 +654,7 @@ export default function EspacesPartageSection() {
                   disabled={uploadingPhoto}
                   className="flex-1 bg-[#6C4EA8] hover:bg-[#5a3d8c] text-white py-2 rounded-lg transition disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {uploadingPhoto ? 'Upload en cours...' : 'Modifier'}
+                  {uploadingPhoto ? "Upload en cours..." : "Modifier"}
                 </button>
                 <button
                   onClick={() => {
@@ -617,13 +680,15 @@ export default function EspacesPartageSection() {
                 <div className="w-10 h-10 bg-red-500/20 rounded-full flex items-center justify-center">
                   <AlertTriangle size={20} className="text-red-400" />
                 </div>
-                <h3 className="font-semibold text-red-400">Supprimer l'espace</h3>
+                <h3 className="font-semibold text-red-400">
+                  Supprimer l'espace
+                </h3>
               </div>
-              <button 
+              <button
                 onClick={() => {
                   setShowDeleteConfirm(false);
                   setSpaceToDelete(null);
-                }} 
+                }}
                 className="p-1 hover:bg-gray-800 rounded"
               >
                 <X size={20} />
@@ -631,10 +696,15 @@ export default function EspacesPartageSection() {
             </div>
             <div className="p-4">
               <p className="text-gray-300 mb-2">
-                Êtes-vous sûr de vouloir supprimer l'espace <span className="font-semibold text-white">"{spaceToDelete.name}"</span> ?
+                Êtes-vous sûr de vouloir supprimer l'espace{" "}
+                <span className="font-semibold text-white">
+                  "{spaceToDelete.name}"
+                </span>{" "}
+                ?
               </p>
               <p className="text-sm text-gray-400 mb-6">
-                Cette action est irréversible. Toutes les données associées seront définitivement supprimées.
+                Cette action est irréversible. Toutes les données associées
+                seront définitivement supprimées.
               </p>
               <div className="flex gap-3">
                 <button
