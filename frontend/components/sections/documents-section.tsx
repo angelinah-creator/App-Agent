@@ -82,9 +82,7 @@ export function DocumentsSection({
     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8">
       <div className="flex space-x-4">
 
-        {/* ────────────────────────────────────────────
-            SECTION CONTRAT
-        ──────────────────────────────────────────── */}
+        {/* SECTION CONTRAT */}
         <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-semibold text-[#F1F1F1]">
@@ -98,7 +96,7 @@ export function DocumentsSection({
                 className="bg-[#6C4EA8] hover:bg-[#7d5fc0] text-white transition-all duration-200"
               >
                 <BookOpen className="w-4 h-4 mr-2" />
-                Lire mon contrat
+                Lire et signer mon contrat
               </Button>
             ) : (
               <Button
@@ -128,13 +126,13 @@ export function DocumentsSection({
                 <span className="text-[#9b7ed4] font-medium">Profil</span>{" "}
                 puis revenez ici.
               </p>
-              <button
+              {/* <button
                 onClick={onReadContract}
                 className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-[#6C4EA8] hover:bg-[#7d5fc0] text-white text-xs font-medium transition-all duration-200"
               >
                 <BookOpen className="w-3.5 h-3.5" />
                 Lire et signer mon contrat
-              </button>
+              </button> */}
             </div>
           ) : contractsLoading ? (
             /* ── Chargement ── */
@@ -201,9 +199,9 @@ export function DocumentsSection({
           )}
         </div>
 
-        {/* ────────────────────────────────────────────
+        {/*
             SECTION NDA
-        ──────────────────────────────────────────── */}
+        */}
         <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-semibold text-[#F1F1F1] flex items-center gap-2">
@@ -285,9 +283,9 @@ export function DocumentsSection({
         </div>
       </div>
 
-      {/* ────────────────────────────────────────────
+      {/*
           SECTION DOCUMENTS PERSONNELS
-      ──────────────────────────────────────────── */}
+      */}
       <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-semibold text-white">Mes Documents</h3>
