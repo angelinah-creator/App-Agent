@@ -43,7 +43,7 @@ export class User {
     enum: UserProfile,
     type: String,
   })
-  profile?: UserProfile; // Optionnel maintenant
+  profile?: UserProfile;
 
   // Champs communs pour tous les utilisateurs
   @Prop({ required: true })
@@ -91,6 +91,9 @@ export class User {
     url: string;
     publicId: string;
   };
+
+  @Prop({ default: true })
+  contractPending?: boolean;
 
   // Champs spécifiques aux collaborateurs et managers (stagiaire/prestataire)
   @Prop()

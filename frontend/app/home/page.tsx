@@ -1024,6 +1024,8 @@ function HomePage() {
                     onDeleteNda={handleDeleteNda}
                     generateNdaPending={generateNdaMutation.isPending}
                     deleteNdaPending={deleteNdaMutation.isPending}
+                    contractPending={userData?.contractPending ?? false}
+                    onReadContract={() => router.push("/contract-preview")}
                   />
                 )}
 
@@ -1060,7 +1062,9 @@ function HomePage() {
 
                 {activeSection === "video" && <VideoSection />}
 
-                {activeSection === "dashboard" && <DashboardSection onSectionChange={setActiveSection}  />}
+                {activeSection === "dashboard" && (
+                  <DashboardSection onSectionChange={setActiveSection} />
+                )}
 
                 {activeSection === "taches" && <TachesSection />}
 
@@ -1109,6 +1113,8 @@ function HomePage() {
                     onDeleteNda={handleDeleteNda}
                     generateNdaPending={generateNdaMutation.isPending}
                     deleteNdaPending={deleteNdaMutation.isPending}
+                    contractPending={userData?.contractPending ?? false}
+                    onReadContract={() => router.push("/contract-preview")}
                   />
                 )}
 
@@ -1141,7 +1147,9 @@ function HomePage() {
 
                 {activeSection === "video" && <VideoSection />}
 
-                {activeSection === "dashboard" && <DashboardSection onSectionChange={setActiveSection}  />}
+                {activeSection === "dashboard" && (
+                  <DashboardSection onSectionChange={setActiveSection} />
+                )}
 
                 {activeSection === "taches" && <TachesSection />}
 

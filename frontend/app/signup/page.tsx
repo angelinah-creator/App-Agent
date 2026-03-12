@@ -168,11 +168,6 @@ function SelectionCard({
         <div className="text-sm font-semibold text-white">{label}</div>
         {desc && <div className="text-xs text-gray-600 mt-0.5">{desc}</div>}
       </div>
-      {/* {selected && (
-        <div className="w-5 h-5 rounded-full bg-[#8254ff] flex items-center justify-center">
-          <Check size={11} />
-        </div>
-      )} */}
     </button>
   );
 }
@@ -298,7 +293,6 @@ export default function SignupPage() {
   const goNext = () => {
     if (!validateStep()) return;
     if (currentStep < totalSteps - 1) {
-      // When moving from profile-select, recompute totalSteps for the newly chosen profile
       transition("right", () => setCurrentStep((s) => s + 1));
     }
   };
@@ -419,23 +413,23 @@ export default function SignupPage() {
         }
       }
 
-      setLoadingMsg("Génération du contrat...");
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/contracts/generate-after-signup/${userId}`,
-        {
-          method: "POST",
-          headers: { ...authHeaders, "Content-Type": "application/json" },
-        },
-      );
+      // setLoadingMsg("Génération du contrat...");
+      // await fetch(
+      //   `${process.env.NEXT_PUBLIC_API_URL}/contracts/generate-after-signup/${userId}`,
+      //   {
+      //     method: "POST",
+      //     headers: { ...authHeaders, "Content-Type": "application/json" },
+      //   },
+      // );
 
-      setLoadingMsg("Génération du NDA...");
-      await fetch(
-        `${process.env.NEXT_PUBLIC_API_URL}/ndas/generate/${userId}`,
-        {
-          method: "POST",
-          headers: { ...authHeaders, "Content-Type": "application/json" },
-        },
-      );
+      // setLoadingMsg("Génération du NDA...");
+      // await fetch(
+      //   `${process.env.NEXT_PUBLIC_API_URL}/ndas/generate/${userId}`,
+      //   {
+      //     method: "POST",
+      //     headers: { ...authHeaders, "Content-Type": "application/json" },
+      //   },
+      // );
 
       router.push("/home");
     } catch (err: any) {
@@ -692,7 +686,7 @@ export default function SignupPage() {
 
                 <div className="grid grid-cols-2 gap-3 mt-3">
                   <Field
-                    label="Lot / Numéro"
+                    label="Adresse"
                     required
                     error={errors.adresseLot}
                   >

@@ -3,12 +3,10 @@
 import {
   FileText,
   Upload,
-  Eye,
   Download,
   Trash2,
   Plus,
-  BarChart3,
-  Badge,
+  BookOpen,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
@@ -39,6 +37,9 @@ interface DocumentsSectionProps {
   onDeleteNda: (id: string) => void;
   generateNdaPending: boolean;
   deleteNdaPending: boolean;
+  // ── Génération différée ──
+  contractPending?: boolean;
+  onReadContract?: () => void;
 }
 
 export function DocumentsSection({
@@ -63,13 +64,11 @@ export function DocumentsSection({
   onDeleteNda,
   generateNdaPending,
   deleteNdaPending,
+  contractPending = false,
+  onReadContract,
 }: DocumentsSectionProps) {
-  const calculateTotalSize = (docs: Document[]): number => {
-    return (
-      docs.reduce((acc: number, doc: Document) => acc + doc.fileSize, 0) /
-      (1024 * 1024)
-    );
-  };
+  // true UNIQUEMENT si contractPending ET qu'aucun contrat n'existe encore
+  const showReadButton = contractPending && contracts.length === 0;
 
   useEffect(() => {
     console.log("📊 Documents Section - NDAs:", {
@@ -82,30 +81,71 @@ export function DocumentsSection({
   return (
     <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8">
       <div className="flex space-x-4">
-        {/* Contrats Section */}
+
+        {/* ────────────────────────────────────────────
+            SECTION CONTRAT
+        ──────────────────────────────────────────── */}
         <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-semibold text-[#F1F1F1]">
               Mon Contrat
             </h3>
-            <Button
-              onClick={onGenerateContract}
-              disabled={generateContractPending}
-              className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white"
-            >
-              <FileText className="w-4 h-4 mr-2" />
-              {generateContractPending ? "Génération..." : "Générer un Contrat"}
-            </Button>
+
+            {/* Bouton "Lire" si en attente + aucun contrat, sinon "Générer" */}
+            {showReadButton ? (
+              <Button
+                onClick={onReadContract}
+                className="bg-[#6C4EA8] hover:bg-[#7d5fc0] text-white transition-all duration-200"
+              >
+                <BookOpen className="w-4 h-4 mr-2" />
+                Lire mon contrat
+              </Button>
+            ) : (
+              <Button
+                onClick={onGenerateContract}
+                disabled={generateContractPending}
+                className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white"
+              >
+                <FileText className="w-4 h-4 mr-2" />
+                {generateContractPending ? "Génération..." : "Générer un Contrat"}
+              </Button>
+            )}
           </div>
 
-          {contractsLoading ? (
+          {showReadButton ? (
+            /* ── En attente de lecture / signature ── */
+            <div className="flex flex-col items-center justify-center py-8 rounded-xl border border-dashed border-[#6C4EA8]/50 bg-[#6C4EA8]/5">
+              <div className="w-12 h-12 rounded-full bg-[#6C4EA8]/15 flex items-center justify-center mb-3">
+                <BookOpen className="w-6 h-6 text-[#9b7ed4]" />
+              </div>
+              <p className="text-[#F1F1F1] font-medium text-sm mb-1">
+                Votre contrat est prêt à être consulté
+              </p>
+              <p className="text-xs text-gray-400 text-center max-w-xs leading-relaxed">
+                Lisez attentivement votre contrat avant de le signer. Si des
+                informations ne vous conviennent pas, modifiez-les depuis
+                l'onglet{" "}
+                <span className="text-[#9b7ed4] font-medium">Profil</span>{" "}
+                puis revenez ici.
+              </p>
+              <button
+                onClick={onReadContract}
+                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-[#6C4EA8] hover:bg-[#7d5fc0] text-white text-xs font-medium transition-all duration-200"
+              >
+                <BookOpen className="w-3.5 h-3.5" />
+                Lire et signer mon contrat
+              </button>
+            </div>
+          ) : contractsLoading ? (
+            /* ── Chargement ── */
             <div className="text-center py-6">
-              <div className="animate-spin rounded-full h-6 w-6 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-4 border-blue-200 border-t-blue-600 mx-auto" />
               <p className="text-[#F1F1F1] mt-2 font-medium text-sm">
                 Chargement des contrats...
               </p>
             </div>
           ) : contracts.length === 0 ? (
+            /* ── Aucun contrat ── */
             <div className="text-center py-6 bg-[#1F2128] rounded-xl">
               <FileText className="mx-auto h-10 w-10 text-[#F1F1F1]" />
               <p className="mt-3 text-[#F1F1F1] font-medium text-sm">
@@ -117,6 +157,7 @@ export function DocumentsSection({
               </p>
             </div>
           ) : (
+            /* ── Liste des contrats (affichage normal) ── */
             <div className="overflow-x-auto rounded-xl border border-[#313442]">
               <table className="w-full">
                 <tbody>
@@ -160,7 +201,9 @@ export function DocumentsSection({
           )}
         </div>
 
-        {/* Nda Section */}
+        {/* ────────────────────────────────────────────
+            SECTION NDA
+        ──────────────────────────────────────────── */}
         <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full">
           <div className="flex items-center justify-between mb-3">
             <h3 className="text-base font-semibold text-[#F1F1F1] flex items-center gap-2">
@@ -177,13 +220,15 @@ export function DocumentsSection({
           </div>
 
           {ndasLoading ? (
+            /* ── Chargement ── */
             <div className="text-center py-6">
-              <div className="animate-spin rounded-full h-6 w-6 border-4 border-purple-200 border-t-purple-600 mx-auto"></div>
+              <div className="animate-spin rounded-full h-6 w-6 border-4 border-purple-200 border-t-purple-600 mx-auto" />
               <p className="text-[#F1F1F1] mt-2 font-medium text-sm">
                 Chargement du NDA...
               </p>
             </div>
           ) : ndas.length === 0 ? (
+            /* ── Aucun NDA ── */
             <div className="text-center py-6 bg-[#1F2128] rounded-xl">
               <FileText className="mx-auto h-10 w-10 text-[#F1F1F1]" />
               <p className="mt-3 text-[#F1F1F1] font-medium text-sm">
@@ -195,6 +240,7 @@ export function DocumentsSection({
               </p>
             </div>
           ) : (
+            /* ── Liste des NDAs (affichage normal) ── */
             <div className="overflow-x-auto rounded-xl border border-[#313442]">
               <table className="w-full">
                 <tbody>
@@ -237,10 +283,11 @@ export function DocumentsSection({
             </div>
           )}
         </div>
-        </div>
-      
+      </div>
 
-      {/* Documents Section */}
+      {/* ────────────────────────────────────────────
+          SECTION DOCUMENTS PERSONNELS
+      ──────────────────────────────────────────── */}
       <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-base font-semibold text-white">Mes Documents</h3>
@@ -255,7 +302,7 @@ export function DocumentsSection({
 
         {documentsLoading ? (
           <div className="text-center py-6">
-            <div className="animate-spin rounded-full h-6 w-6 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
+            <div className="animate-spin rounded-full h-6 w-6 border-4 border-blue-200 border-t-blue-600 mx-auto" />
             <p className="text-[#F1F1F1] mt-2 font-medium text-sm">
               Chargement des documents...
             </p>
@@ -290,11 +337,6 @@ export function DocumentsSection({
                       <p className="text-xs text-[#F1F1F1] mt-1">
                         {new Date(doc.createdAt).toLocaleDateString("fr-FR")}
                       </p>
-                      {/* {doc.description && (
-                        <p className="text-xs text-[#F1F1F1] mt-1 truncate">
-                          {doc.description}
-                        </p>
-                      )} */}
                     </div>
                   </div>
                   <div className="flex items-center gap-2 mt-4 pt-4 border-t border-[#313442]">
@@ -326,7 +368,7 @@ export function DocumentsSection({
         )}
       </div>
 
-      {/* KPI Cards */}
+      {/* ── KPI Cards ── */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="border-[#313442] bg-gradient-to-br bg-[#1F2128] backdrop-blur-sm">
           <CardContent className="p-3">

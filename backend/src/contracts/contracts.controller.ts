@@ -88,7 +88,6 @@ export class ContractsController {
   }
 
   @Delete(':contractId')
-  @UseGuards(AdminGuard)
   async deleteContract(@Param('contractId') contractId: string) {
     await this.contractsService.deleteContract(contractId);
     return { message: 'Contrat supprimé avec succès' };

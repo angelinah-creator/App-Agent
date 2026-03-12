@@ -27,6 +27,9 @@ export interface UserData {
   nif?: string;
   stat?: string;
   roleClient?: string;
+  contractPending?: boolean;
+  nombreJour: number;
+  horaire: string;
 }
 
 export interface CreateClientDto {

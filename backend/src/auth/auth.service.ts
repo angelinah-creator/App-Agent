@@ -55,6 +55,7 @@ export class AuthService {
       telephone: dto.telephone,
       password: hashed,
       completedProfile: true,
+      contractPending: true, 
     };
 
     if (dto.role === UserRole.COLLABORATEUR || dto.role === UserRole.MANAGER) {
