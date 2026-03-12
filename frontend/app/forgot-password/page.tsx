@@ -2,12 +2,8 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import Link from "next/link";
 import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
 import { passwordResetService } from "@/lib/password-reset-service";
 
 export default function ForgotPasswordPage() {
@@ -34,130 +30,125 @@ export default function ForgotPasswordPage() {
 
   if (isSubmitted) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Agent App
-            </h1>
+      <div className="min-h-screen flex items-center justify-center relative bg-[#110521] px-4">
+        <div className="relative z-10 w-full max-w-md bg-black rounded-xl py-8 px-8">
+          {/* Logo */}
+          <div className="flex justify-center mb-4">
+            <Image src="/images/logo2.png" width={80} height={80} alt="Logo" />
           </div>
 
-          <Card className="border-blue-200 shadow-xl">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="mx-auto w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mb-4">
-                  <CheckCircle className="w-8 h-8 text-green-600" />
-                </div>
-                
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                  Email envoyé !
-                </h2>
-                
-                <p className="text-slate-600 mb-6">
-                  Si un compte existe avec l'adresse <strong>{email}</strong>, 
-                  vous recevrez un lien pour réinitialiser votre mot de passe.
-                </p>
+          <h1 className="text-center text-2xl font-bold text-white">
+            OPSIDE - CODE TALENT
+          </h1>
 
-                <div className="space-y-3">
-                  <Button
-                    onClick={() => router.push("/login")}
-                    className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                  >
-                    Retour à la connexion
-                  </Button>
-                  
-                  <Button
-                    variant="outline"
-                    onClick={() => {
-                      setEmail("");
-                      setIsSubmitted(false);
-                    }}
-                    className="w-full"
-                  >
-                    Demander un nouveau lien
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
+          <div className="mt-8 text-center">
+            <div className="mx-auto w-16 h-16 bg-purple-500/20 border border-purple-500/40 rounded-full flex items-center justify-center mb-4">
+              <CheckCircle className="w-8 h-8 text-purple-400" />
+            </div>
+
+            <h2 className="text-xl font-bold text-white mb-2">
+              Email envoyé !
+            </h2>
+
+            <p className="text-gray-400 text-sm mb-6">
+              Si un compte existe avec l'adresse{" "}
+              <span className="text-purple-400 font-medium">{email}</span>,
+              vous recevrez un lien pour réinitialiser votre mot de passe.
+            </p>
+
+            <div className="space-y-3">
+              <button
+                onClick={() => router.push("/login")}
+                className="w-full bg-[#8254ff] hover:bg-[#6d46d9] text-white py-2 rounded-sm font-medium transition"
+              >
+                Retour à la connexion
+              </button>
+
+              <button
+                onClick={() => {
+                  setEmail("");
+                  setIsSubmitted(false);
+                }}
+                className="w-full bg-[#141414] border border-[#333] text-gray-300 hover:bg-[#1b1b1b] py-2 rounded-sm font-medium transition text-sm"
+              >
+                Demander un nouveau lien
+              </button>
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Agent App
-          </h1>
-          <p className="text-slate-600">Réinitialisation de mot de passe</p>
+    <div className="min-h-screen flex items-center justify-center relative bg-[#110521] px-4">
+      <div className="relative z-10 w-full max-w-md bg-black rounded-xl py-8 px-8">
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <Image src="/images/logo2.png" width={80} height={80} alt="Logo" />
         </div>
 
-        <Card className="border-blue-200 shadow-xl">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-slate-800">
-              Mot de passe oublié ?
-            </CardTitle>
-            <CardDescription className="text-slate-600">
-              Entrez votre email pour recevoir un lien de réinitialisation
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="email" className="text-slate-700">
-                  Email
-                </Label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="email"
-                    type="email"
-                    placeholder="votre@email.com"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                    className="pl-10 border-slate-300 focus:border-blue-500"
-                  />
-                </div>
-              </div>
+        {/* Titre */}
+        <h1 className="text-center text-2xl font-bold text-white">
+          OPSIDE - CODE TALENT
+        </h1>
+        <p className="text-center text-gray-500 text-sm mt-1 mb-6">
+          Réinitialisation de mot de passe
+        </p>
 
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{error}</p>
-                </div>
-              )}
+        {/* Erreur */}
+        {error && (
+          <div className="mb-4 p-3 rounded-sm bg-red-500/20 border border-red-600 text-red-300 text-sm">
+            {error}
+          </div>
+        )}
 
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                disabled={isLoading}
-              >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    Envoi en cours...
-                  </span>
-                ) : (
-                  "Envoyer le lien de réinitialisation"
-                )}
-              </Button>
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Email */}
+          <div className="space-y-2">
+            <label className="text-xs text-gray-300">E-mail</label>
+            <div className="relative">
+              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <input
+                id="email"
+                type="email"
+                placeholder="votre@email.com"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+                className="w-full bg-[#161616] text-white placeholder-gray-500 border border-[#333] rounded-sm pl-10 pr-3 py-2 outline-none focus:border-purple-500"
+              />
+            </div>
+          </div>
 
-              <div className="text-center">
-                <Button
-                  variant="link"
-                  onClick={() => router.push("/login")}
-                  className="text-blue-600 hover:text-blue-700"
-                >
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Retour à la connexion
-                </Button>
-              </div>
-            </form>
-          </CardContent>
-        </Card>
+          {/* Bouton submit */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-[#8254ff] hover:bg-[#6d46d9] text-white py-2 rounded-sm font-medium transition disabled:opacity-50"
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Envoi en cours...
+              </span>
+            ) : (
+              "Envoyer le lien de réinitialisation"
+            )}
+          </button>
+
+          {/* Retour connexion */}
+          <div className="text-center">
+            <button
+              type="button"
+              onClick={() => router.push("/login")}
+              className="text-xs text-gray-400 hover:text-gray-200 flex items-center gap-1 mx-auto"
+            >
+              <ArrowLeft className="w-3 h-3" />
+              Retour à la connexion
+            </button>
+          </div>
+        </form>
       </div>
     </div>
   );

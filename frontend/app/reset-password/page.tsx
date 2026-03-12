@@ -3,13 +3,9 @@
 import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { Eye, EyeOff, Key, CheckCircle, XCircle } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import Image from "next/image";
 import { passwordResetService } from "@/lib/password-reset-service";
 
-// Composant interne pour utiliser useSearchParams
 function ResetPasswordForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -27,7 +23,6 @@ function ResetPasswordForm() {
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
 
-  // Valider le token au chargement
   useEffect(() => {
     const validateToken = async () => {
       if (!token) {
@@ -35,17 +30,15 @@ function ResetPasswordForm() {
         setIsTokenValid(false);
         return;
       }
-
       try {
         const { isValid } = await passwordResetService.validateResetToken(token);
         setIsTokenValid(isValid);
-      } catch (error) {
+      } catch {
         setIsTokenValid(false);
       } finally {
         setIsValidating(false);
       }
     };
-
     validateToken();
   }, [token]);
 
@@ -58,27 +51,20 @@ function ResetPasswordForm() {
       setError("Lien de réinitialisation invalide");
       return;
     }
-
     if (formData.password !== formData.confirmPassword) {
       setError("Les mots de passe ne correspondent pas");
       return;
     }
-
     if (formData.password.length < 6) {
       setError("Le mot de passe doit contenir au moins 6 caractères");
       return;
     }
 
     setIsLoading(true);
-
     try {
       await passwordResetService.resetPassword(token, formData.password);
       setSuccess("Mot de passe réinitialisé avec succès !");
-      
-      // Rediriger vers la page de connexion après 2 secondes
-      setTimeout(() => {
-        router.push("/login");
-      }, 2000);
+      setTimeout(() => router.push("/login"), 2000);
     } catch (error: any) {
       setError(error.response?.data?.message || "Une erreur est survenue");
     } finally {
@@ -86,180 +72,165 @@ function ResetPasswordForm() {
     }
   };
 
+  // État : validation en cours
   if (isValidating) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+      <div className="min-h-screen flex items-center justify-center bg-[#110521]">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
-          <p className="mt-4 text-slate-600 font-medium">Validation du lien...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#8254ff]/30 border-t-[#8254ff] mx-auto" />
+          <p className="mt-4 text-gray-400 text-sm">Validation du lien...</p>
         </div>
       </div>
     );
   }
 
+  // État : token invalide
   if (!isTokenValid) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-              Agent App
-            </h1>
+      <div className="min-h-screen flex items-center justify-center bg-[#110521] px-4">
+        <div className="w-full max-w-md bg-black rounded-xl py-8 px-8">
+          <div className="flex justify-center mb-4">
+            <Image src="/images/logo2.png" width={80} height={80} alt="Logo" />
+          </div>
+          <h1 className="text-center text-2xl font-bold text-white">
+            OPSIDE - CODE TALENT
+          </h1>
+
+          <div className="flex flex-col items-center mt-8 mb-6">
+            <div className="w-14 h-14 bg-red-500/20 border border-red-500/40 rounded-full flex items-center justify-center mb-4">
+              <XCircle className="w-7 h-7 text-red-400" />
+            </div>
+            <h2 className="text-xl font-bold text-white mb-2">Lien invalide ou expiré</h2>
+            <p className="text-center text-gray-400 text-sm">
+              Ce lien de réinitialisation est invalide ou a expiré. Veuillez demander un nouveau lien.
+            </p>
           </div>
 
-          <Card className="border-red-200 shadow-xl">
-            <CardContent className="pt-6">
-              <div className="text-center">
-                <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-4">
-                  <XCircle className="w-8 h-8 text-red-600" />
-                </div>
-                
-                <h2 className="text-2xl font-bold text-slate-800 mb-2">
-                  Lien invalide ou expiré
-                </h2>
-                
-                <p className="text-slate-600 mb-6">
-                  Ce lien de réinitialisation est invalide ou a expiré.
-                  Veuillez demander un nouveau lien.
-                </p>
-
-                <Button
-                  onClick={() => router.push("/forgot-password")}
-                  className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700"
-                >
-                  Demander un nouveau lien
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
+          <button
+            onClick={() => router.push("/forgot-password")}
+            className="w-full bg-[#8254ff] hover:bg-[#6d46d9] text-white py-2 rounded-sm font-medium transition"
+          >
+            Demander un nouveau lien
+          </button>
         </div>
       </div>
     );
   }
 
+  // État : formulaire principal
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50 p-4">
-      <div className="w-full max-w-md">
-        <div className="text-center mb-8">
-          <h1 className="text-4xl font-bold mb-3 bg-gradient-to-r from-blue-600 to-indigo-600 bg-clip-text text-transparent">
-            Agent App
-          </h1>
-          <p className="text-slate-600">Nouveau mot de passe</p>
+    <div className="min-h-screen flex items-center justify-center bg-[#110521] px-4">
+      <div className="w-full max-w-md bg-black rounded-xl py-8 px-8">
+        {/* Logo */}
+        <div className="flex justify-center mb-4">
+          <Image src="/images/logo2.png" width={80} height={80} alt="Logo" />
         </div>
 
-        <Card className="border-blue-200 shadow-xl">
-          <CardHeader className="space-y-1">
-            <CardTitle className="text-2xl font-bold text-slate-800">
-              Créer un nouveau mot de passe
-            </CardTitle>
-            <CardDescription className="text-slate-600">
-              Entrez votre nouveau mot de passe
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              <div className="space-y-2">
-                <Label htmlFor="password" className="text-slate-700">
-                  Nouveau mot de passe
-                </Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="password"
-                    type={showPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={formData.password}
-                    onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-                    required
-                    minLength={6}
-                    className="pl-10 pr-10 border-slate-300 focus:border-blue-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
-                  >
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
+        <h1 className="text-center text-2xl font-bold text-white">
+          OPSIDE - CODE TALENT
+        </h1>
+        <p className="text-center text-gray-500 text-sm mt-1 mb-6">
+          Créer un nouveau mot de passe
+        </p>
 
-              <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="text-slate-700">
-                  Confirmer le mot de passe
-                </Label>
-                <div className="relative">
-                  <Key className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
-                  <Input
-                    id="confirmPassword"
-                    type={showConfirmPassword ? "text" : "password"}
-                    placeholder="••••••••"
-                    value={formData.confirmPassword}
-                    onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-                    required
-                    minLength={6}
-                    className="pl-10 pr-10 border-slate-300 focus:border-blue-500"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-                    className="absolute right-3 top-3 text-slate-400 hover:text-slate-600"
-                  >
-                    {showConfirmPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
-                </div>
-              </div>
+        {/* Erreur */}
+        {error && (
+          <div className="mb-4 p-3 rounded-sm bg-red-500/20 border border-red-600 text-red-300 text-sm">
+            {error}
+          </div>
+        )}
 
-              {error && (
-                <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-sm text-red-600">{error}</p>
-                </div>
-              )}
+        {/* Succès */}
+        {success && (
+          <div className="mb-4 p-3 rounded-sm bg-[#8254ff]/20 border border-[#8254ff]/40 text-purple-300 text-sm flex items-center gap-2">
+            <CheckCircle className="w-4 h-4 shrink-0" />
+            {success}
+          </div>
+        )}
 
-              {success && (
-                <div className="p-3 bg-green-50 border border-green-200 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <CheckCircle className="w-4 h-4 text-green-600" />
-                    <p className="text-sm text-green-600">{success}</p>
-                  </div>
-                </div>
-              )}
-
-              <Button
-                type="submit"
-                className="w-full bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 text-white"
-                disabled={isLoading}
+        <form onSubmit={handleSubmit} className="space-y-5">
+          {/* Nouveau mot de passe */}
+          <div className="space-y-2">
+            <label className="text-xs text-gray-300">Nouveau mot de passe</label>
+            <div className="relative">
+              <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <input
+                id="password"
+                type={showPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                required
+                minLength={6}
+                className="w-full bg-[#161616] text-white placeholder-gray-500 border border-[#333] rounded-sm px-3 py-2 pl-9 pr-10 outline-none focus:border-purple-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
               >
-                {isLoading ? (
-                  <span className="flex items-center gap-2">
-                    <span className="h-4 w-4 border-2 border-current border-t-transparent rounded-full animate-spin" />
-                    Réinitialisation...
-                  </span>
-                ) : (
-                  "Réinitialiser le mot de passe"
-                )}
-              </Button>
-            </form>
-          </CardContent>
-        </Card>
+                {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Confirmer mot de passe */}
+          <div className="space-y-2">
+            <label className="text-xs text-gray-300">Confirmer le mot de passe</label>
+            <div className="relative">
+              <Key className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+              <input
+                id="confirmPassword"
+                type={showConfirmPassword ? "text" : "password"}
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                required
+                minLength={6}
+                className="w-full bg-[#161616] text-white placeholder-gray-500 border border-[#333] rounded-sm px-3 py-2 pl-9 pr-10 outline-none focus:border-purple-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400"
+              >
+                {showConfirmPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+              </button>
+            </div>
+          </div>
+
+          {/* Bouton soumettre */}
+          <button
+            type="submit"
+            disabled={isLoading}
+            className="w-full bg-[#8254ff] hover:bg-[#6d46d9] text-white py-2 rounded-sm font-medium transition disabled:opacity-50"
+          >
+            {isLoading ? (
+              <span className="flex items-center justify-center gap-2">
+                <span className="h-4 w-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                Réinitialisation...
+              </span>
+            ) : (
+              "Réinitialiser le mot de passe"
+            )}
+          </button>
+        </form>
       </div>
     </div>
   );
 }
 
-// Loading component pour le Suspense
 function ResetPasswordLoading() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-50">
+    <div className="min-h-screen flex items-center justify-center bg-[#110521]">
       <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-200 border-t-blue-600 mx-auto"></div>
-        <p className="mt-4 text-slate-600 font-medium">Chargement...</p>
+        <div className="animate-spin rounded-full h-12 w-12 border-4 border-[#8254ff]/30 border-t-[#8254ff] mx-auto" />
+        <p className="mt-4 text-gray-400 text-sm">Chargement...</p>
       </div>
     </div>
   );
 }
 
-// Composant principal avec Suspense
 export default function ResetPasswordPage() {
   return (
     <Suspense fallback={<ResetPasswordLoading />}>
