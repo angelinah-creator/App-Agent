@@ -44,8 +44,8 @@ export function VideoCard({ video, isAdmin, onPlay, onEdit, onDelete }: VideoCar
 
         {/* Play button overlay */}
         <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-          <div className="w-14 h-14 rounded-full bg-[#6C4EA8]/90 backdrop-blur-sm flex items-center justify-center shadow-xl">
-            <Play className="w-6 h-6 text-white fill-white ml-1" />
+          <div className="w-10 h-10 md:w-14 md:h-14 rounded-full bg-[#6C4EA8]/90 backdrop-blur-sm flex items-center justify-center shadow-xl">
+            <Play className="w-4 h-4 md:w-6 md:h-6 text-white fill-white ml-0.5 md:ml-1" />
           </div>
         </div>
 
@@ -71,9 +71,9 @@ export function VideoCard({ video, isAdmin, onPlay, onEdit, onDelete }: VideoCar
       </div>
 
       {/* Info */}
-      <div className="p-4 flex flex-col flex-1">
+      <div className="p-3 md:p-4 flex flex-col flex-1">
         <h3
-          className="font-semibold text-white text-sm line-clamp-2 mb-1 cursor-pointer hover:text-[#A78BFA] transition-colors"
+          className="font-semibold text-white text-sm md:text-base line-clamp-2 mb-1 cursor-pointer hover:text-[#A78BFA] transition-colors"
           onClick={() => onPlay(video)}
         >
           {video.title}
@@ -101,24 +101,24 @@ export function VideoCard({ video, isAdmin, onPlay, onEdit, onDelete }: VideoCar
 
         {/* Admin actions */}
         {isAdmin && (
-          <div className="flex gap-2 mt-3 pt-3 border-t border-[#2E2E38]">
+          <div className="flex flex-wrap md:flex-nowrap gap-2 mt-3 pt-3 border-t border-[#2E2E38]">
             <button
               onClick={() => onPlay(video)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-[#6C4EA8]/20 text-[#A78BFA] rounded hover:bg-[#6C4EA8]/40 transition-colors text-xs font-medium"
+              className="flex-1 min-w-[30%] flex items-center justify-center gap-1.5 py-1.5 bg-[#6C4EA8]/20 text-[#A78BFA] rounded hover:bg-[#6C4EA8]/40 transition-colors text-[10px] md:text-xs font-medium"
             >
-              <Play className="w-3.5 h-3.5" /> Lire
+              <Play className="w-3 h-3 md:w-3.5 md:h-3.5" /> Lire
             </button>
             <button
               onClick={() => onEdit?.(video)}
-              className="flex-1 flex items-center justify-center gap-1.5 py-1.5 bg-blue-500/10 text-blue-400 rounded hover:bg-blue-500/20 transition-colors text-xs font-medium"
+              className="flex-1 min-w-[30%] flex items-center justify-center gap-1.5 py-1.5 bg-blue-500/10 text-blue-400 rounded hover:bg-blue-500/20 transition-colors text-[10px] md:text-xs font-medium"
             >
-              <Edit className="w-3.5 h-3.5" /> Modifier
+              <Edit className="w-3 h-3 md:w-3.5 md:h-3.5" /> Modifier
             </button>
             <button
               onClick={() => onDelete?.(video)}
-              className="flex items-center justify-center gap-1.5 px-2.5 py-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 transition-colors text-xs font-medium"
+              className="flex items-center justify-center gap-1.5 px-2 md:px-2.5 py-1.5 bg-red-500/10 text-red-400 rounded hover:bg-red-500/20 transition-colors text-[10px] md:text-xs font-medium"
             >
-              <Trash2 className="w-3.5 h-3.5" />
+              <Trash2 className="w-3 h-3 md:w-3.5 md:h-3.5" />
             </button>
           </div>
         )}

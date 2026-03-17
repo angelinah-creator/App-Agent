@@ -142,30 +142,31 @@ export function VideoPlayer({ video, onClose }: VideoPlayerProps) {
   return (
     <div className="fixed inset-0 z-50 bg-black/95 flex flex-col overflow-hidden">
       {/* Header */}
-      <div className="flex items-center justify-between px-6 py-3 border-b border-[#2E2E38] bg-[#0D0D14] flex-shrink-0">
-        <div>
-          <h2 className="text-white font-bold text-lg truncate max-w-xl">{video.title}</h2>
+      <div className="flex items-center justify-between px-4 md:px-6 py-3 border-b border-[#2E2E38] bg-[#0D0D14] flex-shrink-0">
+        <div className="flex-1 min-w-0 mr-4">
+          <h2 className="text-white font-bold text-base md:text-lg truncate">{video.title}</h2>
           {video.description && (
-            <p className="text-gray-400 text-xs truncate max-w-xl">{video.description}</p>
+            <p className="text-gray-400 text-xs truncate hidden sm:block">{video.description}</p>
           )}
         </div>
-        <div className="flex items-center gap-3">
+        <div className="flex items-center gap-2 md:gap-3 flex-shrink-0">
           {chapters.length > 0 && (
             <button
               onClick={() => setShowChapters(!showChapters)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded text-xs font-medium transition-colors ${
+              className={`flex items-center gap-1 md:gap-1.5 px-2 md:px-3 py-1.5 rounded text-xs font-medium transition-colors ${
                 showChapters
                   ? "bg-[#6C4EA8] text-white"
                   : "bg-[#1E1E28] text-gray-400 hover:text-white border border-[#2E2E38]"
               }`}
             >
               <BookOpen className="w-3.5 h-3.5" />
-              Chapitres ({chapters.length})
+              <span className="hidden sm:inline">Chapitres ({chapters.length})</span>
+              <span className="sm:hidden">({chapters.length})</span>
             </button>
           )}
           <button
             onClick={onClose}
-            className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
+            className="p-1.5 md:p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg transition-colors"
           >
             <X className="w-5 h-5" />
           </button>
@@ -215,9 +216,9 @@ export function VideoPlayer({ video, onClose }: VideoPlayerProps) {
       </div>
 
       {/* Main content area */}
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Video */}
-        <div className={`flex flex-col flex-1 overflow-hidden ${showChapters && chapters.length > 0 ? "border-r border-[#2E2E38]" : ""}`}>
+        <div className={`flex flex-col flex-1 overflow-hidden ${showChapters && chapters.length > 0 ? "md:border-r border-[#2E2E38]" : ""}`}>
           {/* Video player */}
           <div className="flex-1 bg-black flex items-center justify-center overflow-hidden">
             <video
@@ -231,10 +232,10 @@ export function VideoPlayer({ video, onClose }: VideoPlayerProps) {
           </div>
 
           {/* Controls */}
-          <div className="bg-[#0D0D14] border-t border-[#2E2E38] px-6 py-3 flex items-center gap-4 flex-shrink-0">
+          <div className="bg-[#0D0D14] border-t border-[#2E2E38] px-3 md:px-6 py-3 flex items-center gap-2 md:gap-4 flex-shrink-0">
             <button
               onClick={togglePlay}
-              className="w-10 h-10 rounded-full bg-[#6C4EA8] flex items-center justify-center hover:bg-[#5a3d8a] transition-colors"
+              className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-[#6C4EA8] flex items-center justify-center hover:bg-[#5a3d8a] transition-colors flex-shrink-0"
             >
               {isPlaying ? (
                 <Pause className="w-4 h-4 text-white" />
@@ -245,18 +246,18 @@ export function VideoPlayer({ video, onClose }: VideoPlayerProps) {
 
             {/* Chapter navigation */}
             {chapters.length > 0 && (
-              <>
+              <div className="flex items-center">
                 <button
                   onClick={() => {
                     const prev = chapters[activeChapterIndex - 1];
                     if (prev) seekToChapter(prev);
                   }}
                   disabled={activeChapterIndex <= 0}
-                  className="p-2 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+                  className="p-1 md:p-2 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
                 >
-                  <ChevronLeft className="w-4 h-4" />
+                  <ChevronLeft className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
-                <span className="text-xs text-gray-400">
+                <span className="text-[10px] md:text-xs text-gray-400 hidden sm:block max-w-[100px] md:max-w-[200px] truncate">
                   {activeChapterIndex >= 0 ? chapters[activeChapterIndex]?.title : ""}
                 </span>
                 <button
@@ -265,19 +266,19 @@ export function VideoPlayer({ video, onClose }: VideoPlayerProps) {
                     if (next) seekToChapter(next);
                   }}
                   disabled={activeChapterIndex >= chapters.length - 1}
-                  className="p-2 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
+                  className="p-1 md:p-2 text-gray-400 hover:text-white disabled:opacity-30 transition-colors"
                 >
-                  <ChevronRight className="w-4 h-4" />
+                  <ChevronRight className="w-4 h-4 md:w-5 md:h-5" />
                 </button>
-              </>
+              </div>
             )}
 
             <div className="flex-1" />
 
             {/* Volume */}
-            <div className="flex items-center gap-2">
-              <button onClick={toggleMute} className="text-gray-400 hover:text-white transition-colors">
-                {isMuted || volume === 0 ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />}
+            <div className="flex items-center gap-1 md:gap-2">
+              <button onClick={toggleMute} className="p-1 md:p-2 text-gray-400 hover:text-white transition-colors">
+                {isMuted || volume === 0 ? <VolumeX className="w-4 h-4 md:w-5 md:h-5" /> : <Volume2 className="w-4 h-4 md:w-5 md:h-5" />}
               </button>
               <input
                 type="range"
@@ -286,22 +287,30 @@ export function VideoPlayer({ video, onClose }: VideoPlayerProps) {
                 step={0.05}
                 value={isMuted ? 0 : volume}
                 onChange={handleVolumeChange}
-                className="w-20 accent-[#6C4EA8]"
+                className="w-12 md:w-20 accent-[#6C4EA8]"
               />
             </div>
 
-            <button onClick={toggleFullscreen} className="text-gray-400 hover:text-white transition-colors p-2">
-              <Maximize className="w-4 h-4" />
+            <button onClick={toggleFullscreen} className="text-gray-400 hover:text-white transition-colors p-1 md:p-2 ml-1 md:ml-2">
+              <Maximize className="w-4 h-4 md:w-5 md:h-5" />
             </button>
           </div>
         </div>
 
         {/* Chapters sidebar */}
         {showChapters && chapters.length > 0 && (
-          <div className="w-80 flex flex-col bg-[#0D0D14] overflow-hidden flex-shrink-0">
-            <div className="px-4 py-3 border-b border-[#2E2E38] flex-shrink-0">
-              <h3 className="text-white font-semibold text-sm">Chapitres</h3>
-              <p className="text-gray-500 text-xs mt-0.5">{chapters.length} section{chapters.length > 1 ? "s" : ""}</p>
+          <div className="w-full md:w-80 h-1/3 md:h-auto flex flex-col bg-[#0D0D14] overflow-hidden flex-shrink-0 border-t md:border-t-0 border-[#2E2E38]">
+            <div className="px-4 py-3 border-b border-[#2E2E38] flex-shrink-0 flex items-center justify-between md:block">
+              <div>
+                <h3 className="text-white font-semibold text-sm">Chapitres</h3>
+                <p className="text-gray-500 text-xs mt-0.5">{chapters.length} section{chapters.length > 1 ? "s" : ""}</p>
+              </div>
+              <button 
+                className="md:hidden p-2 text-gray-400 hover:text-white"
+                onClick={() => setShowChapters(false)}
+              >
+                <X className="w-4 h-4" />
+              </button>
             </div>
             <div className="flex-1 overflow-y-auto">
               {chapters.map((chapter, index) => {

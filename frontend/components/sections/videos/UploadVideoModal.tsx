@@ -89,21 +89,21 @@ export function UploadVideoModal({ onClose }: UploadVideoModalProps) {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
-      <div className="bg-[#14141A] border border-[#2E2E38] rounded-xl w-full max-w-2xl max-h-[90vh] flex flex-col">
+    <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-2 md:p-4">
+      <div className="bg-[#14141A] border border-[#2E2E38] rounded-xl w-full max-w-2xl max-h-[95vh] md:max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-[#2E2E38] flex-shrink-0">
+        <div className="flex items-center justify-between px-4 md:px-6 py-3 md:py-4 border-b border-[#2E2E38] flex-shrink-0">
           <div>
-            <h2 className="text-white font-bold text-lg">Uploader une vidéo</h2>
-            <p className="text-gray-400 text-xs mt-0.5">MP4, WebM, MOV — Max 500MB</p>
+            <h2 className="text-white font-bold text-base md:text-lg">Uploader une vidéo</h2>
+            <p className="text-gray-400 text-[10px] md:text-xs mt-0.5">MP4, WebM, MOV — Max 500MB</p>
           </div>
-          <button onClick={onClose} className="p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg">
+          <button onClick={onClose} className="p-1.5 md:p-2 text-gray-400 hover:text-white hover:bg-white/10 rounded-lg">
             <X className="w-5 h-5" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="flex-1 overflow-y-auto px-6 py-5 space-y-5">
+        <div className="flex-1 overflow-y-auto px-4 md:px-6 py-4 md:py-5 space-y-4 md:space-y-5">
           {/* Titre */}
           <div>
             <label className="block text-xs font-semibold text-gray-300 mb-1.5">
@@ -266,14 +266,14 @@ export function UploadVideoModal({ onClose }: UploadVideoModalProps) {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-4 border-t border-[#2E2E38] flex items-center justify-between flex-shrink-0">
-          <button onClick={onClose} className="px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors">
+        <div className="px-4 md:px-6 py-3 md:py-4 border-t border-[#2E2E38] flex flex-col-reverse sm:flex-row items-center sm:justify-between gap-3 sm:gap-0 flex-shrink-0">
+          <button onClick={onClose} className="w-full sm:w-auto px-4 py-2 text-gray-400 hover:text-white text-sm transition-colors cursor-pointer text-center">
             Annuler
           </button>
           <button
             onClick={handleSubmit}
             disabled={!title.trim() || !file || isUploading}
-            className="flex items-center gap-2 px-5 py-2 bg-[#6C4EA8] text-white rounded-lg hover:bg-[#5a3d8a] transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full sm:w-auto flex items-center justify-center gap-2 px-5 py-2 bg-[#6C4EA8] text-white rounded-lg hover:bg-[#5a3d8a] transition-colors text-sm font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isUploading ? (
               <>

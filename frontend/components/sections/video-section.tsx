@@ -21,26 +21,26 @@ function VideoProgressBar({ progress }: { progress: VideoProgress }) {
   const colors = getColor();
 
   return (
-    <div className={`rounded-xl border px-5 py-4 -mt-8 ${colors.bg}`}>
-      <div className="flex items-center justify-between mb-3">
+    <div className={`rounded-xl border px-4 md:px-5 py-4 -mt-4 md:-mt-8 ${colors.bg}`}>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-3">
         <div className="flex items-center gap-2.5">
           {percentage >= 100 ? (
-            <Trophy className="w-5 h-5 text-green-400" />
+            <Trophy className="w-5 h-5 md:w-6 md:h-6 text-green-400 flex-shrink-0" />
           ) : (
-            <Video className={`w-5 h-5 ${colors.text}`} />
+            <Video className={`w-5 h-5 md:w-6 md:h-6 ${colors.text} flex-shrink-0`} />
           )}
-          <div>
-            <p className="text-white text-sm font-semibold">
+          <div className="min-w-0">
+            <p className="text-white text-sm md:text-base font-semibold truncate">
               {percentage >= 100
                 ? "Onboarding complété !"
                 : "Progression de l'onboarding"}
             </p>
-            <p className="text-gray-400 text-xs mt-0.5">
+            <p className="text-gray-400 text-xs md:text-sm mt-0.5 truncate">
               {watchedCount} vidéo{watchedCount > 1 ? "s" : ""} vue{watchedCount > 1 ? "s" : ""} sur {totalCount}
             </p>
           </div>
         </div>
-        <span className={`text-2xl font-extrabold ${colors.text}`}>
+        <span className={`text-xl md:text-2xl font-extrabold ${colors.text}`}>
           {percentage}%
         </span>
       </div>
@@ -127,8 +127,8 @@ export function VideoSection() {
       )}
 
       <div>
-        <h2 className="text-2xl font-extrabold text-white">Vidéos d'Onboarding</h2>
-        <p className="text-gray-400 text-sm mt-1">
+        <h2 className="text-xl md:text-2xl font-extrabold text-white">Vidéos d'Onboarding</h2>
+        <p className="text-gray-400 text-xs md:text-sm mt-1">
           {videos.length} vidéo{videos.length > 1 ? "s" : ""} disponible{videos.length > 1 ? "s" : ""}
         </p>
       </div>
