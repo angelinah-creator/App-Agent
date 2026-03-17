@@ -79,33 +79,38 @@ export function DocumentsSection({
   }, [ndas, ndasLoading]);
 
   return (
-    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8">
-      <div className="flex space-x-4">
+    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8 w-full overflow-hidden">
+      <div className="flex flex-col lg:flex-row gap-4 w-full min-w-0">
 
-        {/* SECTION CONTRAT */}
-        <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-semibold text-[#F1F1F1]">
+        {/* ── SECTION CONTRAT ── */}
+        <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h3 className="text-base font-semibold text-[#F1F1F1] shrink-0">
               Mon Contrat
             </h3>
 
-            {/* Bouton "Lire" si en attente + aucun contrat, sinon "Générer" */}
             {showReadButton ? (
               <Button
                 onClick={onReadContract}
-                className="bg-[#6C4EA8] hover:bg-[#7d5fc0] text-white transition-all duration-200"
+                className="bg-[#6C4EA8] hover:bg-[#7d5fc0] text-white transition-all duration-200 text-xs"
               >
-                <BookOpen className="w-4 h-4 mr-2" />
-                Lire et signer mon contrat
+                <BookOpen className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">Lire et signer mon contrat</span>
+                <span className="sm:hidden">Lire</span>
               </Button>
             ) : (
               <Button
                 onClick={onGenerateContract}
                 disabled={generateContractPending}
-                className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white"
+                className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white text-xs"
               >
-                <FileText className="w-4 h-4 mr-2" />
-                {generateContractPending ? "Génération..." : "Générer un Contrat"}
+                <FileText className="w-4 h-4 mr-1 sm:mr-2" />
+                <span className="hidden sm:inline">
+                  {generateContractPending ? "Génération..." : "Générer un Contrat"}
+                </span>
+                <span className="sm:hidden">
+                  {generateContractPending ? "..." : "Générer"}
+                </span>
               </Button>
             )}
           </div>
@@ -119,20 +124,13 @@ export function DocumentsSection({
               <p className="text-[#F1F1F1] font-medium text-sm mb-1">
                 Votre contrat est prêt à être consulté
               </p>
-              <p className="text-xs text-gray-400 text-center max-w-xs leading-relaxed">
+              <p className="text-xs text-gray-400 text-center max-w-xs leading-relaxed px-2">
                 Lisez attentivement votre contrat avant de le signer. Si des
                 informations ne vous conviennent pas, modifiez-les depuis
                 l'onglet{" "}
                 <span className="text-[#9b7ed4] font-medium">Profil</span>{" "}
                 puis revenez ici.
               </p>
-              {/* <button
-                onClick={onReadContract}
-                className="mt-4 flex items-center gap-2 px-4 py-2 rounded-lg bg-[#6C4EA8] hover:bg-[#7d5fc0] text-white text-xs font-medium transition-all duration-200"
-              >
-                <BookOpen className="w-3.5 h-3.5" />
-                Lire et signer mon contrat
-              </button> */}
             </div>
           ) : contractsLoading ? (
             /* ── Chargement ── */
@@ -149,45 +147,47 @@ export function DocumentsSection({
               <p className="mt-3 text-[#F1F1F1] font-medium text-sm">
                 Aucun contrat généré
               </p>
-              <p className="text-xs text-[#F1F1F1] mt-1">
+              <p className="text-xs text-[#F1F1F1] mt-1 px-2">
                 Cliquez sur "Générer un Contrat" pour créer votre premier
                 contrat
               </p>
             </div>
           ) : (
-            /* ── Liste des contrats (affichage normal) ── */
+            /* ── Liste des contrats ── */
             <div className="overflow-x-auto rounded-xl border border-[#313442]">
-              <table className="w-full">
+              <table className="w-full min-w-0">
                 <tbody>
                   {contracts.map((contract: Contract) => (
                     <tr
                       key={contract._id}
                       className="border-b border-[#313442] hover:bg-[#313442] transition-all duration-200"
                     >
-                      <td className="py-2 px-2 text-[#F1F1F1] font-medium text-sm">
+                      <td className="py-2 px-2 text-[#F1F1F1] font-medium text-sm truncate max-w-[120px]">
                         {contract.fileName}
                       </td>
-                      <td className="py-2 px-2">
-                        <div className="flex items-center gap-1">
+                      <td className="py-2 px-2 shrink-0">
+                        <div className="flex items-center gap-1 justify-end">
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => onDownloadContract(contract)}
                             disabled={deleteContractPending}
-                            className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
+                            className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500 px-2"
+                            title="Télécharger"
                           >
-                            <Download className="w-4 h-4 mr-1" />
-                            Télécharger
+                            <Download className="w-4 h-4" />
+                            <span className="hidden sm:inline ml-1">Télécharger</span>
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => onDeleteContract(contract._id)}
                             disabled={deleteContractPending}
-                            className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
+                            className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500 px-2"
+                            title="Supprimer"
                           >
                             <Trash2 className="w-4 h-4" />
-                            Supprimer
+                            <span className="hidden sm:inline ml-1">Supprimer</span>
                           </Button>
                         </div>
                       </td>
@@ -199,21 +199,25 @@ export function DocumentsSection({
           )}
         </div>
 
-        {/*
-            SECTION NDA
-        */}
-        <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full">
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="text-base font-semibold text-[#F1F1F1] flex items-center gap-2">
-              Mon NDA (Non-Disclosure Agreement)
+        {/* ── SECTION NDA ── */}
+        <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full min-w-0">
+          <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+            <h3 className="text-base font-semibold text-[#F1F1F1] shrink-0">
+              <span className="hidden sm:inline">Mon NDA (Non-Disclosure Agreement)</span>
+              <span className="sm:hidden">Mon NDA</span>
             </h3>
             <Button
               onClick={onGenerateNda}
               disabled={generateNdaPending}
-              className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white"
+              className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white text-xs"
             >
-              <FileText className="w-4 h-4 mr-2" />
-              {generateNdaPending ? "Génération..." : "Générer mon NDA"}
+              <FileText className="w-4 h-4 mr-1 sm:mr-2" />
+              <span className="hidden sm:inline">
+                {generateNdaPending ? "Génération..." : "Générer mon NDA"}
+              </span>
+              <span className="sm:hidden">
+                {generateNdaPending ? "..." : "Générer"}
+              </span>
             </Button>
           </div>
 
@@ -232,45 +236,47 @@ export function DocumentsSection({
               <p className="mt-3 text-[#F1F1F1] font-medium text-sm">
                 Aucun NDA généré
               </p>
-              <p className="text-xs text-[#F1F1F1] mt-1">
+              <p className="text-xs text-[#F1F1F1] mt-1 px-2">
                 Cliquez sur "Générer mon NDA" pour créer votre accord de
                 confidentialité
               </p>
             </div>
           ) : (
-            /* ── Liste des NDAs (affichage normal) ── */
+            /* ── Liste des NDAs ── */
             <div className="overflow-x-auto rounded-xl border border-[#313442]">
-              <table className="w-full">
+              <table className="w-full min-w-0">
                 <tbody>
                   {ndas.map((nda) => (
                     <tr
                       key={nda._id}
                       className="border-b border-[#313442] hover:bg-[#313442] transition-all duration-200"
                     >
-                      <td className="py-2 px-2 text-[#F1F1F1] font-medium text-sm font-mono">
+                      <td className="py-2 px-2 text-[#F1F1F1] font-medium text-sm font-mono truncate max-w-[120px]">
                         {nda.fileName}
                       </td>
-                      <td className="py-2 px-2">
-                        <div className="flex items-center gap-1">
+                      <td className="py-2 px-2 shrink-0">
+                        <div className="flex items-center gap-1 justify-end">
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => onDownloadNda(nda)}
                             disabled={deleteNdaPending}
-                            className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
+                            className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500 px-2"
+                            title="Télécharger"
                           >
-                            <Download className="w-4 h-4 mr-1" />
-                            Télécharger
+                            <Download className="w-4 h-4" />
+                            <span className="hidden sm:inline ml-1">Télécharger</span>
                           </Button>
                           <Button
                             size="sm"
                             variant="ghost"
                             onClick={() => onDeleteNda(nda._id)}
                             disabled={deleteNdaPending}
-                            className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
+                            className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500 px-2"
+                            title="Supprimer"
                           >
                             <Trash2 className="w-4 h-4" />
-                            Supprimer
+                            <span className="hidden sm:inline ml-1">Supprimer</span>
                           </Button>
                         </div>
                       </td>
@@ -283,18 +289,17 @@ export function DocumentsSection({
         </div>
       </div>
 
-      {/*
-          SECTION DOCUMENTS PERSONNELS
-      */}
-      <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
-        <div className="flex items-center justify-between mb-3">
-          <h3 className="text-base font-semibold text-white">Mes Documents</h3>
+      {/* ── SECTION DOCUMENTS PERSONNELS ── */}
+      <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3 w-full min-w-0">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
+          <h3 className="text-base font-semibold text-white shrink-0">Mes Documents</h3>
           <Button
             onClick={onAddDocument}
-            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105"
+            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105 text-xs"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Ajouter un document
+            <Plus className="w-4 h-4 mr-1 sm:mr-2" />
+            <span className="hidden sm:inline">Ajouter un document</span>
+            <span className="sm:hidden">Ajouter</span>
           </Button>
         </div>
 
@@ -311,13 +316,13 @@ export function DocumentsSection({
             <p className="mt-3 text-[#F1F1F1] font-medium text-sm">
               Aucun document uploadé
             </p>
-            <p className="text-xs text-[#F1F1F1] mt-1">
+            <p className="text-xs text-[#F1F1F1] mt-1 px-2">
               Cliquez sur "Ajouter un document" pour uploader vos premiers
               documents
             </p>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-2">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-2">
             {documents.map((doc: Document) => (
               <Card
                 key={doc._id}
@@ -343,7 +348,7 @@ export function DocumentsSection({
                       variant="ghost"
                       onClick={() => onDownloadDocument(doc)}
                       disabled={deleteDocumentPending}
-                      className="text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
+                      className="flex-1 text-xs border border-blue-500/40 bg-transparent hover:bg-blue-600 hover:border-blue-600 text-blue-400 hover:text-white focus:ring-blue-500"
                     >
                       <Download className="w-4 h-4 mr-1" />
                       Télécharger
@@ -353,10 +358,10 @@ export function DocumentsSection({
                       variant="ghost"
                       onClick={() => onDeleteDocument(doc._id)}
                       disabled={deleteDocumentPending}
-                      className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500"
+                      className="text-xs border border-red-500/40 bg-transparent hover:bg-red-600 hover:border-red-600 text-red-400 hover:text-white focus:ring-red-500 px-2"
+                      title="Supprimer"
                     >
                       <Trash2 className="w-4 h-4" />
-                      Supprimer
                     </Button>
                   </div>
                 </CardContent>
@@ -366,12 +371,12 @@ export function DocumentsSection({
         )}
       </div>
 
-      {/* ── KPI Cards ── */}
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      {/* ── KPI Stats Card ── */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
         <Card className="border-[#313442] bg-gradient-to-br bg-[#1F2128] backdrop-blur-sm">
           <CardContent className="p-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center">
+              <div className="w-10 h-10 rounded-xl bg-indigo-600 flex items-center justify-center shrink-0">
                 <Upload className="w-5 h-5 text-white" />
               </div>
               <div>
