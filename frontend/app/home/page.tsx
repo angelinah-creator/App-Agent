@@ -59,6 +59,7 @@ function HomePage() {
   const [activeSection, setActiveSection] = useState("documents");
   const [isMounted, setIsMounted] = useState(false);
   const [showArchivedAgents, setShowArchivedAgents] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { confirm, dialog } = useConfirmDialog();
 
   // Document upload state
@@ -851,25 +852,41 @@ function HomePage() {
       }`}
     >
       {dialog}
+      
+      {/* Mobile sidebar overlay */}
+      {isSidebarOpen && (
+        <div 
+          className="fixed inset-0 bg-black/60 z-30 md:hidden backdrop-blur-sm"
+          onClick={() => setIsSidebarOpen(false)}
+        />
+      )}
+
       {/* Sidebar - reste fixe */}
-      <div className="fixed left-0 top-0 h-screen w-50 z-40">
+      <div className={`fixed left-0 top-0 h-screen w-50 z-40 transition-transform duration-300 md:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <Sidebar
           activeSection={activeSection}
-          onSectionChange={setActiveSection}
+          onSectionChange={(section) => {
+            setActiveSection(section);
+            setIsSidebarOpen(false);
+          }}
           userRole={userData?.role || "collaborateur"}
           userProfile={userData?.profile}
         />
       </div>
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col ml-50 min-h-screen -mt-5">
+      <div className="flex-1 flex flex-col md:ml-50 min-h-screen -mt-5">
         {/* Header - fixed */}
-        <div className="fixed top-0 left-50 right-0 z-30">
+        <div className="fixed top-0 left-0 md:left-50 right-0 z-20">
           <Header
             title={getHeaderContent().title}
             subtitle={getHeaderContent().subtitle}
             notificationBell={<NotificationBell />}
-            onProfileClick={() => setActiveSection("profil")}
+            onProfileClick={() => {
+              setActiveSection("profil");
+              setIsSidebarOpen(false);
+            }}
+            onMenuClick={() => setIsSidebarOpen(true)}
           />
         </div>
 

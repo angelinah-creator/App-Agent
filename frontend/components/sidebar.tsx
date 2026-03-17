@@ -139,7 +139,7 @@ export function Sidebar({
 
   return (
     <>
-      <div className="w-50 bg-[#1F2128] text-gray-300 flex flex-col h-screen border-r border-2 border-[#313442]">
+      <div className="w-full bg-[#1F2128] text-gray-300 flex flex-col h-screen border-r border-2 border-[#313442]">
         {/* Logo */}
         <div className="px-4 py-6 text-center">
           <img src="/images/logo3.png" className="w-14 mx-auto" />
