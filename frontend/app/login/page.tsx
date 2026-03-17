@@ -102,15 +102,15 @@ export default function LoginPage() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative bg-[#110521] px-4">
-      <div className="relative z-10 w-full max-w-md bg-black rounded-xl py-8 px-8">
+    <div className="min-h-screen flex items-center justify-center relative bg-[#110521] px-4 py-8">
+      <div className="relative z-10 w-full max-w-md bg-black rounded-xl py-8 px-6 sm:px-8">
         {/* Logo */}
         <div className="flex justify-center mb-4">
           <Image src="/images/logo2.png" width={80} height={80} alt="Logo" />
         </div>
 
         {/* Titre */}
-        <h1 className="text-center text-2xl font-bold text-white">
+        <h1 className="text-center text-xl sm:text-2xl font-bold text-white">
           OPSIDE - CODE TALENT
         </h1>
         <p className="text-center text-gray-500 text-sm mt-1 mb-6">
@@ -171,7 +171,7 @@ export default function LoginPage() {
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full bg-[#8254ff] hover:bg-[#6d46d9] text-white py-2 rounded-sm font-medium transition disabled:opacity-50"
+            className="w-full bg-[#8254ff] hover:bg-[#6d46d9] text-white py-2.5 rounded-sm font-medium transition disabled:opacity-50"
           >
             {isLoading ? "Connexion..." : "Se connecter"}
           </button>
@@ -192,7 +192,7 @@ export default function LoginPage() {
               type="button"
               onClick={handleGoogleLogin}
               disabled={isGoogleLoading}
-              className="flex items-center justify-center gap-2 bg-[#141414] border border-[#333] text-white py-3 text-sm rounded-sm hover:bg-[#1b1b1b] transition disabled:opacity-50 p-4"
+              className="w-full flex items-center justify-center gap-2 bg-[#141414] border border-[#333] text-white py-3 text-sm rounded-sm hover:bg-[#1b1b1b] transition disabled:opacity-50"
             >
               {isGoogleLoading ? (
                 "Connexion..."
@@ -204,7 +204,7 @@ export default function LoginPage() {
                     height={18}
                     alt=""
                   />
-                  Se connecter avec Google
+                  <span>Se connecter avec Google</span>
                 </>
               )}
             </button>

@@ -152,7 +152,7 @@ function SelectionCard({
     <button
       type="button"
       onClick={onClick}
-      className={`flex flex-col items-center justify-center gap-3 p-5 rounded-sm border transition-all duration-200 group w-sm ${
+      className={`flex flex-col items-center justify-center gap-3 p-5 rounded-sm border transition-all duration-200 group w-full md:w-sm ${
         selected
           ? "border-white bg-[#8254ff]/10"
           : "border-[#2a2a2a] bg-[#0a0a0a] hover:border-[#8254ff] hover:bg-[#0d0d0d]"
@@ -455,10 +455,10 @@ export default function SignupPage() {
 
       <div className="relative z-10 w-full max-w-7xl">
         {/* Header */}
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row items-center justify-between gap-4 mb-6">
           <div className="flex items-center gap-4">
             <Image src="/images/logo2.png" width={52} height={52} alt="Logo" />
-            <span className="text-white font-bold text-xl tracking-wide">
+            <span className="text-white font-bold text-lg sm:text-xl tracking-wide">
               OPSIDE - CODE TALENT
             </span>
           </div>
@@ -504,7 +504,7 @@ export default function SignupPage() {
         </div>
 
         {/* Card */}
-        <div className="bg-black rounded-xl py-7 px-8 overflow-hidden relative min-h-[420px] flex flex-col">
+        <div className="bg-black rounded-xl py-7 px-5 sm:px-8 overflow-hidden relative min-h-[420px] flex flex-col">
           <style>{`
             @keyframes slideInRight {
               from { transform: translateX(60px); opacity: 0; }
@@ -531,7 +531,7 @@ export default function SignupPage() {
             {/* ── Step 1: Role select ── */}
             {stepId === "role-select" && (
               <StepWrapper title="Sélectionnez votre rôle chez code talent">
-                <div className="flex justify-center gap-3 mt-10">
+                <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-10">
                   <SelectionCard
                     icon={<Users size={28} color="white" />}
                     label="Collaborateur"
@@ -562,7 +562,7 @@ export default function SignupPage() {
                     {userRole === "collaborateur" ? "Collaborateur" : "Manager"}
                   </span>
                 </p>
-                <div className="flex justify-center gap-3 mt-10">
+                <div className="flex flex-col md:flex-row justify-center items-center gap-3 mt-10">
                   <SelectionCard
                     icon={<GraduationCap size={28} color="white" />}
                     label="Stagiaire"
@@ -641,7 +641,7 @@ export default function SignupPage() {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                   <Field label="Nom" required error={errors.nom}>
                     <Input
                       placeholder="Rakoto"
@@ -658,7 +658,7 @@ export default function SignupPage() {
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                   <Field
                     label="Date de naissance"
                     required
@@ -684,7 +684,7 @@ export default function SignupPage() {
                   </Field>
                 </div>
 
-                <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                   <Field
                     label="Adresse"
                     required
@@ -725,7 +725,7 @@ export default function SignupPage() {
                   />
                 </Field>
 
-                <div className="grid grid-cols-2 gap-3 mt-3">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mt-3">
                   <Field
                     label="Date de début"
                     required
@@ -1045,11 +1045,11 @@ export default function SignupPage() {
                   />
 
                   {form.signaturePreview ? (
-                    <div className="flex items-center gap-3 w-full">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full">
                       <button
                         type="button"
                         onClick={() => signatureInputRef.current?.click()}
-                        className="flex-1 py-2 text-xs border border-[#2a2a2a] rounded-sm text-gray-400 hover:border-[#8254ff] hover:text-white transition-colors"
+                        className="w-full sm:flex-1 py-2 text-xs border border-[#2a2a2a] rounded-sm text-gray-400 hover:border-[#8254ff] hover:text-white transition-colors"
                       >
                         Changer
                       </button>
@@ -1059,14 +1059,12 @@ export default function SignupPage() {
                           setField("signature", null);
                           setField("signaturePreview", "");
                         }}
-                        className="flex-1 py-2 text-xs border border-red-900 rounded-sm text-red-500 hover:bg-red-950 transition-colors"
+                        className="w-full sm:flex-1 py-2 text-xs border border-red-900 rounded-sm text-red-500 hover:bg-red-950 transition-colors"
                       >
                         Supprimer
                       </button>
                     </div>
-                  ) : (
-                    <div></div>
-                  )}
+                  ) : null}
 
                   {errors.signature && (
                     <p className="text-xs text-red-400 self-start">
@@ -1075,7 +1073,7 @@ export default function SignupPage() {
                   )}
                 </div>
 
-                <p className="text-xs text-gray-600 mt-4">
+                <p className="text-xs text-gray-600 mt-4 text-center sm:text-left">
                   Formats : JPG, PNG · Max 2MB
                 </p>
               </StepWrapper>
@@ -1083,12 +1081,12 @@ export default function SignupPage() {
           </div>
 
           {/* Navigation buttons */}
-          <div className="flex items-center gap-3 mt-6 pt-4 border-t border-[#1a1a1a]">
+          <div className="flex flex-col sm:flex-row items-center gap-3 mt-6 pt-4 border-t border-[#1a1a1a]">
             {currentStep > 0 ? (
               <button
                 type="button"
                 onClick={goPrev}
-                className="flex items-center gap-1.5 px-4 py-2.5 text-sm text-gray-400 border border-[#2a2a2a] rounded-sm hover:border-gray-500 hover:text-gray-200 transition-colors"
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 px-6 py-2.5 text-sm text-gray-400 border border-[#2a2a2a] rounded-sm hover:border-gray-500 hover:text-gray-200 transition-colors"
               >
                 <ChevronLeft size={15} />
                 Retour
@@ -1100,7 +1098,7 @@ export default function SignupPage() {
                 type="button"
                 onClick={handleSubmit}
                 disabled={isLoading}
-                className="flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-[#8254ff] hover:bg-[#6d46d9] text-white rounded-sm transition-colors disabled:opacity-50"
+                className="w-full flex-1 flex items-center justify-center gap-2 py-2.5 text-sm font-medium bg-[#8254ff] hover:bg-[#6d46d9] text-white rounded-sm transition-colors disabled:opacity-50"
               >
                 {isLoading ? (
                   <>
@@ -1118,7 +1116,7 @@ export default function SignupPage() {
               <button
                 type="button"
                 onClick={goNext}
-                className="flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium bg-[#8254ff] hover:bg-[#6d46d9] text-white rounded-sm transition-colors px-10"
+                className="w-full sm:w-auto flex items-center justify-center gap-1.5 py-2.5 text-sm font-medium bg-[#8254ff] hover:bg-[#6d46d9] text-white rounded-sm transition-colors px-10 ml-auto"
               >
                 Continuer
               </button>
