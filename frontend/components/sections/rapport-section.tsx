@@ -39,7 +39,7 @@ import {
 import { fr } from "date-fns/locale";
 import { useQuery } from "@tanstack/react-query";
 import { timerService, ReportData } from "@/lib/timer-service";
-import { projectService } from "@/lib/project-service"; // ← AJOUT
+import { projectService } from "@/lib/project-service";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
 import domtoimage from "dom-to-image";
@@ -172,7 +172,7 @@ function ProjectFilter({
       </button>
 
       {isOpen && (
-        <div className="absolute right-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 min-w-[200px] overflow-hidden">
+        <div className="absolute left-0 sm:left-auto sm:right-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 min-w-[200px] max-w-[280px] overflow-hidden">
           <div className="p-1.5 border-b border-[#313442]">
             <button
               onClick={clearAll}
@@ -427,17 +427,16 @@ function PeriodSelector({
   return (
     <div
       ref={popupRef}
-      className="absolute left-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 overflow-hidden"
-      style={{ width: "400px" }}
+      className="absolute left-0 sm:left-auto top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 overflow-hidden w-[280px] sm:w-[400px] max-w-[100vw]"
     >
-      <div className="flex" style={{ height: "280px" }}>
-        <div className="w-40 border-r border-[#313442] p-2 overflow-y-auto">
-          <div className="space-y-0.5">
+      <div className="flex flex-col sm:flex-row h-[360px] sm:h-[280px]">
+        <div className="w-full sm:w-40 border-b sm:border-b-0 sm:border-r border-[#313442] p-2 overflow-x-auto sm:overflow-y-auto no-scrollbar">
+          <div className="flex flex-row sm:flex-col gap-1 sm:space-y-0.5 min-w-max sm:min-w-0">
             {shortcuts.map((shortcut) => (
               <button
                 key={shortcut.value}
                 onClick={() => handleShortcutClick(shortcut.value)}
-                className={`w-full text-left px-2 py-1.5 rounded transition text-xs ${
+                className={`whitespace-nowrap sm:whitespace-normal w-auto sm:w-full text-left px-2 py-1.5 rounded transition text-xs ${
                   shortcut.value === currentPeriodType
                     ? "bg-purple-500/20 text-white"
                     : "text-gray-300 hover:bg-white/5"
@@ -448,7 +447,7 @@ function PeriodSelector({
             ))}
           </div>
         </div>
-        <div className="flex-1 p-2">{renderCalendar()}</div>
+        <div className="flex-1 p-2 flex flex-col">{renderCalendar()}</div>
       </div>
     </div>
   );
@@ -869,11 +868,11 @@ export function RapportSection() {
   }
 
   return (
-    <div className="space-y-4 p-4 bg-[#0F0F12] -mt-2 sm:-mt-8">
+    <div className="space-y-4 p-2 sm:p-4 bg-[#0F0F12] -mt-2 sm:-mt-8">
       {/* EN-TÊTE */}
-      <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-2 relative">
+      <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-3 sm:p-4">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 sm:gap-4 mb-4">
+          <div className="flex flex-wrap items-center gap-2 relative">
             <button
               onClick={() => setOffset((o) => o - 1)}
               className="p-1 hover:bg-white/5 rounded transition"
@@ -886,8 +885,8 @@ export function RapportSection() {
               onClick={() => setIsPeriodSelectorOpen(!isPeriodSelectorOpen)}
               className="flex items-center gap-1 bg-[#0F0F12] px-3 py-1 rounded cursor-pointer hover:bg-[#1a1a1f] transition"
             >
-              <Calendar className="text-purple-400" size={14} />
-              <span className="text-white text-xs font-medium">{displayText}</span>
+              <Calendar className="text-purple-400 shrink-0" size={14} />
+              <span className="text-white text-xs font-medium truncate max-w-[130px] sm:max-w-none">{displayText}</span>
             </div>
 
             <PeriodSelector
@@ -921,7 +920,7 @@ export function RapportSection() {
           </div>
 
           {/* DROITE : filtre projet + export */}
-          <div className="flex items-center gap-2">
+          <div className="flex flex-wrap items-center gap-2 mt-2 md:mt-0">
             <ProjectFilter
               projects={projectOptions} // ← REMPLACÉ
               selectedProjectIds={selectedProjectIds}
@@ -956,9 +955,9 @@ export function RapportSection() {
       </div>
 
       {/* GRAPHIQUES */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         {/* GRAPHIQUE EN BARRES */}
-        <div className="col-span-2 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
+        <div className="lg:col-span-2 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
           <h3 className="text-white font-semibold text-sm mb-3">Durée par jour</h3>
           <div ref={barChartRef}>
             <ResponsiveContainer width="100%" height={250}>
@@ -1046,9 +1045,10 @@ export function RapportSection() {
       </div>
 
       {/* TABLEAU DÉTAILLÉ */}
-      <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
+      <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4 overflow-x-auto">
         <h3 className="text-white font-semibold text-sm mb-3">Détails par projet</h3>
-        <table className="w-full">
+        <div className="min-w-[600px]">
+          <table className="w-full">
           <thead>
             <tr className="border-b border-[#313442]">
               <th className="text-left text-gray-400 font-medium py-2 px-3 text-xs">
@@ -1143,6 +1143,7 @@ export function RapportSection() {
             </tr>
           </tbody>
         </table>
+        </div>
       </div>
     </div>
   );
