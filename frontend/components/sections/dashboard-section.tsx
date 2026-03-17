@@ -83,22 +83,22 @@ export function DashboardSection({ onSectionChange }: DashboardSectionProps) {
   }, []);
 
   return (
-    <div className="p-4 text-gray-200 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="p-2 sm:p-4 text-gray-200 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* TITRE */}
-      <div className="mb-6 flex justify-between items-center -mt-14">
+      <div className="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 sm:-mt-14">
         <div>
           <h1 className="text-2xl font-bold text-white">Dashboard</h1>
           <p className="text-gray-400 mt-1">Bienvenue, voici votre dashboard</p>
         </div>
-        <div>
-          <button onClick={() => onSectionChange('timer')} className="bg-[#6C4EA8] py-1.5 px-3 rounded-[6px] text-sm">
+        <div className="w-full sm:w-auto">
+          <button onClick={() => onSectionChange('timer')} className="w-full sm:w-auto bg-[#6C4EA8] py-1.5 px-4 rounded-[6px] text-sm font-medium hover:bg-[#5a3f8e] transition-colors">
             Commencer le shift
           </button>
         </div>
       </div>
 
       {/* WIDGETS DU HAUT */}
-      <div className="grid grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Tâches complétées */}
         <div className="bg-[#1A1C22] p-4 rounded-xl border border-gray-800">
           <div className="flex items-center gap-2 mb-3">
@@ -163,7 +163,7 @@ export function DashboardSection({ onSectionChange }: DashboardSectionProps) {
       </div>
 
       {/* BLOC DU BAS */}
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
         {/* Actions rapides */}
         <div className="bg-[#1A1C22] rounded-xl p-4 border border-gray-800">
           <h2 className="text-base font-semibold mb-3">Actions rapides</h2>

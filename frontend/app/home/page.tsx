@@ -904,7 +904,7 @@ function HomePage() {
         <div className="flex-1 overflow-auto mt-30">
           {" "}
           {/* mt-16 = hauteur du header */}
-          <div className="p-8">
+          <div className="p-3 sm:p-8">
             {isAdmin && (
               <>
                 {activeSection === "agents" && (
