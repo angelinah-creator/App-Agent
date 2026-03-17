@@ -64,16 +64,17 @@ export function KPIsSection({
       </div>
 
       <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h3 className="text-base font-semibold text-white">
             Mes Rapports KPI
           </h3>
           <Button
             onClick={onAddKPI}
-            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105"
+            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105 text-xs sm:text-sm"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Ajouter un rapport
+            <Plus className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Ajouter un rapport</span>
+            <span className="sm:hidden">Ajouter</span>
           </Button>
         </div>
 

@@ -214,13 +214,18 @@ export function AbsencesSection() {
       {dialog}
       <Card className="bg-[#1F2128] border-[#313442]">
         <CardHeader>
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
+            <div>
+              <h3 className="text-base font-semibold text-white">Mes Absences</h3>
+              <p className="text-xs text-gray-400 mt-0.5">Gérez vos demandes de congés</p>
+            </div>
             <Button
               onClick={() => setShowCreateDialog(true)}
-              className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105"
+              className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105 text-xs sm:text-sm"
             >
-              <Plus className="h-4 w-4 mr-2" />
-              Nouvelle demande
+              <Plus className="h-4 w-4 sm:mr-2" />
+              <span className="hidden sm:inline">Nouvelle demande</span>
+              <span className="sm:hidden">Demande</span>
             </Button>
           </div>
         </CardHeader>
@@ -366,7 +371,7 @@ export function AbsencesSection() {
 
               {/* Formulaire */}
               <div className="space-y-4">
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
                     <label className="text-white text-sm font-medium mb-1.5 block">
                       Date de début
@@ -426,7 +431,7 @@ export function AbsencesSection() {
                 </div>
 
                 {/* Actions */}
-                <div className="flex gap-3 pt-4">
+                <div className="flex flex-col sm:flex-row gap-3 pt-4">
                   <Button
                     onClick={handleSubmit}
                     disabled={createAbsenceMutation.isPending}

@@ -156,9 +156,9 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
       {dialog}
 
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h2 className="text-2xl font-extrabold text-white">
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white">
             {userRole === "collaborateur" ? "Mes Projets" : "Gestion des Projets"}
           </h2>
           <p className="text-sm text-gray-400 mt-0.5">
@@ -170,10 +170,11 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
         {canCreateProject && (
           <Button
             onClick={() => setShowCreateModal(true)}
-            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105"
+            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white hover:scale-105 text-xs sm:text-sm"
           >
-            <Plus className="w-4 h-4" />
-            Nouveau projet
+            <Plus className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Nouveau projet</span>
+            <span className="sm:hidden">Nouveau</span>
           </Button>
         )}
       </div>
@@ -191,7 +192,7 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
       </div>
 
       {/* Stats */}
-      <div className="grid grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
         <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-4">
           <div className="flex items-center gap-3">
             <div className="w-9 h-9 rounded-lg bg-[#6C4EA8]/20 flex items-center justify-center">

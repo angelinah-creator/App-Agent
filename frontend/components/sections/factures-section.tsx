@@ -147,22 +147,23 @@ export function FacturesSection({
   return (
     <div className="space-y-3 -mt-8">
       <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
-        <div className="flex items-center justify-between mb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h3 className="text-base font-semibold text-[#F1F1F1]">
             Mes Factures
           </h3>
           <Button
             onClick={() => setIsDialogOpen(true)}
-            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white transition-all duration-300 hover:scale-105"
+            className="bg-[#6C4EA8] hover:bg-[#382d4e] text-white transition-all duration-300 hover:scale-105 text-xs sm:text-sm"
           >
-            <Plus className="w-4 h-4 mr-2" />
-            Ajouter une facture
+            <Plus className="w-4 h-4 sm:mr-2" />
+            <span className="hidden sm:inline">Ajouter une facture</span>
+            <span className="sm:hidden">Ajouter</span>
           </Button>
         </div>
 
-        <div className="flex gap-2 mb-4 flex-wrap text-white">
+        <div className="flex flex-wrap gap-2 mb-4 text-white">
           <Select value={selectedYear} onValueChange={setSelectedYear}>
-            <SelectTrigger className="w-[120px] border-[#313442]">
+            <SelectTrigger className="w-[100px] sm:w-[120px] border-[#313442]">
               <SelectValue placeholder="Année" />
             </SelectTrigger>
             <SelectContent>
@@ -176,7 +177,7 @@ export function FacturesSection({
           </Select>
 
           <Select value={selectedMonth} onValueChange={setSelectedMonth}>
-            <SelectTrigger className="w-[140px] border-[#313442]">
+            <SelectTrigger className="w-[120px] sm:w-[140px] border-[#313442]">
               <SelectValue placeholder="Mois" />
             </SelectTrigger>
             <SelectContent>
@@ -190,7 +191,7 @@ export function FacturesSection({
           </Select>
 
           <Select value={selectedStatus} onValueChange={setSelectedStatus}>
-            <SelectTrigger className="w-[140px] border-[#313442]">
+            <SelectTrigger className="w-[120px] sm:w-[140px] border-[#313442]">
               <SelectValue placeholder="Statut" />
             </SelectTrigger>
             <SelectContent>
@@ -288,7 +289,7 @@ export function FacturesSection({
         )}
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">
         <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">
           <CardContent className="p-3">
             <div className="flex items-center gap-3">

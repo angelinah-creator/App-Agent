@@ -210,7 +210,7 @@ function CalendlyFormModal({
         </div>
 
         {/* Footer */}
-        <div className="flex gap-3 px-6 pb-6 pt-3 border-t border-[#313442] flex-shrink-0">
+        <div className="flex flex-col sm:flex-row gap-3 px-6 pb-6 pt-3 border-t border-[#313442] flex-shrink-0">
           <button
             onClick={onClose}
             className="flex-1 px-4 py-2.5 border border-[#313442] text-gray-300 rounded-lg hover:bg-white/5 transition-colors text-sm font-medium"
@@ -489,9 +489,9 @@ export function RendezVousSection({ userRole }: RendezVousSectionProps) {
   return (
     <div className="space-y-6 -mt-8">
       {/* Header */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
-          <h1 className="text-white text-2xl font-extrabold">Rendez-vous</h1>
+          <h1 className="text-white text-xl sm:text-2xl font-extrabold">Rendez-vous</h1>
           <p className="text-gray-400 text-sm mt-0.5">
             {canManage
               ? "Gérez votre lien Calendly et consultez les disponibilités"
@@ -505,7 +505,8 @@ export function RendezVousSection({ userRole }: RendezVousSectionProps) {
             className="flex items-center gap-2 px-4 py-2.5 bg-[#6C4EA8] text-white text-sm font-medium rounded-xl hover:bg-[#5a3d96] transition-colors"
           >
             <Plus className="w-4 h-4" />
-            Ajouter mon lien
+            <span className="hidden sm:inline">Ajouter mon lien</span>
+            <span className="sm:hidden">Ajouter</span>
           </button>
         )}
       </div>

@@ -129,7 +129,7 @@ export function AddFactureDialog({
           <form id="facture-form" onSubmit={handleSubmit} className="space-y-5">
             
             {/* Grille Période */}
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 xs:grid-cols-2 sm:grid-cols-2 gap-4">
               <div className="space-y-1.5">
                 <label className="text-white text-sm font-medium">Mois <span className="text-red-500">*</span></label>
                 <select
@@ -219,7 +219,7 @@ export function AddFactureDialog({
         </div>
 
         {/* Footer - Fixe en bas */}
-        <div className="p-6 border-t border-[#313442]/50 flex gap-3 shrink-0">
+        <div className="p-5 sm:p-6 border-t border-[#313442]/50 flex flex-col sm:flex-row gap-3 shrink-0">
           <button
             type="button"
             onClick={handleClose}

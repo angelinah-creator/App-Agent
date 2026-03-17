@@ -723,8 +723,8 @@ export function Profil() {
       )}
 
       {/* Hero Card */}
-      <div className="h-30 -mt-8">
-        <div className="flex flex-col items-center sm:flex-row sm:items-stretch gap-4 h-full">
+      <div className="-mt-8">
+        <div className="flex flex-col sm:flex-row items-center sm:items-stretch gap-4">
           {/* Avatar */}
           <div className="relative flex-shrink-0">
             <div
@@ -799,14 +799,14 @@ export function Profil() {
             />
           </div>
 
-          {/* Name & badges - centré verticalement */}
-          <div className="flex-1 min-w-0 flex items-center h-full">
-            <div className="mb-1">
+          {/* Name & badges */}
+          <div className="flex-1 min-w-0 flex items-center justify-center sm:justify-start h-full">
+            <div className="mb-1 text-center sm:text-left">
               <h1 className="text-xl font-bold text-white truncate">
                 {user.prenoms} {user.nom}
               </h1>
               <p className="text-sm text-gray-400 truncate">{user.email}</p>
-              <div className="flex flex-wrap gap-2 mt-2">
+              <div className="flex flex-wrap justify-center sm:justify-start gap-2 mt-2">
                 <span
                   className={`text-xs px-2.5 py-0.5 rounded-full border font-medium ${roleBadge.color}`}
                 >
@@ -1055,7 +1055,7 @@ export function Profil() {
 
       {/* Mot de passe */}
       <div className="bg-[#1a1a1d] border border-[#313442] rounded-xl p-5">
-        <div className="flex items-center justify-between mb-4">
+        <div className="flex flex-wrap items-center justify-between gap-2 mb-4">
           <h2 className="text-sm font-semibold text-white flex items-center gap-2">
             <Lock size={15} className="text-[#6C4EA8]" />
             Sécurité — Mot de passe

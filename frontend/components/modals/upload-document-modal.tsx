@@ -31,17 +31,17 @@ export function UploadDocumentModal({
 
   return (
     <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-in fade-in duration-300">
-      <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-300 shadow-2xl bg-[#1F2128] backdrop-blur-xl rounded-2xl">
-        <div className="p-6">
+      <div className="w-full max-w-md animate-in fade-in zoom-in-95 duration-300 shadow-2xl bg-[#1F2128] backdrop-blur-xl rounded-2xl max-h-[90vh] overflow-y-auto">
+        <div className="p-5 sm:p-6">
           <div className="flex items-center justify-between mb-6">
-            <h3 className="text-xl font-semibold text-white">
+            <h3 className="text-lg sm:text-xl font-semibold text-white">
               Ajouter un document
             </h3>
             <button
               onClick={onClose}
-              className="p-2 hover:bg-slate-100 rounded-xl transition-all duration-200 hover:scale-110"
+              className="p-2 hover:bg-white/10 rounded-xl transition-all duration-200 hover:scale-110"
             >
-              <X className="w-5 h-5 text-slate-600" />
+              <X className="w-5 h-5 text-slate-400" />
             </button>
           </div>
 
@@ -60,17 +60,17 @@ export function UploadDocumentModal({
                 }
                 placeholder="Description du document..."
                 rows={2}
-                className="mt-1.5 bg-[#0F0F12] focus:border-purple-500 text-white w-full p-2 rounded-lg resize-y min-h-[100px] outline-none transition-colors"
+                className="mt-1.5 bg-[#0F0F12] focus:border-purple-500 text-white w-full p-2 rounded-lg resize-y min-h-[80px] outline-none transition-colors"
               />
             </div>
 
             <div>
               <div className="text-white font-medium">Fichier</div>
               <div
-                className="mt-1.5 border-2 border-dashed border-slate-300 rounded-xl p-8 text-center cursor-pointer hover:border-blue-500 transition-all duration-300 hover:scale-102"
+                className="mt-1.5 border-2 border-dashed border-slate-600 rounded-xl p-6 text-center cursor-pointer hover:border-blue-500 transition-all duration-300"
                 onClick={() => document.getElementById("file-upload")?.click()}
               >
-                <Upload className="w-10 h-10 text-slate-400 mx-auto mb-3" />
+                <Upload className="w-8 h-8 text-slate-400 mx-auto mb-3" />
                 <p className="text-sm font-medium text-white">
                   {selectedFile
                     ? selectedFile.name
@@ -89,7 +89,7 @@ export function UploadDocumentModal({
               </div>
             </div>
 
-            <div className="flex gap-3 pt-2">
+            <div className="flex flex-col sm:flex-row gap-3 pt-2">
               <Button
                 onClick={onUpload}
                 disabled={isLoading || !selectedFile}
