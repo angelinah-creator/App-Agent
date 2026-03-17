@@ -869,6 +869,16 @@ function HomePage() {
             setActiveSection(section);
             setIsSidebarOpen(false);
           }}
+          onLogout={() => {
+            confirm({
+              title: "Confirmer la déconnexion",
+              description: "Êtes-vous sûr de vouloir vous déconnecter ?",
+              confirmText: "Se déconnecter",
+              cancelText: "Annuler",
+              variant: "destructive",
+              onConfirm: handleLogout,
+            });
+          }}
           userRole={userData?.role || "collaborateur"}
           userProfile={userData?.profile}
         />
