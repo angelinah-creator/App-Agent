@@ -571,12 +571,12 @@ export function TimerSection() {
             const taskTitle = entry.personalTaskId
               ? typeof entry.personalTaskId === "string"
                 ? personalTasks.find((t: any) => t._id === entry.personalTaskId)
-                    ?.title
+                  ?.title
                 : (entry.personalTaskId as any).title
               : entry.sharedTaskId
                 ? typeof entry.sharedTaskId === "string"
                   ? sharedTasks.find((t: any) => t._id === entry.sharedTaskId)
-                      ?.title
+                    ?.title
                   : (entry.sharedTaskId as any).title
                 : "";
 
@@ -614,12 +614,12 @@ export function TimerSection() {
         const taskTitle = entry.personalTaskId
           ? typeof entry.personalTaskId === "string"
             ? personalTasks.find((t: any) => t._id === entry.personalTaskId)
-                ?.title
+              ?.title
             : (entry.personalTaskId as any).title
           : entry.sharedTaskId
             ? typeof entry.sharedTaskId === "string"
               ? sharedTasks.find((t: any) => t._id === entry.sharedTaskId)
-                  ?.title
+                ?.title
               : (entry.sharedTaskId as any).title
             : "";
 
@@ -800,24 +800,24 @@ export function TimerSection() {
   };
 
   return (
-    <div className="flex flex-col h-[calc(100vh-100px)] bg-transparent -mt-2 sm:-mt-8">
+    <div className="flex flex-col h-[calc(100vh-100px)] bg-[#0f0f10] -mt-2 sm:-mt-8 overflow-x-auto">
       {/* TOP BAR */}
-      <div className="border-b px-4 py-2 flex items-center gap-3 bg-transparent z-30 flex-shrink-0">
-        <div className="flex-1 relative" ref={taskSelectorRef}>
+      <div className="border-b px-2 sm:px-4 py-2 flex flex-col sm:flex-row items-start sm:items-center gap-2 sm:gap-3 bg-transparent z-30 flex-shrink-0">
+        <div className="flex-1 w-full sm:w-auto relative" ref={taskSelectorRef}>
           <div
             onClick={() =>
               !isRunning &&
               !isPaused &&
               setIsTaskSelectorOpen(!isTaskSelectorOpen)
             }
-            className={`text-base font-medium outline-none text-white bg-transparent cursor-pointer ${isRunning || isPaused ? "opacity-50" : "hover:text-purple-400"}`}
+            className={`text-sm sm:text-base font-medium outline-none text-white bg-transparent cursor-pointer truncate ${isRunning || isPaused ? "opacity-50" : "hover:text-purple-400"}`}
           >
             {getSelectedTaskName()}
           </div>
 
           {/* Task Selector Popup */}
           {isTaskSelectorOpen && (
-            <div className="absolute top-full left-0 mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 w-80 max-h-80 overflow-y-auto">
+            <div className="absolute top-full left-0 mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 w-full sm:w-80 max-h-80 overflow-y-auto">
               <div className="p-1">
                 {personalTasks.length > 0 && (
                   <>
@@ -863,69 +863,73 @@ export function TimerSection() {
           )}
         </div>
 
-        {getSelectedProjectName() && (
-          <div className="text-xs text-purple-400 px-2 py-0.5 bg-purple-500/10 rounded">
-            {getSelectedProjectName()}
-          </div>
-        )}
-
-        <select
-          value={selectedProject}
-          onChange={(e) => setSelectedProject(e.target.value)}
-          className="border rounded px-2 py-0.5 text-xs text-white bg-[#0F0F12] w-32"
-          disabled={isRunning || isPaused}
-        >
-          <option value="">Sans projet</option>
-          {projects.map((p) => (
-            <option key={p._id} value={p._id}>
-              {p.name}
-            </option>
-          ))}
-        </select>
-
-        <span className="font-mono text-base w-[100px] text-center text-white">
-          {formatTime(seconds)}
-        </span>
-
-        <button
-          onClick={handleTimerAction}
-          className={`px-3 py-1 rounded text-white ${isPaused ? "bg-blue-500" : isRunning ? "bg-yellow-500" : "bg-green-500"}`}
-        >
-          {isPaused ? (
-            <Play size={14} />
-          ) : isRunning ? (
-            <Pause size={14} />
-          ) : (
-            <Play size={14} />
+        <div className="flex items-center gap-2 w-full sm:w-auto justify-between sm:justify-end overflow-x-auto pb-1 sm:pb-0 scrollbar-hide">
+          {getSelectedProjectName() && (
+            <div className="text-[10px] sm:text-xs text-purple-400 px-2 py-0.5 bg-purple-500/10 rounded whitespace-nowrap hidden sm:block">
+              {getSelectedProjectName()}
+            </div>
           )}
-        </button>
 
-        {(isRunning || isPaused) && (
-          <button
-            onClick={handleStop}
-            className="px-3 py-1 rounded bg-red-500 text-white"
+          <select
+            value={selectedProject}
+            onChange={(e) => setSelectedProject(e.target.value)}
+            className="border rounded px-2 py-0.5 text-xs text-white bg-[#0F0F12] w-24 sm:w-32 flex-shrink-0"
+            disabled={isRunning || isPaused}
           >
-            <Square size={14} />
-          </button>
-        )}
+            <option value="">Sans projet</option>
+            {projects.map((p) => (
+              <option key={p._id} value={p._id}>
+                {p.name}
+              </option>
+            ))}
+          </select>
+
+          <span className="font-mono text-sm sm:text-base w-[80px] sm:w-[100px] text-center text-white flex-shrink-0">
+            {formatTime(seconds)}
+          </span>
+
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+            <button
+              onClick={handleTimerAction}
+              className={`px-2 sm:px-3 py-1 rounded text-white flex items-center justify-center ${isPaused ? "bg-blue-500" : isRunning ? "bg-yellow-500" : "bg-green-500"}`}
+            >
+              {isPaused ? (
+                <Play size={14} />
+              ) : isRunning ? (
+                <Pause size={14} />
+              ) : (
+                <Play size={14} />
+              )}
+            </button>
+
+            {(isRunning || isPaused) && (
+              <button
+                onClick={handleStop}
+                className="px-2 sm:px-3 py-1 rounded bg-red-500 text-white flex items-center justify-center"
+              >
+                <Square size={14} />
+              </button>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* WEEK HEADER */}
-      <div className="border-b px-4 py-1.5 flex items-center justify-between bg-transparent text-white z-20 flex-shrink-0">
-        <div className="flex items-center gap-2 relative">
+      <div className="border-b px-2 sm:px-4 py-1.5 flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-2 sm:gap-0 bg-transparent text-white z-20 flex-shrink-0">
+        <div className="flex items-center gap-1 sm:gap-2 relative justify-between sm:justify-start">
           <button
             onClick={() => setWeekOffset((w) => w - 1)}
-            className="p-0.5 hover:bg-white/5 rounded"
+            className="p-1 sm:p-0.5 hover:bg-white/5 rounded"
           >
             <ChevronLeft size={16} />
           </button>
           <div
             ref={weekSelectorButtonRef}
             onClick={() => setIsWeekSelectorOpen(!isWeekSelectorOpen)}
-            className="flex items-center gap-1 bg-[#0F0F12] px-3 py-1 rounded cursor-pointer hover:bg-[#1a1a1f] transition"
+            className="flex items-center justify-center flex-1 sm:flex-none gap-1 bg-[#0F0F12] px-3 py-1.5 sm:py-1 rounded cursor-pointer hover:bg-[#1a1a1f] transition"
           >
             <Calendar className="text-purple-400" size={14} />
-            <span className="text-white text-xs font-medium">
+            <span className="text-white text-xs sm:text-xs font-medium whitespace-nowrap">
               {weekDisplayText}
             </span>
           </div>
@@ -942,83 +946,88 @@ export function TimerSection() {
 
           <button
             onClick={() => setWeekOffset((w) => w + 1)}
-            className="p-0.5 hover:bg-white/5 rounded"
+            className="p-1 sm:p-0.5 hover:bg-white/5 rounded"
           >
             <ChevronRight size={16} />
           </button>
         </div>
-        <div className="flex gap-6">
-          <span className="text-base font-medium font-mono">
+        <div className="flex gap-4 sm:gap-6 justify-between sm:justify-end text-xs sm:text-base">
+          <span className="font-medium font-mono whitespace-nowrap">
             Total : {formatTime(weekTotalSeconds)}
           </span>
-          <span className="text-base font-medium font-mono">
-            Moyenne journalière : {formatTime(Math.floor(averageDailySeconds))}
+          <span className="font-medium font-mono whitespace-nowrap">
+            <span className="hidden sm:inline">Moyenne journalière : </span>
+            <span className="sm:hidden">Moy. jour : </span>
+            {formatTime(Math.floor(averageDailySeconds))}
           </span>
         </div>
       </div>
 
-      {/* DAYS HEADER */}
-      <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b bg-transparent text-white z-10 flex-shrink-0">
-        <div />
-        {DAYS.map((day, i) => {
-          const dayTotal = gridEntries
-            .filter((e) => e.dayIndex === i)
-            .reduce((sum, e) => sum + e.duration, 0);
-          return (
-            <div key={day} className="text-center py-1.5 font-medium text-sm">
-              {day}
-              <p className="text-xs text-gray-400 font-mono">
-                {formatTime(dayTotal)}
-              </p>
-            </div>
-          );
-        })}
-      </div>
-
-      {/* GRID */}
+      {/* GRID AREA */}
       <div className="flex-1 overflow-auto">
-        <div className="relative min-w-[700px]">
-          <TimeGrid
-            onCellClick={handleGridClick}
-            pixelsPerHour={PIXELS_PER_HOUR}
-            editableCutoff={editableCutoff}
-            weekStart={weekStart}
-          />
-
-          {/* Marqueur de position actuelle */}
-          <div
-            className="absolute w-full pointer-events-none z-10"
-            style={{
-              left: `calc(60px + ${currentPosition.dayIndex} * (100% - 60px) / 7)`,
-              top: currentPosition.hourPosition * PIXELS_PER_HOUR,
-              width: `calc((100% - 60px) / 7)`,
-            }}
-          >
-            <div className="w-full h-0.5 bg-white relative">
-              <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full -ml-1"></div>
-            </div>
+        <div className="min-w-[700px] flex flex-col h-full relative">
+          {/* DAYS HEADER */}
+          <div className="grid grid-cols-[60px_repeat(7,1fr)] border-b bg-[#1F2128]/95 backdrop-blur-sm text-white z-20 flex-shrink-0 sticky top-0">
+            <div />
+            {DAYS.map((day, i) => {
+              const dayTotal = gridEntries
+                .filter((e) => e.dayIndex === i)
+                .reduce((sum, e) => sum + e.duration, 0);
+              return (
+                <div key={day} className="text-center py-1.5 font-medium text-sm border-l border-[#313442]/50 first:border-0 pl-1">
+                  {day}
+                  <p className="text-[10px] sm:text-xs text-gray-400 font-mono">
+                    {formatTime(dayTotal)}
+                  </p>
+                </div>
+              );
+            })}
           </div>
 
-          {gridEntries.map((entry, index) => (
-            <TaskBlock
-              key={entry._id || index}
-              entry={entry}
-              dayIndex={entry.dayIndex}
-              startHour={entry.startHour}
-              durationHours={entry.durationHours}
+          {/* GRID */}
+          <div className="relative flex-1">
+            <TimeGrid
+              onCellClick={handleGridClick}
               pixelsPerHour={PIXELS_PER_HOUR}
-              isActive={entry.isActive}
-              onClick={() => handleEntryClick(entry)}
-              onUpdate={(startHour, durationHours) =>
-                handleTaskUpdate(
-                  entry.originalId || entry._id,
-                  startHour,
-                  durationHours,
-                )
-              }
               editableCutoff={editableCutoff}
+              weekStart={weekStart}
             />
-          ))}
+
+            {/* Marqueur de position actuelle */}
+            <div
+              className="absolute w-full pointer-events-none z-10"
+              style={{
+                left: `calc(60px + ${currentPosition.dayIndex} * (100% - 60px) / 7)`,
+                top: currentPosition.hourPosition * PIXELS_PER_HOUR,
+                width: `calc((100% - 60px) / 7)`,
+              }}
+            >
+              <div className="w-full h-0.5 bg-white relative">
+                <div className="absolute left-0 top-1/2 -translate-y-1/2 w-2 h-2 bg-white rounded-full -ml-1"></div>
+              </div>
+            </div>
+
+            {gridEntries.map((entry, index) => (
+              <TaskBlock
+                key={entry._id || index}
+                entry={entry}
+                dayIndex={entry.dayIndex}
+                startHour={entry.startHour}
+                durationHours={entry.durationHours}
+                pixelsPerHour={PIXELS_PER_HOUR}
+                isActive={entry.isActive}
+                onClick={() => handleEntryClick(entry)}
+                onUpdate={(startHour, durationHours) =>
+                  handleTaskUpdate(
+                    entry.originalId || entry._id,
+                    startHour,
+                    durationHours,
+                  )
+                }
+                editableCutoff={editableCutoff}
+              />
+            ))}
+          </div>
         </div>
       </div>
 

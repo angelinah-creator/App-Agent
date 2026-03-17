@@ -209,8 +209,8 @@ export function TaskPopup({
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50" onClick={onClose}>
-      <div className="bg-[#1F2128] rounded-lg p-4 w-[400px] border border-[#313442]" onClick={(e) => e.stopPropagation()}>
+    <div className="fixed inset-0 bg-black/50 flex items-center justify-center z-50 p-4" onClick={onClose}>
+      <div className="bg-[#1F2128] rounded-lg p-4 w-full max-w-[400px] max-h-[90vh] overflow-y-auto border border-[#313442] flex flex-col" onClick={(e) => e.stopPropagation()}>
         <div className="flex items-center justify-between mb-3">
           <h3 className="text-white text-base font-semibold">
             {mode === 'create' ? 'Nouvelle entrée' : 'Modifier l\'entrée'}
@@ -312,7 +312,7 @@ export function TaskPopup({
           </div>
 
           {/* Horaires */}
-          <div className="grid grid-cols-3 gap-2">
+          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2 sm:gap-3">
             <div>
               <label className="text-gray-400 text-[10px] font-medium mb-0.5 block">Début</label>
               <input
@@ -335,7 +335,7 @@ export function TaskPopup({
               />
             </div>
 
-            <div>
+            <div className="col-span-2 sm:col-span-1">
               <label className="text-gray-400 text-[10px] font-medium mb-0.5 block">Durée</label>
               <input
                 type="text"
@@ -347,13 +347,13 @@ export function TaskPopup({
           </div>
 
           {/* Actions */}
-          <div className="flex gap-1.5 mt-4">
+          <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-4">
             {mode === 'edit' && onDelete && (
               <button
                 type="button"
                 onClick={onDelete}
                 disabled={!isEditable}
-                className="px-3 py-1.5 bg-red-600 text-white rounded hover:bg-red-700 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                className="w-full sm:w-auto px-3 py-1.5 bg-red-600/20 text-red-500 rounded hover:bg-red-600 hover:text-white transition-colors text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
               >
                 Supprimer
               </button>
@@ -361,7 +361,7 @@ export function TaskPopup({
             <button
               type="button"
               onClick={onClose}
-              className="flex-1 px-3 py-1.5 bg-gray-700 text-white rounded hover:bg-gray-600 text-xs font-medium"
+              className="flex-1 px-3 py-1.5 bg-[#313442] text-gray-300 rounded hover:bg-[#3d4150] transition-colors text-xs font-medium"
             >
               Annuler
             </button>
@@ -369,7 +369,7 @@ export function TaskPopup({
               type="button"
               onClick={handleSave}
               disabled={mode === 'edit' && !isEditable}
-              className="flex-1 px-3 py-1.5 bg-purple-600 text-white rounded hover:bg-purple-700 text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+              className="flex-1 px-3 py-1.5 bg-[#6C4EA8] text-white rounded hover:bg-purple-600 transition-colors text-xs font-medium disabled:opacity-50 disabled:cursor-not-allowed"
             >
               {mode === 'create' ? 'Créer' : 'Enregistrer'}
             </button>
