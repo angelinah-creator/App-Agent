@@ -79,7 +79,7 @@ export function DocumentsSection({
   }, [ndas, ndasLoading]);
 
   return (
-    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8 w-full overflow-hidden">
+    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-2 sm:-mt-8 w-full overflow-hidden">
       <div className="flex flex-col lg:flex-row gap-4 w-full min-w-0">
 
         {/* ── SECTION CONTRAT ── */}

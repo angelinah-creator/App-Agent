@@ -12,17 +12,6 @@ import {
 } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogFooter,
-} from "@/components/ui/dialog";
 import {
   AlertCircle,
   Calendar,
@@ -210,7 +199,7 @@ export function AbsencesSection() {
   }
 
   return (
-    <div className="space-y-3 -mt-8">
+    <div className="space-y-3 -mt-2 sm:-mt-8">
       {dialog}
       <Card className="bg-[#1F2128] border-[#313442]">
         <CardHeader>

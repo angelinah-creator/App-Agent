@@ -869,7 +869,7 @@ export function RapportSection() {
   }
 
   return (
-    <div className="space-y-4 p-4 bg-[#0F0F12] -mt-8">
+    <div className="space-y-4 p-4 bg-[#0F0F12] -mt-2 sm:-mt-8">
       {/* EN-TÊTE */}
       <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
         <div className="flex items-center justify-between mb-4">

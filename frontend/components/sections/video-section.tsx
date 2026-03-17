@@ -21,7 +21,7 @@ function VideoProgressBar({ progress }: { progress: VideoProgress }) {
   const colors = getColor();
 
   return (
-    <div className={`rounded-xl border px-4 md:px-5 py-4 -mt-4 md:-mt-8 ${colors.bg}`}>
+    <div className={`rounded-xl border px-4 md:px-5 py-4 -mt-2 md:-mt-8 ${colors.bg}`}>
       <div className="flex flex-col sm:flex-row sm:items-center justify-between mb-3 gap-3">
         <div className="flex items-center gap-2.5">
           {percentage >= 100 ? (

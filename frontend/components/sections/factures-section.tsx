@@ -145,7 +145,7 @@ export function FacturesSection({
   ).length;
 
   return (
-    <div className="space-y-3 -mt-8">
+    <div className="space-y-3 -mt-2 sm:-mt-8">
       <div className="bg-[#1F2128] backdrop-blur-sm rounded-2xl border border-[#313442] p-3">
         <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
           <h3 className="text-base font-semibold text-[#F1F1F1]">

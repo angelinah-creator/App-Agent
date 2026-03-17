@@ -43,7 +43,7 @@ export function KPIsSection({
   };
 
   return (
-    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8">
+    <div className="space-y-3 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-2 sm:-mt-8">
       {/* KPI Stats Cards */}
       <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
         <Card className="border-[#313442] bg-[#1F2128] backdrop-blur-sm">

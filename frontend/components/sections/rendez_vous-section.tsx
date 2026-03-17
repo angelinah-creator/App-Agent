@@ -487,7 +487,7 @@ export function RendezVousSection({ userRole }: RendezVousSectionProps) {
   };
 
   return (
-    <div className="space-y-6 -mt-8">
+    <div className="space-y-6 -mt-2 sm:-mt-8">
       {/* Header */}
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>

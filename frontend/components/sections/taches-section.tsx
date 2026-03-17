@@ -189,7 +189,7 @@ export function TachesSection() {
       }
     });
     setColumnTaskIds(newMap);
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [taskStatuses]); // ← string primitive : stable, pas de boucle infinie
 
   // Sauvegarder l'état des tâches dépliées
@@ -565,7 +565,7 @@ export function TachesSection() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f10] text-gray-100 -mt-8">
+    <div className="min-h-screen bg-[#0f0f10] text-gray-100 -mt-2 sm:-mt-8">
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
         <div>
@@ -583,9 +583,8 @@ export function TachesSection() {
           </button>
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className={`px-4 py-2 rounded-lg transition text-xs ${
-              showArchived ? "bg-purple-600" : "bg-gray-700 hover:bg-gray-600"
-            }`}
+            className={`px-4 py-2 rounded-lg transition text-xs ${showArchived ? "bg-purple-600" : "bg-gray-700 hover:bg-gray-600"
+              }`}
           >
             {showArchived ? "Masquer archivées" : "Voir archivées"}
           </button>
@@ -608,18 +607,16 @@ export function TachesSection() {
           <div className="flex items-center gap-2">
             <button
               onClick={() => setViewMode("kanban")}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${
-                viewMode === "kanban" ? "bg-[#6C4EA8] text-white" : "bg-[#2a2a2d] text-gray-300"
-              }`}
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${viewMode === "kanban" ? "bg-[#6C4EA8] text-white" : "bg-[#2a2a2d] text-gray-300"
+                }`}
             >
               <LayoutGrid size={16} />
               Tableau
             </button>
             <button
               onClick={() => setViewMode("list")}
-              className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${
-                viewMode === "list" ? "bg-[#6C4EA8] text-white" : "bg-[#2a2a2d] text-gray-300"
-              }`}
+              className={`flex items-center gap-2 px-2 py-1.5 rounded-lg text-xs ${viewMode === "list" ? "bg-[#6C4EA8] text-white" : "bg-[#2a2a2d] text-gray-300"
+                }`}
             >
               <List size={16} />
               Liste
@@ -707,10 +704,10 @@ export function TachesSection() {
               <div className="rotate-2 opacity-90 w-[230px] shadow-2xl">
                 <TaskCard
                   task={activeTask}
-                  onEdit={() => {}}
-                  onDelete={() => {}}
-                  onAddSubtask={() => {}}
-                  onToggleSubtasks={() => {}}
+                  onEdit={() => { }}
+                  onDelete={() => { }}
+                  onAddSubtask={() => { }}
+                  onToggleSubtasks={() => { }}
                 />
               </div>
             ) : null}

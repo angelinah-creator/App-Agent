@@ -723,7 +723,7 @@ export function Profil() {
       )}
 
       {/* Hero Card */}
-      <div className="-mt-8">
+      <div className="-mt-2 sm:-mt-8">
         <div className="flex flex-col sm:flex-row items-center sm:items-stretch gap-4">
           {/* Avatar */}
           <div className="relative flex-shrink-0">
