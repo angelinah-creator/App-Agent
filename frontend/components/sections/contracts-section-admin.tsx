@@ -83,12 +83,12 @@ export function ContractsSectionAdmin({
         <div className="">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
+              <Search className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 h-3.5 w-3.5 sm:h-4 sm:w-4 text-slate-400" />
               <Input
                 placeholder="Rechercher un contrat..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+                className="pl-8 sm:pl-10 text-xs sm:text-sm h-8 sm:h-9"
               />
             </div>
 

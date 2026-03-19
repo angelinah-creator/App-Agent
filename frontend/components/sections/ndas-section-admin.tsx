@@ -75,17 +75,17 @@ export function NdasSectionAdmin({
         <div className="">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-[#F1F1F1]" />
+              <Search className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 h-3.5 w-3.5 sm:h-4 sm:w-4 text-[#F1F1F1]" />
               <Input
                 placeholder="Rechercher un NDA..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-[#2C2E3A] border-[#313442] text-white placeholder:text-[#F1F1F1]"
+                className="pl-8 sm:pl-10 bg-[#2C2E3A] border-[#313442] text-xs sm:text-sm h-8 sm:h-9 text-white placeholder:text-[#F1F1F1]"
               />
             </div>
 
             <Select value={filterAgent} onValueChange={setFilterAgent}>
-              <SelectTrigger className="bg-[#2C2E3A] border-[#313442] text-white">
+              <SelectTrigger className="bg-[#2C2E3A] border-[#313442] text-white text-xs sm:text-sm h-8 sm:h-9">
                 <SelectValue placeholder="Agent" />
               </SelectTrigger>
               <SelectContent className="bg-[#2C2E3A] border-[#313442] text-white max-h-[300px]">
@@ -110,7 +110,7 @@ export function NdasSectionAdmin({
         <Card className="bg-[#1F2128] border border-[#313442]">
           <CardContent className="py-12 text-center">
             <FileText className="w-16 h-16 text-[#F1F1F1] mx-auto mb-4" />
-            <p className="text-white text-lg font-medium">Aucun NDA trouvé</p>
+            <p className="text-white text-base sm:text-lg font-medium">Aucun NDA trouvé</p>
           </CardContent>
         </Card>
       ) : (
@@ -135,7 +135,7 @@ export function NdasSectionAdmin({
                       
                       <div className="flex-1 space-y-1">
                         <div className="flex items-center gap-3 flex-wrap">
-                          <h3 className="font-semibold text-lg text-white">
+                          <h3 className="font-semibold text-base sm:text-lg text-white">
                             {getAgentInfo(nda.userId)}
                           </h3>
                         </div>

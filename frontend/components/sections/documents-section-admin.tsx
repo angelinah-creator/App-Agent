@@ -104,7 +104,7 @@ export function DocumentsSectionAdmin({
         <CardContent className="">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <Select value={selectedAgent} onValueChange={setSelectedAgent}>
-              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <User className="w-4 h-4 mr-2 text-white" />
                 <SelectValue placeholder="Sélectionner un agent"/>
               </SelectTrigger>
@@ -121,12 +121,12 @@ export function DocumentsSectionAdmin({
             {selectedAgent !== "all" && (
               <>
                 <div className="relative text-white">
-                  <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
+                  <Search className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
                   <Input
                     placeholder="Rechercher un document..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="pl-10 bg-[#2C2E3A] border border-[#2C2E3A]"
+                    className="pl-8 sm:pl-10 bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9"
                   />
                 </div>
               </>
@@ -171,7 +171,7 @@ export function DocumentsSectionAdmin({
         <Card className="bg-[#1F2128] border border-[#313442]">
           <CardContent className="py-16 text-center">
             <User className="w-20 h-20 text-slate-300 mx-auto mb-4" />
-            <p className="text-lg text-slate-600 font-medium">Sélectionnez un agent</p>
+            <p className="text-base sm:text-lg text-slate-600 font-medium">Sélectionnez un agent</p>
             <p className="text-sm text-slate-500 mt-2">
               Choisissez un agent dans la liste pour voir ses documents
             </p>

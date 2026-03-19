@@ -302,17 +302,17 @@ export function FacturesSectionAdmin({
         <CardContent className="">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             <div className="relative">
-              <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
+              <Search className="absolute left-2.5 top-2.5 sm:left-3 sm:top-3 h-3.5 w-3.5 sm:h-4 sm:w-4 text-white" />
               <Input
                 placeholder="Rechercher une facture ou un agent..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10 bg-[#2C2E3A] border border-[#2C2E3A]"
+                className="pl-8 sm:pl-10 bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9"
               />
             </div>
 
             <Select value={filterStatus} onValueChange={setFilterStatus}>
-              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Statut" />
               </SelectTrigger>
@@ -325,7 +325,7 @@ export function FacturesSectionAdmin({
             </Select>
 
             <Select value={filterAgent} onValueChange={setFilterAgent}>
-              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <User className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Agent" />
               </SelectTrigger>
@@ -340,7 +340,7 @@ export function FacturesSectionAdmin({
             </Select>
 
             <Select value={filterMonth} onValueChange={setFilterMonth}>
-              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <SelectValue placeholder="Mois" />
               </SelectTrigger>
               <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
@@ -354,7 +354,7 @@ export function FacturesSectionAdmin({
             </Select>
 
             <Select value={filterYear} onValueChange={setFilterYear}>
-              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
+              <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <SelectValue placeholder="Année" />
               </SelectTrigger>
               <SelectContent className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
@@ -403,7 +403,7 @@ export function FacturesSectionAdmin({
                         <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4 text-white" />
-                            <h3 className="font-semibold text-lg text-white">
+                            <h3 className="font-semibold text-base sm:text-lg text-white">
                               {agentDetails.name}
                             </h3>
                           </div>
