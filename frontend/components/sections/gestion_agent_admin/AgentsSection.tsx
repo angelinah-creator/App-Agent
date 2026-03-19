@@ -99,12 +99,12 @@ function Btn({
 
 function StatCard({ label, value, color, sub }: any) {
   return (
-    <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-4">
-      <p className="text-xs text-white font-medium uppercase tracking-wider mb-1">
+    <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-3 sm:p-4">
+      <p className="text-[10px] sm:text-xs text-white font-medium uppercase tracking-wider mb-1">
         {label}
       </p>
-      <p className={`text-3xl font-bold tabular-nums ${color}`}>{value}</p>
-      {sub && <p className="text-xs text-gray-400 mt-1">{sub}</p>}
+      <p className={`text-xl sm:text-3xl font-bold tabular-nums ${color}`}>{value}</p>
+      {sub && <p className="text-[10px] sm:text-xs text-gray-400 mt-1">{sub}</p>}
     </div>
   );
 }
@@ -247,7 +247,7 @@ export function AgentsSection({
       </div>
 
       {/* Filters */}
-      <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-3 mb-3">
+      <div className="bg-[#1F2128] border border-[#313442] rounded-xl p-2 sm:p-3 mb-3">
         <div className="flex flex-wrap items-center justify-between gap-2">
           <div className="flex gap-1.5">
             <FilterBtn
@@ -321,7 +321,117 @@ export function AgentsSection({
             </p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
+          <>
+          {/* Mobile card layout */}
+          <div className="md:hidden divide-y divide-[#313442]/50">
+            {filteredAgents.map((agent) => (
+              <div
+                key={agent._id}
+                className={`p-3 sm:p-4 transition-colors ${
+                  agent.archived
+                    ? "opacity-60"
+                    : "hover:bg-white/[0.02]"
+                }`}
+              >
+                <div className="flex items-start gap-3">
+                  <div className="relative group flex-shrink-0">
+                    <Avatar
+                      agent={agent}
+                      size="md"
+                      onClick={() => {
+                        if ((agent as any).profilePhoto?.url)
+                          setLightboxAgent(agent);
+                      }}
+                      className={
+                        (agent as any).profilePhoto?.url
+                          ? "ring-2 ring-violet-500/30 hover:ring-violet-500/60"
+                          : ""
+                      }
+                    />
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setPhotoAgent(agent);
+                      }}
+                      className="absolute -bottom-0.5 -right-0.5 w-4 h-4 bg-violet-600 rounded-full flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity hover:bg-violet-500"
+                      title="Changer la photo"
+                    >
+                      <Camera size={8} className="text-white" />
+                    </button>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center justify-between gap-2">
+                      <p className="text-sm font-semibold text-white leading-tight truncate">
+                        {agent.prenoms} {agent.nom}
+                      </p>
+                      <ProfileBadge agent={agent} />
+                    </div>
+                    <p className="text-xs text-white mt-0.5 truncate">{agent.email}</p>
+                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1 mt-1.5">
+                      <p className="flex items-center gap-1 text-xs text-gray-400">
+                        <Phone size={11} className="text-gray-600" />
+                        {agent.telephone}
+                      </p>
+                      <p className="text-xs text-gray-300">{agent.poste}</p>
+                    </div>
+                    {showArchived && (
+                      <p className="text-xs text-gray-400 mt-1">
+                        Archivé le{" "}
+                        {agent.archivedAt
+                          ? new Date(agent.archivedAt).toLocaleDateString("fr-FR")
+                          : "N/A"}
+                        {agent.archiveReason && ` — ${agent.archiveReason}`}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 mt-2.5 pl-[52px]">
+                  <Btn
+                    size="sm"
+                    variant="outline"
+                    onClick={() => handleViewDetails(agent)}
+                  >
+                    <Eye size={11} />
+                    <span className="hidden sm:inline">Détails</span>
+                  </Btn>
+                  {!agent.archived ? (
+                    <>
+                      <Btn
+                        size="sm"
+                        variant="blue"
+                        onClick={() => handleEdit(agent)}
+                      >
+                        <Edit size={11} />
+                        <span className="hidden sm:inline">Modifier</span>
+                      </Btn>
+                      <Btn
+                        size="sm"
+                        variant="orange"
+                        onClick={() => handleArchive(agent)}
+                        disabled={archiveAgentPending}
+                      >
+                        <Archive size={11} />
+                        <span className="hidden sm:inline">Archiver</span>
+                      </Btn>
+                    </>
+                  ) : (
+                    <Btn
+                      size="sm"
+                      variant="green"
+                      onClick={() => handleRestore(agent)}
+                      disabled={archiveAgentPending}
+                    >
+                      <RefreshCw size={11} />
+                      <span className="hidden sm:inline">Restaurer</span>
+                    </Btn>
+                  )}
+                </div>
+              </div>
+            ))}
+          </div>
+
+          {/* Desktop table layout */}
+          <div className="hidden md:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#313442]">
@@ -469,6 +579,7 @@ export function AgentsSection({
               </tbody>
             </table>
           </div>
+          </>
         )}
       </div>
 

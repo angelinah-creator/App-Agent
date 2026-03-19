@@ -185,7 +185,7 @@ export function DetailsModal({
       }
       maxWidth="max-w-lg"
     >
-      <div className="p-5 space-y-5">
+      <div className="p-3 sm:p-5 space-y-5">
         {agent.archived && (
           <div className="bg-gray-500/10 border border-gray-500/20 rounded-xl p-3 text-xs text-gray-400">
             Archivé le {agent.archivedAt ? formatDate(agent.archivedAt) : "N/A"}
@@ -195,7 +195,7 @@ export function DetailsModal({
 
         <div>
           <SectionTitle icon={Users}>Informations Personnelles</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               ["Email", agent.email],
               ["Téléphone", agent.telephone],
@@ -216,7 +216,7 @@ export function DetailsModal({
 
         <div>
           <SectionTitle icon={Briefcase}>Professionnel</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {[
               ["Poste", agent.poste],
               ...(agent.mission ? [["Mission", agent.mission]] : []),
@@ -237,7 +237,7 @@ export function DetailsModal({
 
         <div>
           <SectionTitle icon={FileText}>Financier</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {agent.profile === "stagiaire" ? (
               <>
                 <div>
@@ -286,7 +286,7 @@ export function DetailsModal({
                   </div>
                 )}
                 {agent.domainePrestation && (
-                  <div className="col-span-2">
+                  <div className="sm:col-span-2">
                     <p className="text-[10px] uppercase tracking-wider text-white font-semibold">
                       Domaine
                     </p>
@@ -300,7 +300,7 @@ export function DetailsModal({
           </div>
         </div>
 
-        <div className="flex gap-2 pt-2 border-t border-[#2e3144]">
+        <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#2e3144]">
           <Btn variant="outline" onClick={onClose} className="flex-1">
             Fermer
           </Btn>

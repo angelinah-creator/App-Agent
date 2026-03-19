@@ -97,7 +97,7 @@ export function ArchiveModal({ agent, onClose, onConfirm, isPending }: ArchiveMo
       }
       maxWidth="max-w-sm"
     >
-      <div className="p-4 space-y-3">
+      <div className="p-3 sm:p-4 space-y-3">
         <Field label="Raison de l'archivage (optionnel)" htmlFor="archiveReason">
           <Inp 
             id="archiveReason" 
@@ -109,7 +109,7 @@ export function ArchiveModal({ agent, onClose, onConfirm, isPending }: ArchiveMo
         <div className="bg-amber-500/10 border border-amber-500/20 rounded-xl p-3 text-xs text-amber-300">
           L'agent sera marqué comme archivé. Toutes ses données seront conservées.
         </div>
-        <div className="flex gap-2 pt-2">
+        <div className="flex flex-col sm:flex-row gap-2 pt-2">
           <Btn variant="outline" onClick={onClose} disabled={isPending} className="flex-1">
             Annuler
           </Btn>

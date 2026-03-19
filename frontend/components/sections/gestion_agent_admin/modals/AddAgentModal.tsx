@@ -189,11 +189,11 @@ export function AddAgentModal({ onClose, onSuccess }: AddAgentModalProps) {
       onClose={onClose}
       header={<h2 className="text-sm font-bold">Ajouter un agent</h2>}
     >
-      <form onSubmit={handleSubmit} className="p-5 space-y-5">
+      <form onSubmit={handleSubmit} className="p-3 sm:p-5 space-y-5">
         {/* Base */}
         <div>
           <SectionTitle icon={Users}>Informations de base</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Profil *" htmlFor="profile">
               <Sel
                 id="profile"
@@ -266,7 +266,7 @@ export function AddAgentModal({ onClose, onSuccess }: AddAgentModalProps) {
         {/* Contact */}
         <div>
           <SectionTitle icon={Phone}>Contact</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Email *" htmlFor="email">
               <Inp
                 id="email"
@@ -288,7 +288,7 @@ export function AddAgentModal({ onClose, onSuccess }: AddAgentModalProps) {
                 required
               />
             </Field>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Field label="Adresse *" htmlFor="adresse">
                 <Inp
                   id="adresse"
@@ -317,7 +317,7 @@ export function AddAgentModal({ onClose, onSuccess }: AddAgentModalProps) {
         {/* Pro */}
         <div>
           <SectionTitle icon={Briefcase}>Professionnel</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Poste *" htmlFor="poste">
               <Inp
                 id="poste"
@@ -359,7 +359,7 @@ export function AddAgentModal({ onClose, onSuccess }: AddAgentModalProps) {
                 disabled={formData.dateFinIndeterminee}
               />
             </Field>
-            <div className="col-span-2 flex items-center gap-2">
+            <div className="sm:col-span-2 flex items-center gap-2">
               <input
                 type="checkbox"
                 id="dateFinIndeterminee"
@@ -385,7 +385,7 @@ export function AddAgentModal({ onClose, onSuccess }: AddAgentModalProps) {
         {/* Finance */}
         <div>
           <SectionTitle icon={FileText}>Financier</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {formData.profile === "stagiaire" ? (
               <>
                 <Field label="Indemnité mensuelle" htmlFor="indemnite">
@@ -461,7 +461,7 @@ export function AddAgentModal({ onClose, onSuccess }: AddAgentModalProps) {
           </div>
         </div>
 
-        <div className="flex gap-2 pt-2 border-t border-[#2e3144]">
+        <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#2e3144]">
           <Btn
             variant="outline"
             onClick={onClose}

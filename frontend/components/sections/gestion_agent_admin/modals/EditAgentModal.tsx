@@ -244,10 +244,10 @@ export function EditAgentModal({
         </div>
       }
     >
-      <form onSubmit={handleSubmit} className="p-5 space-y-5">
+      <form onSubmit={handleSubmit} className="p-3 sm:p-5 space-y-5">
         <div>
           <SectionTitle icon={Users}>Informations de base</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Nom *" htmlFor="edit-nom">
               <Inp
                 id="edit-nom"
@@ -273,7 +273,7 @@ export function EditAgentModal({
 
         <div>
           <SectionTitle icon={Phone}>Contact</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Email *" htmlFor="edit-email">
               <Inp
                 id="edit-email"
@@ -295,7 +295,7 @@ export function EditAgentModal({
                 required
               />
             </Field>
-            <div className="col-span-2">
+            <div className="sm:col-span-2">
               <Field label="Adresse *" htmlFor="edit-adresse">
                 <Inp
                   id="edit-adresse"
@@ -312,7 +312,7 @@ export function EditAgentModal({
 
         <div>
           <SectionTitle icon={Briefcase}>Professionnel</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             <Field label="Poste *" htmlFor="edit-poste">
               <Inp
                 id="edit-poste"
@@ -364,7 +364,7 @@ export function EditAgentModal({
                 disabled={formData.dateFinIndeterminee}
               />
             </Field>
-            <div className="col-span-2 flex items-center gap-2">
+            <div className="sm:col-span-2 flex items-center gap-2">
               <input
                 type="checkbox"
                 id="edit-dateFinIndeterminee"
@@ -389,7 +389,7 @@ export function EditAgentModal({
 
         <div>
           <SectionTitle icon={FileText}>Financier</SectionTitle>
-          <div className="grid grid-cols-2 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {agent.profile === "stagiaire" ? (
               <>
                 <Field label="Indemnité mensuelle" htmlFor="edit-indemnite">
@@ -471,7 +471,7 @@ export function EditAgentModal({
           </div>
         </div>
 
-        <div className="flex gap-2 pt-2 border-t border-[#2e3144]">
+        <div className="flex flex-col sm:flex-row gap-2 pt-2 border-t border-[#2e3144]">
           <Btn
             variant="outline"
             onClick={onClose}
