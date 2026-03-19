@@ -125,14 +125,14 @@ export default function CollaboratorKanban({
   return (
     <div className="flex-1">
       {/* Tableau Kanban compact */}
-      <div className="flex gap-3 overflow-x-auto pb-3 mt-20">
+      <div className="flex gap-2 sm:gap-3 overflow-x-auto pb-3">
         {columns.map((column) => {
           const columnTasks = tasks.filter((task) => task.status === column.id);
 
           return (
             <div
               key={column.id}
-              className={`flex-shrink-0 w-64 rounded-lg border ${column.color}`}
+              className={`flex-shrink-0 w-60 sm:w-64 rounded-lg border ${column.color}`}
             >
               {/* En-tête de colonne */}
               <div className={`p-2 rounded-t-lg ${column.bg}`}>

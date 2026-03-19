@@ -569,34 +569,34 @@ export function TachesSection() {
       {/* Header */}
       <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold">Espace Personnel</h1>
-          <p className="text-gray-400">Gère tes tâches et marque ton temps</p>
+          <h1 className="text-xl sm:text-2xl font-extrabold">Espace Personnel</h1>
+          <p className="text-gray-400 text-sm">Gère tes tâches et marque ton temps</p>
         </div>
-        <div className="flex items-center gap-4">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
           <button
             onClick={() => archiveCompletedMutation.mutate()}
             disabled={archiveCompletedMutation.isPending}
-            className="bg-gray-700 hover:bg-gray-600 text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-xs disabled:opacity-50"
+            className="bg-gray-700 hover:bg-gray-600 text-white px-2 sm:px-4 py-2 rounded-lg transition flex items-center gap-2 text-xs disabled:opacity-50"
           >
             <Archive size={16} />
-            {archiveCompletedMutation.isPending ? "Archivage..." : "Nettoyer les terminées"}
+            <span className="hidden sm:inline">{archiveCompletedMutation.isPending ? "Archivage..." : "Nettoyer les terminées"}</span>
           </button>
           <button
             onClick={() => setShowArchived(!showArchived)}
-            className={`px-4 py-2 rounded-lg transition text-xs ${showArchived ? "bg-purple-600" : "bg-gray-700 hover:bg-gray-600"
+            className={`px-2 sm:px-4 py-2 rounded-lg transition text-xs ${showArchived ? "bg-purple-600" : "bg-gray-700 hover:bg-gray-600"
               }`}
           >
-            {showArchived ? "Masquer archivées" : "Voir archivées"}
+            {showArchived ? "Masquer" : "Archivées"}
           </button>
           <button
             onClick={() => {
               setDefaultStatusForNewTask(undefined);
               setShowTaskForm(true);
             }}
-            className="bg-[#6C4EA8] hover:bg-[#5a3d8c] text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-xs"
+            className="bg-[#6C4EA8] hover:bg-[#5a3d8c] text-white px-2 sm:px-4 py-2 rounded-lg transition flex items-center gap-2 text-xs"
           >
             <Plus size={16} />
-            Nouvelle tâche
+            <span className="hidden sm:inline">Nouvelle tâche</span>
           </button>
         </div>
       </div>

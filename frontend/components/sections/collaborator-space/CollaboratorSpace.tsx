@@ -74,18 +74,16 @@ export default function CollaboratorSpace() {
   };
 
   return (
-    <div className=" bg-[#0f0f10] text-gray-100">
+    <div className="bg-[#0f0f10] text-gray-100">
 
-      <div className="mb-6 flex justify-between items-center fixed -mt-15">
-        <div>
-          <h1 className="text-2xl font-extrabold text-white">Espace Collaborateur</h1>
-          <p className="text-gray-400 mt-1">Visionnez les tâches de vos collaborateurs</p>
-        </div>
+      <div className="mb-4 sm:mb-6 px-2 sm:px-4">
+        <h1 className="text-xl sm:text-2xl font-extrabold text-white">Espace Collaborateur</h1>
+        <p className="text-gray-400 mt-1 text-sm">Visionnez les tâches de vos collaborateurs</p>
       </div>
       {/* Barre de navigation */}
-      <div className="fixed top-35 left-54 z-50 px-4 py-3">
+      <div className="px-2 sm:px-4 py-2 sm:py-3">
         <div className="flex items-center justify-between">
-          <div className="relative">
+          <div className="relative w-full max-w-xs">
             <CollaboratorDropdown
               collaborators={collaborators}
               selectedCollaborator={selectedCollaborator}
@@ -99,7 +97,7 @@ export default function CollaboratorSpace() {
       </div>
 
       {/* Contenu principal */}
-      <div className="p-4 mt-10">
+      <div className="p-2 sm:p-4">
         {selectedCollaborator ? (
           <CollaboratorKanban
             collaborator={selectedCollaborator}
@@ -108,12 +106,12 @@ export default function CollaboratorSpace() {
             onLoadSubtasks={handleLoadSubtasks}
           />
         ) : (
-          <div className="h-[calc(100vh-100px)] flex flex-col items-center justify-center">
+          <div className="h-[calc(100vh-250px)] flex flex-col items-center justify-center">
             <div className="text-center max-w-md">
-              <div className="w-25 h-25 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
-                <UserX className="text-gray-500 w-12 h-12"/>
+              <div className="w-20 sm:w-25 h-20 sm:h-25 bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-4">
+                <UserX className="text-gray-500 w-10 sm:w-12 h-10 sm:h-12"/>
               </div>
-              <h2 className="text-xl font-bold mb-2">Aucun collaborateur sélectionné</h2>
+              <h2 className="text-lg sm:text-xl font-bold mb-2">Aucun collaborateur sélectionné</h2>
               <p className="text-sm text-gray-400 mb-4">
                 Sélectionnez un collaborateur dans le menu déroulant pour consulter ses tâches.
               </p>

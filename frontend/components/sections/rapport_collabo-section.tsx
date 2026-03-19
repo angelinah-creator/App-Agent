@@ -377,12 +377,11 @@ function PeriodSelector({
   return (
     <div
       ref={popupRef}
-      className="absolute left-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 overflow-hidden"
-      style={{ width: "400px" }}
+      className="absolute left-0 top-full mt-1 bg-[#1F2128] border border-[#313442] rounded-lg shadow-2xl z-50 overflow-hidden w-[280px] sm:w-[400px] max-w-[calc(100vw-2rem)]"
     >
-      <div className="flex" style={{ height: "280px" }}>
-        <div className="w-40 border-r border-[#313442] p-2 overflow-y-auto">
-          <div className="space-y-0.5">
+      <div className="flex flex-col sm:flex-row" style={{ height: "auto", minHeight: "280px" }}>
+        <div className="sm:w-40 border-b sm:border-b-0 sm:border-r border-[#313442] p-2 overflow-y-auto">
+          <div className="flex sm:flex-col flex-wrap gap-0.5">
             {shortcuts.map((shortcut) => (
               <button
                 key={shortcut.value}
@@ -751,9 +750,9 @@ export function RapportCollaboSection() {
   };
 
   return (
-    <div className="space-y-4 p-4 bg-[#0F0F12] -mt-8">
-      <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-3">
-        <div className="flex items-center gap-2">
+    <div className="space-y-4 p-2 sm:p-4 bg-[#0F0F12] -mt-2 sm:-mt-8">
+      <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-2 sm:p-3">
+        <div className="flex flex-wrap items-center gap-2">
           <Users className="text-purple-400" size={16} />
           <select
             value={selectedUserId}
@@ -761,7 +760,7 @@ export function RapportCollaboSection() {
               setSelectedUserId(e.target.value);
               setSelectedProjectIds(new Set());
             }}
-            className="flex-1 bg-[#0F0F12] text-white px-3 py-1.5 rounded border border-[#313442] max-w-xs text-xs"
+            className="flex-1 bg-[#0F0F12] text-white px-3 py-1.5 rounded border border-[#313442] max-w-full sm:max-w-xs text-xs"
           >
             <option value="">Sélectionner un collaborateur</option>
             {users.map((user) => (
@@ -790,9 +789,9 @@ export function RapportCollaboSection() {
         </div>
       ) : (
         <>
-          <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
-            <div className="flex items-center justify-between mb-4">
-              <div className="flex items-center gap-2 relative">
+          <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-3 sm:p-4">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-3 mb-4">
+              <div className="flex flex-wrap items-center gap-2 relative">
                 <button onClick={() => setOffset((o) => o - 1)} className="p-1 hover:bg-white/5 rounded transition">
                   <ChevronLeft className="text-white" size={16} />
                 </button>
@@ -802,7 +801,7 @@ export function RapportCollaboSection() {
                   className="flex items-center gap-1 bg-[#0F0F12] px-3 py-1 rounded cursor-pointer hover:bg-[#1a1a1f] transition"
                 >
                   <Calendar className="text-purple-400" size={14} />
-                  <span className="text-white text-xs font-medium">{displayText}</span>
+                  <span className="text-white text-xs font-medium truncate max-w-[130px] sm:max-w-none">{displayText}</span>
                 </div>
                 <PeriodSelector
                   isOpen={isPeriodSelectorOpen}
@@ -826,7 +825,7 @@ export function RapportCollaboSection() {
                 </select>
               </div>
 
-              <div className="flex items-center gap-2">
+              <div className="flex flex-wrap items-center gap-2">
                 <ProjectFilter
                   projects={availableProjects} // ← maintenant basé sur userProjects
                   selectedProjectIds={selectedProjectIds}
@@ -858,8 +857,8 @@ export function RapportCollaboSection() {
             </div>
           </div>
 
-          <div className="grid grid-cols-3 gap-4">
-            <div className="col-span-2 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+            <div className="lg:col-span-2 bg-[#1F2128] rounded-lg border border-[#313442] p-3 sm:p-4">
               <h3 className="text-white font-semibold text-sm mb-3">Durée par jour</h3>
               <div ref={barChartRef}>
                 <ResponsiveContainer width="100%" height={250}>
@@ -874,7 +873,7 @@ export function RapportCollaboSection() {
               </div>
             </div>
 
-            <div className="col-span-1 bg-[#1F2128] rounded-lg border border-[#313442] p-4">
+            <div className="col-span-1 bg-[#1F2128] rounded-lg border border-[#313442] p-3 sm:p-4">
               <h3 className="text-white font-semibold text-sm mb-3">Temps par tâche</h3>
               <div ref={pieChartRef}>
                 <ResponsiveContainer width="100%" height={150}>
@@ -923,8 +922,9 @@ export function RapportCollaboSection() {
             </div>
           </div>
 
-          <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-4">
+          <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-3 sm:p-4 overflow-x-auto">
             <h3 className="text-white font-semibold text-sm mb-3">Détails par projet</h3>
+            <div className="min-w-[600px]">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#313442]">
@@ -980,6 +980,7 @@ export function RapportCollaboSection() {
                 </tr>
               </tbody>
             </table>
+            </div>
           </div>
         </>
       )}

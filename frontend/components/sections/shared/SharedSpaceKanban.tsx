@@ -536,15 +536,15 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f10] text-gray-100 p-4">
+    <div className="min-h-screen bg-[#0f0f10] text-gray-100 p-2 sm:p-4">
       {/* Header */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between mb-6 gap-4">
+      <div className="flex flex-col md:flex-row md:items-start justify-between mb-4 sm:mb-6 gap-3 sm:gap-4">
         <div>
-          <h1 className="text-2xl font-extrabold">{space.name}</h1>
-          <p className="text-gray-400">{space.description || "Espace partagé"}</p>
+          <h1 className="text-xl sm:text-2xl font-extrabold">{space.name}</h1>
+          <p className="text-gray-400 text-sm">{space.description || "Espace partagé"}</p>
         </div>
-        <div className="flex items-center gap-4">
-          <div className="flex items-center gap-2 bg-[#1F2128] px-3 py-1.5 rounded-lg border border-[#313442]">
+        <div className="flex flex-wrap items-center gap-2 sm:gap-4">
+          <div className="flex items-center gap-2 bg-[#1F2128] px-2 sm:px-3 py-1.5 rounded-lg border border-[#313442]">
             <Users size={16} className="text-purple-400" />
             <span className="text-xs">{members.length} membre(s)</span>
           </div>
@@ -553,10 +553,10 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
               setDefaultStatusForNewTask(undefined);
               setShowTaskForm(true);
             }}
-            className="bg-[#6C4EA8] hover:bg-[#5a3d8c] text-white px-4 py-2 rounded-lg transition flex items-center gap-2 text-xs"
+            className="bg-[#6C4EA8] hover:bg-[#5a3d8c] text-white px-2 sm:px-4 py-2 rounded-lg transition flex items-center gap-2 text-xs"
           >
             <Plus size={16} />
-            Nouvelle tâche
+            <span className="hidden sm:inline">Nouvelle tâche</span>
           </button>
         </div>
       </div>

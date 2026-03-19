@@ -12,6 +12,8 @@ import {
   Edit,
   Trash2,
   AlertTriangle,
+  Menu,
+  ChevronDown,
 } from "lucide-react";
 import { spaceService, Space, SpacePhoto } from "@/lib/space-service";
 import SharedSpaceKanban from "./SharedSpaceKanban";
@@ -27,6 +29,7 @@ export default function EspacesPartageSection() {
   const [spaceToDelete, setSpaceToDelete] = useState<Space | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [openMenuId, setOpenMenuId] = useState<string | null>(null);
+  const [showMobileSidebar, setShowMobileSidebar] = useState(false);
 
   // États pour l'upload
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -273,9 +276,97 @@ export default function EspacesPartageSection() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0f0f10] text-gray-100 flex">
-      {/* Sidebar des espaces */}
-      <div className="w-50 bg-[#1a1a1d] border-r border-gray-800 flex flex-col h-screen">
+    <div className="min-h-screen bg-[#0f0f10] text-gray-100 flex flex-col md:flex-row">
+      {/* Mobile: barre de sélection d'espace */}
+      <div className="md:hidden bg-[#1a1a1d] border-b border-gray-800 p-3">
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowMobileSidebar(!showMobileSidebar)}
+            className="p-2 hover:bg-gray-800 rounded-lg transition"
+          >
+            <Menu size={18} />
+          </button>
+          <div className="flex-1 min-w-0">
+            <select
+              value={selectedSpace?._id || ""}
+              onChange={(e) => {
+                const space = spaces.find((s) => s._id === e.target.value);
+                setSelectedSpace(space || null);
+              }}
+              className="w-full bg-[#2a2a2d] text-white border border-gray-700 rounded-lg px-3 py-2 text-sm focus:outline-none focus:border-purple-500"
+            >
+              <option value="">Sélectionner un espace...</option>
+              {filteredSpaces.map((space) => (
+                <option key={space._id} value={space._id}>
+                  {space.name}
+                </option>
+              ))}
+            </select>
+          </div>
+          {isAdminOrManager && (
+            <button
+              onClick={() => setShowSpaceForm(true)}
+              className="p-2 hover:bg-gray-800 rounded-lg transition flex-shrink-0"
+              title="Créer un espace"
+            >
+              <Plus size={18} />
+            </button>
+          )}
+        </div>
+      </div>
+
+      {/* Mobile: sidebar overlay */}
+      {showMobileSidebar && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={() => setShowMobileSidebar(false)}>
+          <div className="w-64 bg-[#1a1a1d] h-full border-r border-gray-800 flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-4 border-b border-gray-800">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-sm font-semibold">Espaces Partagés</h2>
+                <button onClick={() => setShowMobileSidebar(false)} className="p-1 hover:bg-gray-800 rounded">
+                  <X size={18} />
+                </button>
+              </div>
+              <div className="relative">
+                <Search className="absolute left-2 top-1/2 transform -translate-y-1/2 text-gray-500" size={15} />
+                <input
+                  type="text"
+                  placeholder="Rechercher..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="w-full pl-7 pr-2 py-1.5 bg-[#2a2a2d] border border-gray-700 rounded-lg focus:outline-none focus:border-purple-500 text-xs"
+                />
+              </div>
+            </div>
+            <div className="flex-1 overflow-y-auto p-2">
+              {filteredSpaces.map((space) => (
+                <button
+                  key={space._id}
+                  onClick={() => { setSelectedSpace(space); setShowMobileSidebar(false); }}
+                  className={`w-full text-left p-2 rounded-lg transition flex items-center gap-3 mb-1 ${
+                    selectedSpace?._id === space._id ? "bg-[#6C4EA8] text-white" : "hover:bg-gray-800"
+                  }`}
+                >
+                  <div className={`w-8 h-8 rounded flex items-center justify-center overflow-hidden flex-shrink-0 ${
+                    space.photo ? "bg-transparent" : space.isActive ? "bg-purple-900" : "bg-gray-500/20"
+                  }`}>
+                    {space.photo ? (
+                      <img src={space.photo.url} alt={space.name} className="w-full h-full object-cover" />
+                    ) : (
+                      <span className={`font-semibold text-xs ${space.isActive ? "text-white" : "text-gray-400"}`}>
+                        {getSpaceInitials(space.name)}
+                      </span>
+                    )}
+                  </div>
+                  <span className="font-medium truncate text-sm">{space.name}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Desktop: Sidebar des espaces */}
+      <div className="hidden md:flex w-50 bg-[#1a1a1d] border-r border-gray-800 flex-col h-screen">
         <div className="p-4 border-b border-gray-800">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-sm font-semibold">Espaces Partagés</h2>
@@ -330,12 +421,10 @@ export default function EspacesPartageSection() {
                       : "hover:bg-gray-800"
                   }`}
                 >
-                  {/* Partie cliquable pour sélectionner l'espace */}
                   <button
                     onClick={() => setSelectedSpace(space)}
                     className="flex items-center gap-3 flex-1 min-w-0"
                   >
-                    {/* Photo ou initiales */}
                     <div
                       className={`w-8 h-8 rounded flex items-center justify-center overflow-hidden flex-shrink-0 ${
                         space.photo
@@ -368,7 +457,6 @@ export default function EspacesPartageSection() {
                     </div>
                   </button>
 
-                  {/* Menu 3 points (seulement pour admin/manager) */}
                   {isAdminOrManager && (
                     <div
                       className="relative"
@@ -386,7 +474,6 @@ export default function EspacesPartageSection() {
                         <MoreVertical size={16} />
                       </button>
 
-                      {/* Menu déroulant */}
                       {openMenuId === space._id && (
                         <div className="absolute right-0 top-full mt-1 bg-[#2a2a2d] border border-gray-700 rounded-lg shadow-xl z-50 text-xs">
                           <button
@@ -415,11 +502,11 @@ export default function EspacesPartageSection() {
       </div>
 
       {/* Contenu principal */}
-      <div className="flex-1">
+      <div className="flex-1 min-w-0">
         {selectedSpace ? (
           <SharedSpaceKanban space={selectedSpace} members={members} />
         ) : (
-          <div className="h-full flex items-center justify-center p-8">
+          <div className="h-full flex items-center justify-center p-4 sm:p-8">
             <div className="text-center max-w-md">
               <div className="w-20 h-20 bg-[#1a1a1d] rounded-full flex items-center justify-center mx-auto mb-6">
                 <Globe className="w-10 h-10 text-gray-500" />
@@ -427,7 +514,7 @@ export default function EspacesPartageSection() {
               <h3 className="text-xl font-semibold mb-2">
                 Aucun espace sélectionné
               </h3>
-              <p className="text-gray-400 mb-6">
+              <p className="text-gray-400 mb-6 text-sm">
                 {spaces.length === 0
                   ? isAdminOrManager
                     ? "Créez votre premier espace partagé"
