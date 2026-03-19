@@ -885,7 +885,7 @@ function HomePage() {
       </div>
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col lg:ml-50 min-h-screen -mt-5">
+      <div className="flex-1 flex flex-col lg:ml-50 min-h-screen -mt-5 bg-[#0F0F12]">
         {/* Header - fixed */}
         <div className="fixed top-0 left-0 lg:left-50 right-0 z-20">
           <Header
@@ -901,7 +901,7 @@ function HomePage() {
         </div>
 
         {/* Contenu avec espace réservé pour header */}
-        <div className="flex-1 overflow-auto mt-30">
+        <div className="flex-1 overflow-auto mt-30 bg ">
           {" "}
           {/* mt-16 = hauteur du header */}
           <div className="p-3 sm:p-8">
