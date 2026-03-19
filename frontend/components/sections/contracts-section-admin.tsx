@@ -67,10 +67,10 @@ export function ContractsSectionAdmin({
   }
 
   return (
-    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 sm:space-y-6 -mt-2 sm:-mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête */}
         <div>
-          <h1 className="text-white font-extrabold text-2xl">
+          <h1 className="text-white font-extrabold text-xl sm:text-2xl">
             Gestion des contrats
           </h1>
           <p className="text-slate-600 mt-1">
@@ -81,7 +81,7 @@ export function ContractsSectionAdmin({
       {/* Filtres */}
       <div className="bg-[#1F2128] text-white border border-[#313442] p-3 rounded-lg">
         <div className="">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-slate-400" />
               <Input
@@ -137,16 +137,16 @@ export function ContractsSectionAdmin({
         <div className="grid grid-cols-1 gap-4">
           {filteredContracts.map((contract) => (
             <div key={contract._id} className="hover:shadow-lg transition-shadow bg-[#1F2128] border border-[#313442] rounded-lg">
-              <CardContent className="p-6">
-                <div className="flex items-start justify-between">
+              <CardContent className="p-3 sm:p-6">
+                <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
                   <div className="flex items-start gap-4 flex-1">
                     <div className="p-3 bg-gradient-to-br bg-[#1F2128] rounded-xl">
                       <FileText className="w-6 h-6 text-violet-600" />
                     </div>
                     
                     <div className="flex-1 space-y-1">
-                      <div className="flex items-center gap-3">
-                        <h3 className="font-semibold text-lg text-white">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+                        <h3 className="font-semibold text-base sm:text-lg text-white">
                           {getAgentInfo(contract.userId)}
                         </h3>
                         <span
@@ -160,7 +160,7 @@ export function ContractsSectionAdmin({
                         </span>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                         {contract.expiresAt && (
                           <div>
                             <span className="text-slate-500">Date expiration:</span>
@@ -173,7 +173,7 @@ export function ContractsSectionAdmin({
                     </div>
                   </div>
 
-                  <div className="flex gap-2 ml-4">
+                  <div className="flex flex-wrap gap-2 sm:ml-4">
                     <Button
                       variant="outline"
                       size="sm"

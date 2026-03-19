@@ -165,11 +165,11 @@ export function AbsencesSectionAdmin() {
   const rejectedCount = absences.filter((a) => a.status === "rejected").length;
 
   return (
-    <div className="space-y-6 -mt-8">
+    <div className="space-y-4 sm:space-y-6 -mt-2 sm:-mt-8">
       {/* En-tête avec statistiques */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-white font-extrabold text-2xl">
+          <h1 className="text-white font-extrabold text-xl sm:text-2xl">
             Gestion des abscences
           </h1>
           <p className="text-slate-600 mt-1">
@@ -178,17 +178,17 @@ export function AbsencesSectionAdmin() {
             {filteredAbsences.length > 1 ? "s" : ""}
           </p>
         </div>
-        <div className="flex gap-6">
+        <div className="flex gap-4 sm:gap-6">
           <div className="text-center">
-            <p className="text-2xl font-bold text-amber-600">{pendingCount}</p>
+            <p className="text-xl sm:text-2xl font-bold text-amber-600">{pendingCount}</p>
             <p className="text-xs text-slate-600">En attente</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">{approvedCount}</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600">{approvedCount}</p>
             <p className="text-xs text-slate-600">Approuvées</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">{rejectedCount}</p>
+            <p className="text-xl sm:text-2xl font-bold text-red-600">{rejectedCount}</p>
             <p className="text-xs text-slate-600">Rejetées</p>
           </div>
         </div>
@@ -197,7 +197,7 @@ export function AbsencesSectionAdmin() {
       {/* Filtres */}
       <Card className="bg-[#1F2128] border-[#313442]">
         <CardContent className="">
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
               <Input
@@ -244,7 +244,7 @@ export function AbsencesSectionAdmin() {
               className="hover:shadow-lg transition-shadow text-white bg-[#1F2128] border-[#313442]"
             >
               <CardContent className="p-3">
-                <div className="flex items-start justify-between">
+                <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
                   <div className="flex items-start gap-4 flex-1">
                     <div className={`p-3 rounded-xl bg-gray-500/30`}>
                       <Calendar
@@ -259,7 +259,7 @@ export function AbsencesSectionAdmin() {
                     </div>
 
                     <div className="flex-1 space-y-3">
-                      <div className="flex items-center gap-3">
+                      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                         <div className="flex items-center gap-2">
                           <User className="w-4 h-4 text-slate-500" />
                           <h3 className="font-semibold text-lg text-white">
@@ -269,7 +269,7 @@ export function AbsencesSectionAdmin() {
                         {getStatusBadge(absence.status)}
                       </div>
 
-                      <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                         <div>
                           <span className="text-slate-500">Email:</span>
                           <span className="ml-2 font-medium text-white">
@@ -297,13 +297,13 @@ export function AbsencesSectionAdmin() {
                             {formatDate(absence.endDate)}
                           </span>
                         </div>
-                        <div className="col-span-2">
+                        <div className="sm:col-span-2">
                           <span className="text-slate-500">Raison:</span>
                           <p className="mt-1 font-medium text-white">
                             {absence.reason}
                           </p>
                         </div>
-                        <div className="col-span-2">
+                        <div className="sm:col-span-2">
                           <span className="text-slate-500">
                             Personne de backup:
                           </span>
@@ -343,7 +343,7 @@ export function AbsencesSectionAdmin() {
                   </div>
 
                   {absence.status === "pending" && (
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex flex-wrap gap-2 sm:ml-4">
                       <Button
                         variant="outline"
                         size="sm"

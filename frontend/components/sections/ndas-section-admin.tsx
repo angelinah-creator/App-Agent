@@ -59,11 +59,11 @@ export function NdasSectionAdmin({
   };
 
   return (
-    <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-8">
+    <div className="space-y-4 sm:space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500 -mt-2 sm:-mt-8">
       {/* En-tête avec stats */}
       <div className="flex items-center justify-between">
         <div>
-          <h2 className="text-2xl font-extrabold text-white">Gestion des NDA</h2>
+          <h2 className="text-xl sm:text-2xl font-extrabold text-white">Gestion des NDA</h2>
           <p className="text-gray-400 mt-1">
             {filteredNdas.length} NDA{filteredNdas.length > 1 ? "s" : ""} trouvé{filteredNdas.length > 1 ? "s" : ""}
           </p>
@@ -73,7 +73,7 @@ export function NdasSectionAdmin({
       {/* Filtres */}
       <div className="bg-[#1F2128] text-white border border-[#313442] p-3 rounded-lg">
         <div className="">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-[#F1F1F1]" />
               <Input
@@ -126,8 +126,8 @@ export function NdasSectionAdmin({
                   isArchived ? 'opacity-70' : ''
                 }`}
               >
-                <CardContent className="p-5">
-                  <div className="flex items-start justify-between">
+                <CardContent className="p-3 sm:p-5">
+                  <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
                     <div className="flex items-start gap-4 flex-1">
                       <div className="p-3">
                         <FileText className="w-6 h-6 text-purple-400" />
@@ -145,7 +145,7 @@ export function NdasSectionAdmin({
                       </div>
                     </div>
 
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex flex-wrap gap-2 sm:ml-4">
                       <Button
                         variant="outline"
                         size="sm"

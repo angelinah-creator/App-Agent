@@ -266,11 +266,11 @@ export function FacturesSectionAdmin({
   const unpaidCount = invoices.filter((i) => i.status === "unpaid").length;
 
   return (
-    <div className="space-y-6 -mt-8">
+    <div className="space-y-4 sm:space-y-6 -mt-2 sm:-mt-8">
       {/* En-tête avec statistiques */}
-      <div className="flex justify-between">
+      <div className="flex flex-col sm:flex-row sm:justify-between gap-3">
         <div>
-          <h1 className="text-white font-extrabold text-2xl">
+          <h1 className="text-white font-extrabold text-xl sm:text-2xl">
             Gestion des Factures
           </h1>
           <div>
@@ -281,17 +281,17 @@ export function FacturesSectionAdmin({
             </p>
           </div>
         </div>
-        <div className="flex gap-6">
+        <div className="flex gap-4 sm:gap-6">
           <div className="text-center">
-            <p className="text-2xl font-bold text-amber-600">{pendingCount}</p>
+            <p className="text-xl sm:text-2xl font-bold text-amber-600">{pendingCount}</p>
             <p className="text-xs text-slate-600">En attente</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-green-600">{paidCount}</p>
+            <p className="text-xl sm:text-2xl font-bold text-green-600">{paidCount}</p>
             <p className="text-xs text-slate-600">Payées</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-red-600">{unpaidCount}</p>
+            <p className="text-xl sm:text-2xl font-bold text-red-600">{unpaidCount}</p>
             <p className="text-xs text-slate-600">Non payées</p>
           </div>
         </div>
@@ -300,7 +300,7 @@ export function FacturesSectionAdmin({
       {/* Filtres */}
       <Card className="bg-[#1F2128] border-[#313442]">
         <CardContent className="">
-          <div className="grid grid-cols-1 md:grid-cols-5 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-3 sm:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
               <Input
@@ -393,14 +393,14 @@ export function FacturesSectionAdmin({
                 className="hover:shadow-lg transition-shadow text-white bg-[#1F2128] border-[#313442]"
               >
                 <CardContent className="p-3">
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
                     <div className="flex items-start gap-4 flex-1">
                       <div className="p-3 bg-gray-500/30 rounded-xl">
                         <Receipt className="w-6 h-6 text-violet-600" />
                       </div>
 
                       <div className="flex-1 space-y-3">
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                           <div className="flex items-center gap-2">
                             <User className="w-4 h-4 text-white" />
                             <h3 className="font-semibold text-lg text-white">
@@ -409,7 +409,7 @@ export function FacturesSectionAdmin({
                           </div>
                           {getStatusBadge(invoice.status)}
                         </div>
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                           <div>
                             <span className="text-white">Référence:</span>
                             <span className="ml-2 font-semibold text-violet-300">
@@ -453,7 +453,7 @@ export function FacturesSectionAdmin({
                       </div>
                     </div>
 
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex flex-wrap gap-2 sm:ml-4">
                       {invoice.status === "pending" && (
                         <Button
                           variant="outline"

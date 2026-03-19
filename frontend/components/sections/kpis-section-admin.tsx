@@ -175,11 +175,11 @@ export function KPIsSectionAdmin({
     .filter((item) => item.count > 0);
 
   return (
-    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 sm:space-y-6 -mt-2 sm:-mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête avec statistiques */}
-      <div className="flex items-center justify-between">
+      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
-          <h1 className="text-white font-extrabold text-2xl">
+          <h1 className="text-white font-extrabold text-xl sm:text-2xl">
             Gestion des KPIs
          </h1>
           <p className="text-slate-600 mt-1">
@@ -187,13 +187,13 @@ export function KPIsSectionAdmin({
             {totalKPIs > 1 ? "s" : ""}
           </p>
         </div>
-        <div className="grid grid-cols-2 gap-6">
+        <div className="grid grid-cols-2 gap-4 sm:gap-6">
           <div className="text-center">
-            <p className="text-2xl font-bold text-violet-600">{totalKPIs}</p>
+            <p className="text-xl sm:text-2xl font-bold text-violet-600">{totalKPIs}</p>
             <p className="text-xs text-slate-600">Total rapports</p>
           </div>
           <div className="text-center">
-            <p className="text-2xl font-bold text-purple-600">
+            <p className="text-xl sm:text-2xl font-bold text-purple-600">
               {
                 new Set(
                   filteredKPIs.map((k) => {
@@ -217,7 +217,7 @@ export function KPIsSectionAdmin({
       {/* Filtres */}
       <Card className="bg-[#1F2128] border-[#313442]">
         <CardContent className="">
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-3 h-4 w-4 text-white" />
               <Input
@@ -295,14 +295,14 @@ export function KPIsSectionAdmin({
             return (
               <Card key={kpi._id} className="hover:shadow-lg transition-shadow text-white bg-[#1F2128] border-[#313442]">
                 <CardContent className="p-3">
-                  <div className="flex items-start justify-between">
+                  <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
                     <div className="flex items-start gap-4 flex-1">
                       <div className="p-3 bg-gray-500/30 rounded-xl">
                         <BarChart3 className="w-6 h-6 text-violet-600" />
                       </div>
 
                       <div className="flex-1 space-y-2">
-                        <div className="flex items-center gap-3">
+                        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
                           <h3 className="font-semibold text-lg text-white">
                             {agentInfo.name}
                           </h3>
@@ -311,7 +311,7 @@ export function KPIsSectionAdmin({
                           </span>
                         </div>
 
-                        <div className="grid grid-cols-2 gap-x-6 gap-y-2 text-sm">
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-6 gap-y-2 text-sm">
                           <div>
                             <span className="text-slate-500">Email:</span>
                             <span className="ml-2 font-medium text-white">
@@ -364,7 +364,7 @@ export function KPIsSectionAdmin({
                       </div>
                     </div>
 
-                    <div className="flex gap-2 ml-4">
+                    <div className="flex flex-wrap gap-2 sm:ml-4">
                       <Button
                         variant="outline"
                         size="sm"

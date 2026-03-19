@@ -83,10 +83,10 @@ export function DocumentsSectionAdmin({
   const selectedAgentData = agents.find(a => a._id === selectedAgent)
 
   return (
-    <div className="space-y-6 -mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 sm:space-y-6 -mt-2 sm:-mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête */}
       <div>
-        <h1 className="text-white font-extrabold text-2xl">
+        <h1 className="text-white font-extrabold text-xl sm:text-2xl">
             Gestion des documents
         </h1>
         <div>
@@ -102,7 +102,7 @@ export function DocumentsSectionAdmin({
       {/* Sélection de l'agent */}
       <Card className="bg-[#1F2128] border-[#313442] border">
         <CardContent className="">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
             <Select value={selectedAgent} onValueChange={setSelectedAgent}>
               <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A]">
                 <User className="w-4 h-4 mr-2 text-white" />
@@ -139,7 +139,7 @@ export function DocumentsSectionAdmin({
       {selectedAgent !== "all" && selectedAgentData && (
         <Card className="bg-[#1F2128] border border-[#313442] text-white">
           <CardContent className="">
-            <div className="flex items-center gap-4">
+            <div className="flex flex-col sm:flex-row items-center gap-4">
               <div className="w-16 h-16 rounded-full bg-[#6C4EA8] flex items-center justify-center text-white font-bold text-2xl">
                 {selectedAgentData.prenoms[0]}{selectedAgentData.nom[0]}
               </div>
@@ -147,14 +147,14 @@ export function DocumentsSectionAdmin({
                 <h3 className="text-xl font-semibold text-white">
                   {selectedAgentData.nom} {selectedAgentData.prenoms}
                 </h3>
-                <div className="flex gap-4 text-sm text-white mt-1">
+                <div className="flex flex-wrap gap-4 text-sm text-white mt-1">
                   <span className="flex items-center gap-1">
                     <Mail className="w-4 h-4" />
                     {selectedAgentData.email}
                   </span>
                 </div>
               </div>
-              <div className="text-right">
+              <div className="text-center sm:text-right">
                 <p className="text-3xl font-bold text-blue-600">{documents.length}</p>
                 <p className="text-xs text-slate-600 flex items-center gap-1 justify-end">
                   <Folder className="w-3 h-3" />
@@ -189,7 +189,7 @@ export function DocumentsSectionAdmin({
           </CardContent>
         </Card>
       ) : (
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4">
           {filteredDocuments.map((doc) => (
             <Card key={doc._id} className="hover:shadow-lg transition-shadow bg-[#1F2128] border border-[#313442]">
               <CardContent className="p-5">
