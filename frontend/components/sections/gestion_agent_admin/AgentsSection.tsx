@@ -208,7 +208,7 @@ export function AgentsSection({
   return (
     <>
       {/* Stat Cards */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5 -mt-8">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-5 -mt-2 sm:-mt-8">
         <StatCard
           label="Total Agents"
           value={effectiveAgents.length}
@@ -323,7 +323,7 @@ export function AgentsSection({
         ) : (
           <>
           {/* Mobile card layout */}
-          <div className="md:hidden divide-y divide-[#313442]/50">
+          <div className="lg:hidden divide-y divide-[#313442]/50">
             {filteredAgents.map((agent) => (
               <div
                 key={agent._id}
@@ -431,7 +431,7 @@ export function AgentsSection({
           </div>
 
           {/* Desktop table layout */}
-          <div className="hidden md:block overflow-x-auto">
+          <div className="hidden lg:block overflow-x-auto">
             <table className="w-full">
               <thead>
                 <tr className="border-b border-[#313442]">

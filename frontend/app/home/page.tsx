@@ -862,7 +862,7 @@ function HomePage() {
       )}
 
       {/* Sidebar - reste fixe */}
-      <div className={`fixed left-0 top-0 h-screen w-50 z-40 transition-transform duration-300 md:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
+      <div className={`fixed left-0 top-0 h-screen w-50 z-40 transition-transform duration-300 lg:translate-x-0 ${isSidebarOpen ? "translate-x-0" : "-translate-x-full"}`}>
         <Sidebar
           activeSection={activeSection}
           onSectionChange={(section) => {
@@ -885,9 +885,9 @@ function HomePage() {
       </div>
 
       {/* Contenu principal */}
-      <div className="flex-1 flex flex-col md:ml-50 min-h-screen -mt-5">
+      <div className="flex-1 flex flex-col lg:ml-50 min-h-screen -mt-5">
         {/* Header - fixed */}
-        <div className="fixed top-0 left-0 md:left-50 right-0 z-20">
+        <div className="fixed top-0 left-0 lg:left-50 right-0 z-20">
           <Header
             title={getHeaderContent().title}
             subtitle={getHeaderContent().subtitle}

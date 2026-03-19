@@ -38,7 +38,7 @@ export function Header({ title, subtitle, notificationBell, onProfileClick, onMe
         <div className="flex items-center">
           <button
             onClick={onMenuClick}
-            className="md:hidden p-2 mr-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition"
+            className="lg:hidden p-2 mr-2 text-gray-300 hover:text-white hover:bg-white/10 rounded-lg transition"
           >
             <Menu className="w-5 h-5" />
           </button>
