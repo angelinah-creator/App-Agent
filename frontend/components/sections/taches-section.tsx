@@ -365,11 +365,18 @@ export function TachesSection() {
       const activeId = String(active.id);
       const overId = String(over.id);
 
+      // Trouver la tâche originale dans l'état queries pour avoir son statut initial
+      const originalTask = tasks.find((t) => t._id === activeId);
+      if (!originalTask) return;
+
+      const originalStatus = originalTask.status;
+
       let targetColumnId: string | null = null;
 
       if (overId.startsWith("col-")) {
         targetColumnId = overId.replace("col-", "");
       } else {
+        // Pour trouver la colonne cible, on regarde où se trouve l'élément survolé
         for (const [colId, ids] of Object.entries(columnTaskIds)) {
           if (ids.includes(overId)) {
             targetColumnId = colId;
@@ -378,44 +385,39 @@ export function TachesSection() {
         }
       }
 
-      let sourceColumnId: string | null = null;
-      for (const [colId, ids] of Object.entries(columnTaskIds)) {
-        if (ids.includes(activeId)) {
-          sourceColumnId = colId;
-          break;
+      if (!targetColumnId) return;
+
+      const newStatus = targetColumnId as TaskStatus;
+
+      // Si le statut a changé
+      if (originalStatus !== newStatus) {
+        // Mise à jour optimiste du cache React Query
+        queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
+          old?.map((task) =>
+            task._id === activeId ? { ...task, status: newStatus } : task
+          )
+        );
+
+        try {
+          await personalTaskService.update(activeId, { status: newStatus });
+        } catch (error) {
+          console.error("Erreur mise à jour statut:", error);
+          queryClient.invalidateQueries({ queryKey: ["personalTasks"] });
         }
-      }
-
-      if (!targetColumnId || !sourceColumnId) return;
-
-      if (sourceColumnId === targetColumnId) {
-        const colIds = [...columnTaskIds[sourceColumnId]];
+      } else {
+        // C'est potentiellement une réorganisation dans la même colonne
+        const colIds = [...(columnTaskIds[targetColumnId] || [])];
         const oldIndex = colIds.indexOf(activeId);
         const newIndex = colIds.indexOf(overId);
 
         if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
           const newIds = arrayMove(colIds, oldIndex, newIndex);
-          setColumnTaskIds((prev) => ({ ...prev, [sourceColumnId!]: newIds }));
+          setColumnTaskIds((prev) => ({ ...prev, [targetColumnId!]: newIds }));
+          // Note: L'ordre n'est pas encore persisté en base pour les tâches personnelles
         }
-        return;
-      }
-
-      const newStatus = targetColumnId as TaskStatus;
-
-      queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) =>
-        old?.map((task) =>
-          task._id === activeId ? { ...task, status: newStatus } : task
-        )
-      );
-
-      try {
-        await personalTaskService.update(activeId, { status: newStatus });
-      } catch (error) {
-        console.error("Erreur mise à jour statut:", error);
-        queryClient.invalidateQueries({ queryKey: ["personalTasks"] });
       }
     },
-    [columnTaskIds, queryClient, showArchived]
+    [columnTaskIds, queryClient, showArchived, tasks]
   );
 
   // ─── CRUD handlers ────────────────────────────────────────────────────────────

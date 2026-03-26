@@ -334,11 +334,18 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
       const activeId = String(active.id);
       const overId = String(over.id);
 
+      // Trouver la tâche originale dans l'état queries pour avoir son statut initial
+      const originalTask = tasks.find((t) => t._id === activeId);
+      if (!originalTask) return;
+
+      const originalStatus = originalTask.status;
+
       let targetColumnId: string | null = null;
 
       if (overId.startsWith("col-")) {
         targetColumnId = overId.replace("col-", "");
       } else {
+        // Regarder où se trouve l'élément survolé dans les colonnes actuelles
         for (const [colId, ids] of Object.entries(columnTaskIds)) {
           if (ids.includes(overId)) {
             targetColumnId = colId;
@@ -347,44 +354,39 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
         }
       }
 
-      let sourceColumnId: string | null = null;
-      for (const [colId, ids] of Object.entries(columnTaskIds)) {
-        if (ids.includes(activeId)) {
-          sourceColumnId = colId;
-          break;
+      if (!targetColumnId) return;
+
+      const newStatus = targetColumnId as TaskStatus;
+
+      // Si le statut a réellement changé
+      if (originalStatus !== newStatus) {
+        // Mise à jour optimiste du cache React Query
+        queryClient.setQueryData<Task[]>(["sharedTasks", space._id], (old) =>
+          old?.map((task) =>
+            task._id === activeId ? { ...task, status: newStatus } : task
+          )
+        );
+
+        try {
+          await sharedTaskService.update(space._id, activeId, { status: newStatus });
+        } catch (error) {
+          console.error("Erreur mise à jour statut:", error);
+          queryClient.invalidateQueries({ queryKey: ["sharedTasks", space._id] });
         }
-      }
-
-      if (!targetColumnId || !sourceColumnId) return;
-
-      if (sourceColumnId === targetColumnId) {
-        const colIds = [...columnTaskIds[sourceColumnId]];
+      } else {
+        // Réorganisation dans la même colonne
+        const colIds = [...(columnTaskIds[targetColumnId] || [])];
         const oldIndex = colIds.indexOf(activeId);
         const newIndex = colIds.indexOf(overId);
 
         if (oldIndex !== -1 && newIndex !== -1 && oldIndex !== newIndex) {
           const newIds = arrayMove(colIds, oldIndex, newIndex);
-          setColumnTaskIds((prev) => ({ ...prev, [sourceColumnId!]: newIds }));
+          setColumnTaskIds((prev) => ({ ...prev, [targetColumnId!]: newIds }));
+          // Note: L'ordre n'est pas encore persisté en base
         }
-        return;
-      }
-
-      const newStatus = targetColumnId as TaskStatus;
-
-      queryClient.setQueryData<Task[]>(["sharedTasks", space._id], (old) =>
-        old?.map((task) =>
-          task._id === activeId ? { ...task, status: newStatus } : task
-        )
-      );
-
-      try {
-        await sharedTaskService.update(space._id, activeId, { status: newStatus });
-      } catch (error) {
-        console.error("Erreur mise à jour statut:", error);
-        queryClient.invalidateQueries({ queryKey: ["sharedTasks", space._id] });
       }
     },
-    [columnTaskIds, queryClient, space._id]
+    [columnTaskIds, queryClient, space._id, tasks]
   );
 
   // CRUD handlers
