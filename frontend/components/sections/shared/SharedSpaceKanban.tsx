@@ -209,6 +209,13 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
     }
   };
 
+  // Charger les sous-tâches quand une tâche est sélectionnée (pour le modal de détails)
+  useEffect(() => {
+    if (selectedTask && !subtasksMap[selectedTask._id] && !loadingSubtasksMap[selectedTask._id]) {
+      loadSubtasks(selectedTask._id);
+    }
+  }, [selectedTask]);
+
   // Filtres
   const filteredTasks = tasks.filter((task) => {
     if (searchTerm && !task.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
@@ -393,9 +400,23 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
   );
 
   // CRUD handlers
-  const handleCreateTask = async (data: CreateTaskDto) => {
+  const handleCreateTask = async (
+    data: CreateTaskDto,
+    subtasks?: { title: string; priority: TaskPriority }[]
+  ) => {
     try {
       const newTask = await sharedTaskService.create(space._id, data);
+      if (subtasks && subtasks.length > 0) {
+        await Promise.all(
+          subtasks.map((st) =>
+            sharedTaskService.createSubtask(space._id, newTask._id, {
+              title: st.title,
+              priority: st.priority,
+            })
+          )
+        );
+        loadSubtasks(newTask._id);
+      }
       queryClient.setQueryData<Task[]>(["sharedTasks", space._id], (old) => [
         ...(old || []),
         newTask,
@@ -796,6 +817,11 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
           onUpdate={handleUpdateTask}
           onDelete={handleDeleteTask}
           onClose={() => setSelectedTask(null)}
+          subtasks={subtasksMap[selectedTask._id] || []}
+          onAddSubtask={(data) => handleCreateSubtask(selectedTask._id, data)}
+          onUpdateSubtask={handleUpdateTask}
+          onDeleteSubtask={handleDeleteTask}
+          onEditSubtask={(subtask) => setSelectedSubtask(subtask)}
           isPersonal={false}
         />
       )}

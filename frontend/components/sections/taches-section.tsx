@@ -231,6 +231,13 @@ export function TachesSection() {
     }
   };
 
+  // Charger les sous-tâches quand une tâche est sélectionnée (pour le modal de détails)
+  useEffect(() => {
+    if (selectedTask && !subtasksMap[selectedTask._id] && !loadingSubtasksMap[selectedTask._id]) {
+      loadSubtasks(selectedTask._id);
+    }
+  }, [selectedTask]);
+
   // ─── Filtres ─────────────────────────────────────────────────────────────────
   const filteredTasks = tasks.filter((task) => {
     if (searchTerm && !task.title.toLowerCase().includes(searchTerm.toLowerCase())) return false;
@@ -424,9 +431,23 @@ export function TachesSection() {
   );
 
   // ─── CRUD handlers ────────────────────────────────────────────────────────────
-  const handleCreateTask = async (data: CreateTaskDto) => {
+  const handleCreateTask = async (
+    data: CreateTaskDto,
+    subtasks?: { title: string; priority: TaskPriority }[]
+  ) => {
     try {
       const newTask = await personalTaskService.create(data);
+      if (subtasks && subtasks.length > 0) {
+        await Promise.all(
+          subtasks.map((st) =>
+            personalTaskService.createSubtask(newTask._id, {
+              title: st.title,
+              priority: st.priority,
+            })
+          )
+        );
+        loadSubtasks(newTask._id);
+      }
       queryClient.setQueryData<Task[]>(["personalTasks", showArchived], (old) => [
         ...(old || []),
         newTask,
@@ -838,6 +859,11 @@ export function TachesSection() {
           onUpdate={handleUpdateTask}
           onDelete={handleDeleteTask}
           onClose={() => setSelectedTask(null)}
+          subtasks={subtasksMap[selectedTask._id] || []}
+          onAddSubtask={(data) => handleCreateSubtask(selectedTask._id, data)}
+          onUpdateSubtask={handleUpdateTask}
+          onDeleteSubtask={handleDeleteTask}
+          onEditSubtask={(subtask) => setSelectedSubtask(subtask)}
           isPersonal={true}
         />
       )}

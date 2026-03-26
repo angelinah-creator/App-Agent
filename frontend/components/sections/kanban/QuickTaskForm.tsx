@@ -12,7 +12,7 @@ interface QuickTaskFormProps {
   isShared?: boolean;
   defaultStatus?: TaskStatus;
   defaultColumnStatus?: TaskStatus;
-  onSubmit: (data: CreateTaskDto) => void;
+  onSubmit: (data: CreateTaskDto, subtasks?: { title: string; priority: TaskPriority }[]) => void;
   onCancel: () => void;
 }
 
@@ -32,6 +32,10 @@ export default function QuickTaskForm({
     status: defaultStatus || defaultColumnStatus || TaskStatus.A_FAIRE,
     assignees: isShared ? [] : currentUserId ? [currentUserId] : [],
   });
+
+  const [subtasks, setSubtasks] = useState<{ title: string; priority: TaskPriority }[]>([]);
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [newSubtaskPriority, setNewSubtaskPriority] = useState<TaskPriority>(TaskPriority.NORMALE);
 
   const [startDate, setStartDate] = useState<string>("");
   const [endDate, setEndDate] = useState<string>("");
@@ -78,8 +82,19 @@ export default function QuickTaskForm({
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.title.trim()) return;
-    onSubmit(formData);
+    onSubmit(formData, subtasks);
     onCancel();
+  };
+
+  const addSubtask = () => {
+    if (!newSubtaskTitle.trim()) return;
+    setSubtasks([...subtasks, { title: newSubtaskTitle.trim(), priority: newSubtaskPriority }]);
+    setNewSubtaskTitle("");
+    setNewSubtaskPriority(TaskPriority.NORMALE);
+  };
+
+  const removeSubtask = (index: number) => {
+    setSubtasks(subtasks.filter((_, i) => i !== index));
   };
 
   // Affichage compact des assignés sélectionnés (comme dans TaskDetailModal)
@@ -361,6 +376,82 @@ export default function QuickTaskForm({
                     />
                   </div>
                 </div>
+              </div>
+
+              {/* Sous-tâches */}
+              <div className="space-y-2">
+                <label className="text-xs font-medium text-white mb-1.5 flex items-center gap-1.5">
+                  <Check size={18} className="text-[#6C4EA8]" /> Sous-tâches
+                </label>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newSubtaskTitle}
+                    onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter") {
+                        e.preventDefault();
+                        addSubtask();
+                      }
+                    }}
+                    placeholder="Ajouter une sous-tâche..."
+                    className="flex-1 bg-[#0F0F12] rounded-lg px-2.5 py-2 text-xs text-white focus:outline-none focus:border-purple-500 border border-transparent"
+                  />
+                  <select
+                    value={newSubtaskPriority}
+                    onChange={(e) => setNewSubtaskPriority(e.target.value as TaskPriority)}
+                    className="bg-[#0F0F12] rounded-lg px-2 py-2 text-[10px] text-white focus:outline-none border border-transparent"
+                  >
+                    {Object.values(TaskPriority).map((p) => (
+                      <option key={p} value={p}>
+                        {p}
+                      </option>
+                    ))}
+                  </select>
+                  <button
+                    type="button"
+                    onClick={addSubtask}
+                    disabled={!newSubtaskTitle.trim()}
+                    className="px-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-xs transition disabled:opacity-50"
+                  >
+                    Ajouter
+                  </button>
+                </div>
+
+                {subtasks.length > 0 && (
+                  <div className="space-y-1 mt-2 max-h-32 overflow-y-auto pr-1 custom-scrollbar">
+                    {subtasks.map((st, index) => (
+                      <div
+                        key={index}
+                        className="flex items-center justify-between bg-[#0F0F12] rounded px-2 py-1.5 text-xs group"
+                      >
+                        <div className="flex items-center gap-2">
+                          <Flag
+                            size={10}
+                            fill="currentColor"
+                            className={
+                              st.priority === TaskPriority.URGENTE
+                                ? "text-red-500"
+                                : st.priority === TaskPriority.ELEVEE
+                                  ? "text-orange-500"
+                                  : st.priority === TaskPriority.NORMALE
+                                    ? "text-blue-500"
+                                    : "text-gray-500"
+                            }
+                          />
+                          <span className="text-gray-300 truncate max-w-[150px]">{st.title}</span>
+                        </div>
+                        <button
+                          type="button"
+                          onClick={() => removeSubtask(index)}
+                          className="text-gray-500 hover:text-red-400 opacity-0 group-hover:opacity-100 transition"
+                        >
+                          <X size={14} />
+                        </button>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>

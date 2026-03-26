@@ -12,6 +12,7 @@ import {
   Trash2,
   Check,
   ChevronDown,
+  Plus,
 } from "lucide-react";
 import {
   Task,
@@ -30,9 +31,13 @@ interface TaskDetailModalProps {
   onUpdate: (taskId: string, data: UpdateTaskDto) => void;
   onDelete: (taskId: string) => void;
   onClose: () => void;
+  subtasks?: Task[];
+  onAddSubtask?: (data: { title: string; priority: TaskPriority; assignees?: string[] }) => void;
+  onUpdateSubtask?: (subtaskId: string, data: UpdateTaskDto) => void;
+  onDeleteSubtask?: (subtaskId: string) => void;
+  onEditSubtask?: (subtask: Task) => void;
   isPersonal?: boolean;
 }
-
 export default function TaskDetailModal({
   task,
   projects,
@@ -40,8 +45,18 @@ export default function TaskDetailModal({
   onUpdate,
   onDelete,
   onClose,
+  subtasks = [],
+  onAddSubtask,
+  onUpdateSubtask,
+  onDeleteSubtask,
+  onEditSubtask,
   isPersonal = false,
 }: TaskDetailModalProps) {
+  const [newSubtaskTitle, setNewSubtaskTitle] = useState("");
+  const [newSubtaskPriority, setNewSubtaskPriority] = useState<TaskPriority>(TaskPriority.NORMALE);
+  const [newSubtaskAssignees, setNewSubtaskAssignees] = useState<string[]>([]);
+  const [showSubtaskAssigneesDropdown, setShowSubtaskAssigneesDropdown] = useState(false);
+  const subtaskAssigneesRef = useRef<HTMLDivElement>(null);
   const [editedTask, setEditedTask] = useState<UpdateTaskDto>({
     title: task.title,
     description: task.description,
@@ -93,6 +108,13 @@ export default function TaskDetailModal({
         !projectRef.current.contains(event.target as Node)
       ) {
         setShowProjectDropdown(false);
+      }
+      if (
+        showSubtaskAssigneesDropdown &&
+        subtaskAssigneesRef.current &&
+        !subtaskAssigneesRef.current.contains(event.target as Node)
+      ) {
+        setShowSubtaskAssigneesDropdown(false);
       }
       if (
         showStatusDropdown &&
@@ -541,6 +563,239 @@ export default function TaskDetailModal({
               className="w-full bg-[#0F0F12] rounded-[6px] px-2.5 py-1.5 focus:outline-none focus:border-purple-500 h-24 resize-none text-xs mt-2"
               placeholder="Ajouter une description..."
             />
+          </div>
+
+          {/* Sous-tâches */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <label className="text-xs text-white font-medium flex items-center gap-1.5">
+                <Check size={18} className="text-[#6C4EA8]" /> Sous-tâches ({subtasks.length})
+              </label>
+            </div>
+
+            {/* Quick Add Subtask */}
+            <div className="space-y-2">
+              <div className="flex gap-2">
+                <input
+                  type="text"
+                  value={newSubtaskTitle}
+                  onChange={(e) => setNewSubtaskTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && newSubtaskTitle.trim()) {
+                      onAddSubtask?.({
+                        title: newSubtaskTitle.trim(),
+                        priority: newSubtaskPriority,
+                        assignees: newSubtaskAssignees,
+                      });
+                      setNewSubtaskTitle("");
+                      setNewSubtaskPriority(TaskPriority.NORMALE);
+                      setNewSubtaskAssignees([]);
+                    }
+                  }}
+                  placeholder="Ajouter une sous-tâche..."
+                  className="flex-1 bg-[#0F0F12] rounded-lg px-2.5 py-1.5 text-xs text-white focus:outline-none focus:border-purple-500 border border-transparent"
+                />
+                <button
+                  type="button"
+                  onClick={() => {
+                    if (newSubtaskTitle.trim()) {
+                      onAddSubtask?.({
+                        title: newSubtaskTitle.trim(),
+                        priority: newSubtaskPriority,
+                        assignees: newSubtaskAssignees,
+                      });
+                      setNewSubtaskTitle("");
+                      setNewSubtaskPriority(TaskPriority.NORMALE);
+                      setNewSubtaskAssignees([]);
+                    }
+                  }}
+                  disabled={!newSubtaskTitle.trim()}
+                  className="px-3 bg-gray-800 hover:bg-gray-700 rounded-lg text-white text-xs transition disabled:opacity-50"
+                >
+                  <Plus size={14} />
+                </button>
+              </div>
+
+              <div className="flex items-center gap-4 px-1">
+                {/* Priority Selector for Subtask */}
+                <div className="flex items-center gap-2">
+                  <span className="text-[10px] text-gray-500">Priorité:</span>
+                  <div className="flex gap-1">
+                    {Object.values(TaskPriority).map((p) => (
+                      <button
+                        key={p}
+                        onClick={() => setNewSubtaskPriority(p)}
+                        className={`p-1 rounded transition ${
+                          newSubtaskPriority === p ? "bg-gray-700" : "hover:bg-gray-800"
+                        }`}
+                        title={p}
+                      >
+                        <Flag
+                          size={12}
+                          fill="currentColor"
+                          className={
+                            p === TaskPriority.URGENTE
+                              ? "text-red-500"
+                              : p === TaskPriority.ELEVEE
+                                ? "text-orange-500"
+                                : p === TaskPriority.NORMALE
+                                  ? "text-blue-500"
+                                  : "text-gray-500"
+                          }
+                        />
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Assignees Selector for Subtask (Shared only) */}
+                {!isPersonal && (
+                  <div className="flex items-center gap-2 relative" ref={subtaskAssigneesRef}>
+                    <span className="text-[10px] text-gray-500">Assigner:</span>
+                    <button
+                      onClick={() => setShowSubtaskAssigneesDropdown(!showSubtaskAssigneesDropdown)}
+                      className="flex items-center gap-1 bg-[#0F0F12] rounded px-1.5 py-0.5 text-[10px] text-gray-300 hover:bg-gray-800 transition"
+                    >
+                      <Plus size={10} />
+                      {newSubtaskAssignees.length > 0
+                        ? `${newSubtaskAssignees.length}`
+                        : "Personne"}
+                    </button>
+
+                    {showSubtaskAssigneesDropdown && (
+                      <div className="absolute bottom-full left-0 mb-2 z-30 bg-[#0F0F12] border border-gray-700 rounded-lg shadow-xl min-w-[150px] max-h-48 overflow-y-auto custom-scrollbar p-1">
+                        {users.map((user) => (
+                          <button
+                            key={user._id}
+                            onClick={() => {
+                              setNewSubtaskAssignees((prev) =>
+                                prev.includes(user._id)
+                                  ? prev.filter((id) => id !== user._id)
+                                  : [...prev, user._id]
+                              );
+                            }}
+                            className="w-full px-2 py-1.5 text-left hover:bg-[#3a3a3d] rounded flex items-center justify-between gap-2 text-[10px] text-white"
+                          >
+                            <div className="flex items-center gap-2 truncate">
+                              {user.profilePhoto?.url ? (
+                                <img
+                                  src={user.profilePhoto.url}
+                                  alt={`${user.prenoms} ${user.nom}`}
+                                  className="w-4 h-4 rounded-full object-cover flex-shrink-0"
+                                />
+                              ) : (
+                                <div className="w-4 h-4 rounded-full bg-purple-600 flex-shrink-0 flex items-center justify-center text-[8px]">
+                                  {user.prenoms?.[0] || user.email?.[0]}
+                                </div>
+                              )}
+                              <span className="truncate">{user.prenoms} {user.nom}</span>
+                            </div>
+                            {newSubtaskAssignees.includes(user._id) && (
+                              <Check size={10} className="text-purple-500" />
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Subtasks List */}
+            {subtasks.length > 0 && (
+              <div className="space-y-1 bg-[#0F0F12]/50 rounded-lg p-2 max-h-48 overflow-y-auto custom-scrollbar">
+                {subtasks.map((st) => (
+                  <div
+                    key={st._id}
+                    className="flex items-center justify-between gap-2 p-2 rounded bg-[#0F0F12] group hover:bg-[#1a1a1d] transition"
+                  >
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <button
+                        onClick={() =>
+                          onUpdateSubtask?.(st._id, {
+                            status:
+                              st.status === TaskStatus.TERMINEE
+                                ? TaskStatus.A_FAIRE
+                                : TaskStatus.TERMINEE,
+                          })
+                        }
+                        className={`w-4 h-4 rounded border flex items-center justify-center transition flex-shrink-0 ${
+                          st.status === TaskStatus.TERMINEE
+                            ? "bg-purple-600 border-purple-600 text-white"
+                            : "border-gray-600 hover:border-purple-500"
+                        }`}
+                      >
+                        {st.status === TaskStatus.TERMINEE && <Check size={10} />}
+                      </button>
+                      
+                      {/* Subtask Priority Icon in List */}
+                      <Flag
+                        size={10}
+                        fill="currentColor"
+                        className={`flex-shrink-0 ${
+                          st.priority === TaskPriority.URGENTE
+                            ? "text-red-500"
+                            : st.priority === TaskPriority.ELEVEE
+                              ? "text-orange-500"
+                              : st.priority === TaskPriority.NORMALE
+                                ? "text-blue-500"
+                                : "text-gray-500"
+                        }`}
+                      />
+
+                      <span
+                        onClick={() => onEditSubtask?.(st)}
+                        className={`text-xs cursor-pointer truncate hover:text-purple-400 transition flex-1 ${
+                          st.status === TaskStatus.TERMINEE
+                            ? "line-through text-gray-500"
+                            : "text-gray-200"
+                        }`}
+                      >
+                        {st.title}
+                      </span>
+
+                      {/* Subtask Assignees Avatars in List */}
+                      {!isPersonal && st.assignees && st.assignees.length > 0 && (
+                        <div className="flex -space-x-1 items-center flex-shrink-0 ml-2">
+                          {st.assignees.slice(0, 3).map((v: any, i: number) => (
+                            <div
+                              key={i}
+                              className="w-4 h-4 rounded-full border border-[#0F0F12] bg-purple-600 flex items-center justify-center text-[8px] text-white overflow-hidden"
+                              title={`${v.prenoms} ${v.nom}`}
+                            >
+                              {v.profilePhoto?.url ? (
+                                <img
+                                  src={v.profilePhoto.url}
+                                  alt={`${v.prenoms} ${v.nom}`}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <span>{v.prenoms?.[0] || v.email?.[0]}</span>
+                              )}
+                            </div>
+                          ))}
+                          {st.assignees.length > 3 && (
+                            <div className="w-4 h-4 rounded-full border border-[#0F0F12] bg-gray-700 flex items-center justify-center text-[8px] text-white">
+                              +{st.assignees.length - 3}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition">
+                      <button
+                        onClick={() => onDeleteSubtask?.(st._id)}
+                        className="p-1 text-gray-400 hover:text-red-400 transition"
+                        title="Supprimer"
+                      >
+                        <Trash2 size={14} />
+                      </button>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex gap-2 justify-end mt-5">

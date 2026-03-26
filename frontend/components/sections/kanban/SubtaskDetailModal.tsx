@@ -42,7 +42,7 @@ export default function SubtaskDetailModal({
     description: task.description,
     priority: task.priority,
     status: task.status,
-    assignees: task.assignees?.map((a) => a._id) || [],
+    assignees: task.assignees?.map((a: any) => typeof a === 'string' ? a : a._id) || [],
     start_date: formatDateToInput(task.start_date),
     end_date: formatDateToInput(task.end_date),
   });
