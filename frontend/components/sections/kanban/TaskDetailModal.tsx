@@ -21,6 +21,7 @@ import {
 } from "@/lib/task-service";
 import { Project } from "@/lib/project-service";
 import { formatDateToInput } from "@/lib/utils";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 
 interface TaskDetailModalProps {
   task: Task;
@@ -63,6 +64,7 @@ export default function TaskDetailModal({
   const [showAssigneesDropdown, setShowAssigneesDropdown] = useState(false);
   const [showProjectDropdown, setShowProjectDropdown] = useState(false);
   const [showStatusDropdown, setShowStatusDropdown] = useState(false);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   const priorityRef = useRef<HTMLDivElement>(null);
   const assigneesRef = useRef<HTMLDivElement>(null);
@@ -130,9 +132,12 @@ export default function TaskDetailModal({
   };
 
   const handleDelete = () => {
-    if (confirm("Supprimer cette tâche ?")) {
-      onDelete(task._id);
-    }
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    onDelete(task._id);
+    setIsDeleteModalOpen(false);
   };
 
   const isSubtask =
@@ -558,6 +563,11 @@ export default function TaskDetailModal({
           </div>
         </div>
       </div>
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+      />
     </div>
   );
 }

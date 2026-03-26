@@ -18,6 +18,7 @@ import {
   UpdateTaskDto,
 } from "@/lib/task-service";
 import { formatDateToInput } from "@/lib/utils";
+import { DeleteConfirmationModal } from "@/components/modals/DeleteConfirmationModal";
 
 interface SubtaskDetailModalProps {
   task: Task;
@@ -54,6 +55,7 @@ export default function SubtaskDetailModal({
 
   const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
   const priorityRef = useRef<HTMLDivElement>(null);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
 
   useEffect(() => {
     setEditedTask((prev) => ({
@@ -98,9 +100,12 @@ export default function SubtaskDetailModal({
   };
 
   const handleDelete = () => {
-    if (confirm("Supprimer cette sous-tâche ?")) {
-      onDelete(task._id);
-    }
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDelete = () => {
+    onDelete(task._id);
+    setIsDeleteModalOpen(false);
   };
 
   const toggleAssignee = (userId: string) => {
@@ -417,6 +422,12 @@ export default function SubtaskDetailModal({
           </div>
         </div>
       </div>
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => setIsDeleteModalOpen(false)}
+        onConfirm={confirmDelete}
+        title="Supprimer cette sous-tâche ?"
+      />
     </div>
   );
 }

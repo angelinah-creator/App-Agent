@@ -51,6 +51,7 @@ import TaskDetailModal from "./kanban/TaskDetailModal";
 import ProjectFilter from "./kanban/ProjectFilter";
 import PriorityFilter from "./kanban/PriorityFilter";
 import SubtaskDetailModal from "./kanban/SubtaskDetailModal";
+import { DeleteConfirmationModal } from "../modals/DeleteConfirmationModal";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 
 // ─── Colonnes Kanban ──────────────────────────────────────────────────────────
@@ -124,6 +125,8 @@ export function TachesSection() {
   const [showSubtaskForm, setShowSubtaskForm] = useState<{ taskId: string; isShared: boolean } | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [defaultStatusForNewTask, setDefaultStatusForNewTask] = useState<TaskStatus | undefined>(undefined);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
 
   const lastOverId = useRef<UniqueIdentifier | null>(null);
   const recentlyMovedToNewContainer = useRef(false);
@@ -490,8 +493,14 @@ export function TachesSection() {
     }
   };
 
-  const handleDeleteTask = async (taskId: string) => {
-    if (!confirm("Supprimer cette tâche ?")) return;
+  const handleDeleteTask = (taskId: string) => {
+    setTaskIdToDelete(taskId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteTask = async () => {
+    if (!taskIdToDelete) return;
+    const taskId = taskIdToDelete;
 
     try {
       const taskToDelete =
@@ -525,6 +534,9 @@ export function TachesSection() {
       }
     } catch (error) {
       console.error("Erreur suppression tâche:", error);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setTaskIdToDelete(null);
     }
   };
 
@@ -829,6 +841,15 @@ export function TachesSection() {
           isPersonal={true}
         />
       )}
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setTaskIdToDelete(null);
+        }}
+        onConfirm={confirmDeleteTask}
+      />
     </div>
   );
 }

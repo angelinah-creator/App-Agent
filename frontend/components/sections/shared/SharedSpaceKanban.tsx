@@ -52,6 +52,7 @@ import TaskDetailModal from "../kanban/TaskDetailModal";
 import ProjectFilter from "../kanban/ProjectFilter";
 import PriorityFilter from "../kanban/PriorityFilter";
 import SubtaskDetailModal from "../kanban/SubtaskDetailModal";
+import { DeleteConfirmationModal } from "../../modals/DeleteConfirmationModal";
 import { Space } from "@/lib/space-service";
 
 interface SharedSpaceKanbanProps {
@@ -125,6 +126,8 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
   const [showSubtaskForm, setShowSubtaskForm] = useState<{ taskId: string; isShared: boolean } | null>(null);
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [defaultStatusForNewTask, setDefaultStatusForNewTask] = useState<TaskStatus | undefined>(undefined);
+  const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
+  const [taskIdToDelete, setTaskIdToDelete] = useState<string | null>(null);
 
   const lastOverId = useRef<UniqueIdentifier | null>(null);
   const recentlyMovedToNewContainer = useRef(false);
@@ -463,8 +466,14 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
     }
   };
 
-  const handleDeleteTask = async (taskId: string) => {
-    if (!confirm("Supprimer cette tâche ?")) return;
+  const handleDeleteTask = (taskId: string) => {
+    setTaskIdToDelete(taskId);
+    setIsDeleteModalOpen(true);
+  };
+
+  const confirmDeleteTask = async () => {
+    if (!taskIdToDelete) return;
+    const taskId = taskIdToDelete;
 
     try {
       const taskToDelete =
@@ -498,6 +507,9 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
       }
     } catch (error) {
       console.error("Erreur suppression tâche:", error);
+    } finally {
+      setIsDeleteModalOpen(false);
+      setTaskIdToDelete(null);
     }
   };
 
@@ -787,6 +799,15 @@ export default function SharedSpaceKanban({ space, members }: SharedSpaceKanbanP
           isPersonal={false}
         />
       )}
+
+      <DeleteConfirmationModal
+        isOpen={isDeleteModalOpen}
+        onClose={() => {
+          setIsDeleteModalOpen(false);
+          setTaskIdToDelete(null);
+        }}
+        onConfirm={confirmDeleteTask}
+      />
     </div>
   );
 }
