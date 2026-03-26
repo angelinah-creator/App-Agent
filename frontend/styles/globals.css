@@ -123,3 +123,16 @@
     @apply bg-background text-foreground;
   }
 }
+
+@layer utilities {
+  .white-calendar-icon,
+  input[type="month"] {
+    color-scheme: dark !important;
+  }
+
+  .white-calendar-icon::-webkit-calendar-picker-indicator,
+  input[type="month"]::-webkit-calendar-picker-indicator {
+    opacity: 0 !important;
+    cursor: pointer;
+  }
+}

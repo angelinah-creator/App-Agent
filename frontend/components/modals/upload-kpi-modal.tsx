@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { X, Upload } from "lucide-react"
+import { X, Upload, Calendar } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import type { CreateKPIDto } from "@/lib/types"
 
@@ -48,13 +48,23 @@ export function UploadKPIModal({
               <div className="text-white font-medium">
                 Période *
               </div>
-              <input
-                type="month"
-                value={uploadData.periode}
-                onChange={(e) => onUploadDataChange({ ...uploadData, periode: e.target.value })}
-                className="mt-1.5 bg-[#0F0F12] focus:border-purple-500 text-white w-full p-2 rounded-lg outline-none transition-colors"
-                required
-              />
+              <div className="relative">
+                <input
+                  type="month"
+                  value={uploadData.periode}
+                  onChange={(e) => onUploadDataChange({ ...uploadData, periode: e.target.value })}
+                  onClick={(e) => {
+                    try {
+                      e.currentTarget.showPicker()
+                    } catch (err) {
+                      console.log("Picker not supported or needs user gesture", err)
+                    }
+                  }}
+                  className="mt-1.5 bg-[#0F0F12] focus:border-purple-500 text-white w-full p-2 pr-10 rounded-lg outline-none transition-colors white-calendar-icon cursor-pointer"
+                  required
+                />
+                <Calendar className="absolute right-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white pointer-events-none mt-1" />
+              </div>
             </div>
 
             <div>
