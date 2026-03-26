@@ -711,24 +711,6 @@ export default function TaskDetailModal({
                     className="flex items-center justify-between gap-2 p-2 rounded bg-[#0F0F12] group hover:bg-[#1a1a1d] transition"
                   >
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <button
-                        onClick={() =>
-                          onUpdateSubtask?.(st._id, {
-                            status:
-                              st.status === TaskStatus.TERMINEE
-                                ? TaskStatus.A_FAIRE
-                                : TaskStatus.TERMINEE,
-                          })
-                        }
-                        className={`w-4 h-4 rounded border flex items-center justify-center transition flex-shrink-0 ${
-                          st.status === TaskStatus.TERMINEE
-                            ? "bg-purple-600 border-purple-600 text-white"
-                            : "border-gray-600 hover:border-purple-500"
-                        }`}
-                      >
-                        {st.status === TaskStatus.TERMINEE && <Check size={10} />}
-                      </button>
-                      
                       {/* Subtask Priority Icon in List */}
                       <Flag
                         size={10}
