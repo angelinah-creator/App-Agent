@@ -20,6 +20,7 @@ import {
   UpdateTaskDto,
 } from "@/lib/task-service";
 import { Project } from "@/lib/project-service";
+import { formatDateToInput } from "@/lib/utils";
 
 interface TaskDetailModalProps {
   task: Task;
@@ -47,22 +48,15 @@ export default function TaskDetailModal({
     status: task.status,
     project_id: task.project_id?._id,
     assignees: task.assignees?.map((a) => a._id) || [],
-    start_date: task.start_date || new Date().toISOString().split("T")[0],
-    end_date:
-      task.end_date ||
-      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
+    start_date: formatDateToInput(task.start_date),
+    end_date: formatDateToInput(task.end_date),
   });
 
   const [startDate, setStartDate] = useState<string>(
-    task.start_date || new Date().toISOString().split("T")[0],
+    formatDateToInput(task.start_date),
   );
   const [endDate, setEndDate] = useState<string>(
-    task.end_date ||
-      new Date(Date.now() + 7 * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
+    formatDateToInput(task.end_date),
   );
 
   const [showPriorityDropdown, setShowPriorityDropdown] = useState(false);
@@ -125,7 +119,13 @@ export default function TaskDetailModal({
   }, [startDate, endDate]);
 
   const handleSave = () => {
-    onUpdate(task._id, editedTask);
+    // Transformer les chaînes vides en null pour le backend (suppression de date)
+    const taskToSave = {
+      ...editedTask,
+      start_date: editedTask.start_date === "" ? null : editedTask.start_date,
+      end_date: editedTask.end_date === "" ? null : editedTask.end_date,
+    };
+    onUpdate(task._id, taskToSave as UpdateTaskDto);
     onClose();
   };
 

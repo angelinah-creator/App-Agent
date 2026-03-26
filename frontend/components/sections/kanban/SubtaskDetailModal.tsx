@@ -17,6 +17,7 @@ import {
   TaskStatus,
   UpdateTaskDto,
 } from "@/lib/task-service";
+import { formatDateToInput } from "@/lib/utils";
 
 interface SubtaskDetailModalProps {
   task: Task;
@@ -41,12 +42,12 @@ export default function SubtaskDetailModal({
     priority: task.priority,
     status: task.status,
     assignees: task.assignees?.map((a) => a._id) || [],
-    start_date: task.start_date,
-    end_date: task.end_date,
+    start_date: formatDateToInput(task.start_date),
+    end_date: formatDateToInput(task.end_date),
   });
 
-  const [startDate, setStartDate] = useState<string>(task.start_date || "");
-  const [endDate, setEndDate] = useState<string>(task.end_date || "");
+  const [startDate, setStartDate] = useState<string>(formatDateToInput(task.start_date));
+  const [endDate, setEndDate] = useState<string>(formatDateToInput(task.end_date));
 
   const [showAssigneesDropdown, setShowAssigneesDropdown] = useState(false);
   const assigneesRef = useRef<HTMLDivElement>(null);
@@ -82,10 +83,12 @@ export default function SubtaskDetailModal({
   }, [showAssigneesDropdown, showPriorityDropdown]);
 
   const handleSave = () => {
-    // Nettoyer les champs vides (ex: start_date = "") pour éviter les 400 du backend
     const payload: any = {};
     Object.entries(editedTask).forEach(([key, value]) => {
-      if (value !== undefined && value !== null && value !== "") {
+      // Pour les dates, on accepte "" et on le transforme en null pour suppression
+      if (key === "start_date" || key === "end_date") {
+        payload[key] = value === "" ? null : value;
+      } else if (value !== undefined && value !== null && value !== "") {
         payload[key] = value;
       }
     });
@@ -218,6 +221,38 @@ export default function SubtaskDetailModal({
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+
+          {/* Dates */}
+          <div className="flex items-center gap-2">
+            <label className="text-xs text-white font-medium mb-1.5 flex items-center gap-1.5 w-18">
+              <Calendar size={18} className="text-[#6C4EA8]" /> Dates
+            </label>
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-1.5">
+                <label className="text-[10px] text-gray-500 w-11">
+                  Début:
+                </label>
+                <input
+                  type="date"
+                  value={startDate}
+                  onChange={(e) => setStartDate(e.target.value)}
+                  className="flex-1 bg-[#0F0F12] rounded-[6px] px-2 py-1 text-xs focus:outline-none focus:border-purple-500"
+                />
+              </div>
+              <div className="flex items-center gap-1.5">
+                <label className="text-[10px] text-gray-500 w-11">
+                  Echéance:
+                </label>
+                <input
+                  type="date"
+                  value={endDate}
+                  onChange={(e) => setEndDate(e.target.value)}
+                  min={startDate}
+                  className="flex-1 bg-[#0F0F12] rounded-[6px] px-2 py-1 text-xs focus:outline-none focus:border-purple-500"
+                />
+              </div>
             </div>
           </div>
 
