@@ -50,6 +50,37 @@ import { RapportSection } from "@/components/sections/rapport-section";
 import { RapportCollaboSection } from "@/components/sections/rapport_collabo-section";
 import { RendezVousSection } from "@/components/sections/rendez_vous-section";
 import { ProjetsSection } from "@/components/sections/projets-section";
+import {
+  GroupMenuSection,
+  type GroupMenuItem,
+} from "@/components/sections/group-menu-section";
+import {
+  FileCheck,
+  File,
+  Receipt,
+  BarChart3,
+  Briefcase,
+  Users,
+  Handshake,
+  BarChart2,
+  FolderOpen,
+  Layers,
+  ArrowLeft,
+  ChevronRight,
+} from "lucide-react";
+
+// Mapping section → groupe parent (pour le breadcrumb et l'état actif du sidebar)
+const SECTION_TO_GROUP: Record<string, { groupId: string; groupLabel: string; sectionLabel: string }> = {
+  contracts:         { groupId: "groupe_dossiers", groupLabel: "Dossiers Agents",  sectionLabel: "Contrats" },
+  ndas:              { groupId: "groupe_dossiers", groupLabel: "Dossiers Agents",  sectionLabel: "NDAs" },
+  documents:         { groupId: "groupe_dossiers", groupLabel: "Dossiers Agents",  sectionLabel: "Documents" },
+  factures:          { groupId: "groupe_dossiers", groupLabel: "Dossiers Agents",  sectionLabel: "Factures" },
+  kpis:              { groupId: "groupe_dossiers", groupLabel: "Dossiers Agents",  sectionLabel: "KPIs" },
+  projets:           { groupId: "groupe_espaces",  groupLabel: "Espaces & Projets", sectionLabel: "Projets" },
+  espaces_des_agents:{ groupId: "groupe_espaces",  groupLabel: "Espaces & Projets", sectionLabel: "Espaces Collaborateur" },
+  espaces_partages:  { groupId: "groupe_espaces",  groupLabel: "Espaces & Projets", sectionLabel: "Espaces Partagés" },
+  rapports_collabo:  { groupId: "groupe_espaces",  groupLabel: "Espaces & Projets", sectionLabel: "Rapports Collaborateur" },
+};
 import { api } from "@/lib/api-config";
 
 function HomePage() {
@@ -907,6 +938,30 @@ function HomePage() {
           <div className="p-3 sm:p-8">
             {isAdmin && (
               <>
+                {/* ── Breadcrumb fil d'Ariane (sections groupées uniquement) ── */}
+                {SECTION_TO_GROUP[activeSection] && (
+                  <div className="flex items-center gap-3 mb-6 -mt-2 sm:-mt-6 pb-4 border-b border-[#313442]">
+                    <button
+                      onClick={() => setActiveSection(SECTION_TO_GROUP[activeSection]!.groupId)}
+                      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white bg-[#1F2128] border border-[#313442] px-3 py-1.5 rounded-lg transition-colors hover:bg-white/5 cursor-pointer shrink-0"
+                    >
+                      <ArrowLeft className="w-3 h-3" />
+                      Retour
+                    </button>
+                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                      <span
+                        className="text-gray-400 hover:text-violet-400 cursor-pointer transition-colors"
+                        onClick={() => setActiveSection(SECTION_TO_GROUP[activeSection]!.groupId)}
+                      >
+                        {SECTION_TO_GROUP[activeSection]!.groupLabel}
+                      </span>
+                      <ChevronRight className="w-3 h-3" />
+                      <span className="text-white font-semibold">
+                        {SECTION_TO_GROUP[activeSection]!.sectionLabel}
+                      </span>
+                    </div>
+                  </div>
+                )}
                 {activeSection === "agents" && (
                   <AgentsSection
                     agents={agents}
@@ -928,6 +983,82 @@ function HomePage() {
                 )}
 
                 {activeSection === "absences" && <AbsencesSectionAdmin />}
+
+                {/* Groupe Dossiers Agents */}
+                {activeSection === "groupe_dossiers" && (
+                  <GroupMenuSection
+                    title="Dossiers Agents"
+                    subtitle="Sélectionnez un module pour accéder à son contenu"
+                    onSelect={setActiveSection}
+                    items={[
+                      {
+                        id: "contracts",
+                        label: "Contrats",
+                        description: "Gérer les contrats de stage et de prestation des agents",
+                        icon: FileCheck,
+                      },
+                      {
+                        id: "ndas",
+                        label: "NDAs",
+                        description: "Accords de non-divulgation signés par les agents",
+                        icon: File,
+                      },
+                      {
+                        id: "documents",
+                        label: "Documents",
+                        description: "Documents administratifs et pièces justificatives",
+                        icon: FolderOpen,
+                      },
+                      {
+                        id: "factures",
+                        label: "Factures",
+                        description: "Suivi et validation des factures mensuelles",
+                        icon: Receipt,
+                      },
+                      {
+                        id: "kpis",
+                        label: "KPIs",
+                        description: "Rapports de performance et indicateurs clés",
+                        icon: BarChart3,
+                      },
+                    ]}
+                  />
+                )}
+
+                {/* Groupe Espaces & Projets */}
+                {activeSection === "groupe_espaces" && (
+                  <GroupMenuSection
+                    title="Espaces & Projets"
+                    subtitle="Sélectionnez un espace ou module pour y accéder"
+                    onSelect={setActiveSection}
+                    items={[
+                      {
+                        id: "projets",
+                        label: "Projets",
+                        description: "Gestion et suivi des projets clients et internes",
+                        icon: Briefcase,
+                      },
+                      {
+                        id: "espaces_des_agents",
+                        label: "Espaces Collaborateur",
+                        description: "Espaces de travail collaboratif des agents",
+                        icon: Users,
+                      },
+                      {
+                        id: "espaces_partages",
+                        label: "Espaces Partagés",
+                        description: "Espaces partagés entre équipes et collaborateurs",
+                        icon: Handshake,
+                      },
+                      {
+                        id: "rapports_collabo",
+                        label: "Rapports Collaborateur",
+                        description: "Rapports d'activité et de performance des collaborateurs",
+                        icon: BarChart2,
+                      },
+                    ]}
+                  />
+                )}
 
                 {activeSection === "factures" && (
                   <FacturesSectionAdmin

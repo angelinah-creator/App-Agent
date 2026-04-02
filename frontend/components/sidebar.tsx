@@ -18,12 +18,25 @@ import {
   CalendarX,
   CircleUser,
   Handshake,
-  BarChart2
+  BarChart2,
+  FolderOpen,
+  Layers,
 } from "lucide-react";
 import { authService } from "@/lib/auth-service";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { id } from "date-fns/locale";
+
+// Mapping des enfants de chaque groupe pour maintenir l'onglet actif
+const GROUP_CHILDREN: Record<string, string[]> = {
+  groupe_dossiers: ["contracts", "ndas", "documents", "factures", "kpis"],
+  groupe_espaces: ["projets", "espaces_des_agents", "espaces_partages", "rapports_collabo"],
+};
+
+const isItemActive = (itemId: string, activeSection: string): boolean => {
+  if (itemId === activeSection) return true;
+  return (GROUP_CHILDREN[itemId] ?? []).includes(activeSection);
+};
 
 interface SidebarProps {
   activeSection: string;
@@ -51,18 +64,11 @@ export function Sidebar({
     const adminItems = [
       { id: "video_admin", label: "Onboarding", icon: Video },
       { id: "agents", label: "Agents", icon: Users },
-      { id: "contracts", label: "Contrats", icon: FileCheck },
-      { id: "ndas", label: "NDAs", icon: FileCheck },
-      { id: "documents", label: "Documents", icon: File },
-      { id: "factures", label: "Factures", icon: Receipt },
-      { id: "kpis", label: "KPIs", icon: BarChart3 },
+      { id: "groupe_dossiers", label: "Dossiers Agents", icon: FolderOpen },
       { id: "absences", label: "Absences", icon: CalendarX },
-      { id: "projets", label: "Projets", icon: Briefcase },
-      { id: "espaces_des_agents", label: "Espaces Collaborateur", icon: Users },
-      { id: "espaces_partages", label: "Espaces Partagés", icon: Handshake },
-      { id: "rapports_collabo", label: "Rapports Collaborateur", icon: BarChart2},
+      { id: "groupe_espaces", label: "Espaces & Projets", icon: Layers },
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
-      {id: "profil", label: "Profil", icon: User}
+      { id: "profil", label: "Profil", icon: User },
     ];
 
     const managerItems = [
@@ -157,7 +163,7 @@ export function Sidebar({
               onClick={() => onSectionChange(item.id)}
               className={`w-full flex items-center gap-2 px-3 py-2 rounded-sm transition 
                 ${
-                  activeSection === item.id
+                  isItemActive(item.id, activeSection)
                     ? "bg-[#6C4EA8] text-white shadow-md"
                     : "hover:bg-white/5 text-[#FFFFFF]"
                 }
