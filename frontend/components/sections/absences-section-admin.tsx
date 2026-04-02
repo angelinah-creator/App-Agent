@@ -35,6 +35,8 @@ export function AbsencesSectionAdmin() {
   const [validateAction, setValidateAction] = useState<
     "approve" | "reject" | null
   >(null);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 4;
 
   // Récupérer toutes les absences
   const { data: absences = [], isLoading } = useQuery({
@@ -79,6 +81,16 @@ export function AbsencesSectionAdmin() {
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime(),
     );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAbsences.length / ITEMS_PER_PAGE);
+  const usePagination = filteredAbsences.length > ITEMS_PER_PAGE;
+  const paginatedAbsences = usePagination
+    ? filteredAbsences.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    : filteredAbsences;
+
+  const handleSearchChange = (val: string) => { setSearchTerm(val); setCurrentPage(1); };
+  const handleFilterChange = (val: string) => { setFilterStatus(val); setCurrentPage(1); };
 
   const getAgentName = (absence: Absence) => {
     if (
@@ -203,12 +215,12 @@ export function AbsencesSectionAdmin() {
               <Input
                 placeholder="Rechercher par agent ou raison..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearchChange(e.target.value)}
                 className="pl-8 sm:pl-10 bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9"
               />
             </div>
 
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <Select value={filterStatus} onValueChange={handleFilterChange}>
               <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Statut" />
@@ -238,7 +250,7 @@ export function AbsencesSectionAdmin() {
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredAbsences.map((absence) => (
+          {paginatedAbsences.map((absence) => (
             <Card
               key={absence._id}
               className="hover:shadow-lg transition-shadow text-white bg-[#1F2128] border-[#313442]"
@@ -370,6 +382,44 @@ export function AbsencesSectionAdmin() {
               </CardContent>
             </Card>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!isLoading && usePagination && filteredAbsences.length > 0 && (
+        <div className="flex items-center justify-between bg-[#1F2128] border border-[#313442] rounded-lg px-4 py-3">
+          <p className="text-xs text-gray-400">
+            {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredAbsences.length)} sur {filteredAbsences.length} demandes
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              ← Préc.
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-7 h-7 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
+                  page === currentPage
+                    ? "bg-violet-600 text-white"
+                    : "border border-[#313442] text-gray-400 hover:bg-white/5"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Suiv. →
+            </button>
+          </div>
         </div>
       )}
 

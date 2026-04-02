@@ -32,6 +32,8 @@ export function ContractsSectionAdmin({
   const [searchTerm, setSearchTerm] = useState("")
   const [filterType, setFilterType] = useState<string>("all")
   const [filterAgent, setFilterAgent] = useState<string>("all")
+  const [currentPage, setCurrentPage] = useState(1)
+  const ITEMS_PER_PAGE = 7
 
   // Filtrage
   const filteredContracts = contracts.filter((contract) => {
@@ -47,6 +49,17 @@ export function ContractsSectionAdmin({
 
     return matchesSearch && matchesType && matchesAgent
   })
+
+  // Pagination
+  const totalPages = Math.ceil(filteredContracts.length / ITEMS_PER_PAGE)
+  const usePagination = filteredContracts.length > ITEMS_PER_PAGE
+  const paginatedContracts = usePagination
+    ? filteredContracts.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    : filteredContracts
+
+  const handleSearch = (val: string) => { setSearchTerm(val); setCurrentPage(1); }
+  const handleFilterType = (val: string) => { setFilterType(val); setCurrentPage(1); }
+  const handleFilterAgent = (val: string) => { setFilterAgent(val); setCurrentPage(1); }
 
   const getAgentInfo = (userId: string) => {
     const agent = agents.find((a) => a._id === userId)
@@ -87,12 +100,12 @@ export function ContractsSectionAdmin({
               <Input
                 placeholder="Rechercher un contrat..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-8 sm:pl-10 text-xs sm:text-sm h-8 sm:h-9"
               />
             </div>
 
-            <Select value={filterType} onValueChange={setFilterType}>
+            <Select value={filterType} onValueChange={handleFilterType}>
               <SelectTrigger>
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Type de contrat" />
@@ -104,7 +117,7 @@ export function ContractsSectionAdmin({
               </SelectContent>
             </Select>
 
-            <Select value={filterAgent} onValueChange={setFilterAgent}>
+            <Select value={filterAgent} onValueChange={handleFilterAgent}>
               <SelectTrigger>
                 <SelectValue placeholder="Agent" />
               </SelectTrigger>
@@ -135,7 +148,7 @@ export function ContractsSectionAdmin({
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredContracts.map((contract) => (
+          {paginatedContracts.map((contract) => (
             <div key={contract._id} className="hover:shadow-lg transition-shadow bg-[#1F2128] border border-[#313442] rounded-lg">
               <CardContent className="p-3 sm:p-6">
                 <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
@@ -200,6 +213,44 @@ export function ContractsSectionAdmin({
               </CardContent>
             </div>
           ))}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!isLoading && usePagination && filteredContracts.length > 0 && (
+        <div className="flex items-center justify-between bg-[#1F2128] border border-[#313442] rounded-lg px-4 py-3">
+          <p className="text-xs text-gray-400">
+            {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredContracts.length)} sur {filteredContracts.length} contrats
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              ← Préc.
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-7 h-7 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
+                  page === currentPage
+                    ? "bg-violet-600 text-white"
+                    : "border border-[#313442] text-gray-400 hover:bg-white/5"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Suiv. →
+            </button>
+          </div>
         </div>
       )}
     </div>

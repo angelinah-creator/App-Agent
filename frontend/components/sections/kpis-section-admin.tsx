@@ -34,6 +34,8 @@ export function KPIsSectionAdmin({
   const [filterAgent, setFilterAgent] = useState<string>("all");
   const [filterMonth, setFilterMonth] = useState<string>("all");
   const [filterYear, setFilterYear] = useState<string>("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   // Générer les années disponibles
   const currentYear = new Date().getFullYear();
@@ -105,6 +107,18 @@ export function KPIsSectionAdmin({
       (a, b) =>
         new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
     );
+
+  // Pagination
+  const totalPages = Math.ceil(filteredKPIs.length / ITEMS_PER_PAGE);
+  const usePagination = filteredKPIs.length > ITEMS_PER_PAGE;
+  const paginatedKPIs = usePagination
+    ? filteredKPIs.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    : filteredKPIs;
+
+  const handleSearch = (val: string) => { setSearchTerm(val); setCurrentPage(1); };
+  const handleFilterAgent = (val: string) => { setFilterAgent(val); setCurrentPage(1); };
+  const handleFilterMonth = (val: string) => { setFilterMonth(val); setCurrentPage(1); };
+  const handleFilterYear = (val: string) => { setFilterYear(val); setCurrentPage(1); };
 
   // Fonction améliorée pour obtenir les infos de l'agent
   const getAgentInfo = (kpi: KPI) => {
@@ -223,12 +237,12 @@ export function KPIsSectionAdmin({
               <Input
                 placeholder="Rechercher un rapport ou un agent..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-8 sm:pl-10 bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9"
               />
             </div>
 
-            <Select value={filterAgent} onValueChange={setFilterAgent}>
+            <Select value={filterAgent} onValueChange={handleFilterAgent}>
               <SelectTrigger  className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <User className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Agent" />
@@ -243,7 +257,7 @@ export function KPIsSectionAdmin({
               </SelectContent>
             </Select>
 
-            <Select value={filterMonth} onValueChange={setFilterMonth}>
+            <Select value={filterMonth} onValueChange={handleFilterMonth}>
               <SelectTrigger  className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <Calendar className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Mois" />
@@ -258,7 +272,7 @@ export function KPIsSectionAdmin({
               </SelectContent>
             </Select>
 
-            <Select value={filterYear} onValueChange={setFilterYear}>
+            <Select value={filterYear} onValueChange={handleFilterYear}>
               <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <SelectValue placeholder="Année" />
               </SelectTrigger>
@@ -289,7 +303,7 @@ export function KPIsSectionAdmin({
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredKPIs.map((kpi) => {
+          {paginatedKPIs.map((kpi) => {
             const agentInfo = getAgentInfo(kpi);
 
             return (
@@ -380,6 +394,44 @@ export function KPIsSectionAdmin({
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!isLoading && usePagination && filteredKPIs.length > 0 && (
+        <div className="flex items-center justify-between bg-[#1F2128] border border-[#313442] rounded-lg px-4 py-3">
+          <p className="text-xs text-gray-400">
+            {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredKPIs.length)} sur {filteredKPIs.length} rapports
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              ← Préc.
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-7 h-7 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
+                  page === currentPage
+                    ? "bg-violet-600 text-white"
+                    : "border border-[#313442] text-gray-400 hover:bg-white/5"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Suiv. →
+            </button>
+          </div>
         </div>
       )}
     </div>

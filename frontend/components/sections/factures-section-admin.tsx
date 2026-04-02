@@ -123,6 +123,8 @@ export function FacturesSectionAdmin({
   const [filterYear, setFilterYear] = useState<string>("all");
   const [selectedInvoice, setSelectedInvoice] = useState<any>(null);
   const [showValidateModal, setShowValidateModal] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
 
   // Générer les années disponibles (5 dernières années)
   const currentYear = new Date().getFullYear();
@@ -176,7 +178,20 @@ export function FacturesSectionAdmin({
         matchesMonth &&
         matchesYear
       );
-    })
+    });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredInvoices.length / ITEMS_PER_PAGE);
+  const usePagination = filteredInvoices.length > ITEMS_PER_PAGE;
+  const paginatedInvoices = usePagination
+    ? filteredInvoices.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    : filteredInvoices;
+
+  const handleSearch = (val: string) => { setSearchTerm(val); setCurrentPage(1); };
+  const handleFilterStatus = (val: string) => { setFilterStatus(val); setCurrentPage(1); };
+  const handleFilterAgent = (val: string) => { setFilterAgent(val); setCurrentPage(1); };
+  const handleFilterMonth = (val: string) => { setFilterMonth(val); setCurrentPage(1); };
+  const handleFilterYear = (val: string) => { setFilterYear(val); setCurrentPage(1); };
 
   const getProcessedByInfo = (processedBy: any): string => {
     if (!processedBy) return "Non traité";
@@ -306,12 +321,12 @@ export function FacturesSectionAdmin({
               <Input
                 placeholder="Rechercher une facture ou un agent..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => handleSearch(e.target.value)}
                 className="pl-8 sm:pl-10 bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9"
               />
             </div>
 
-            <Select value={filterStatus} onValueChange={setFilterStatus}>
+            <Select value={filterStatus} onValueChange={handleFilterStatus}>
               <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <Filter className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Statut" />
@@ -324,7 +339,7 @@ export function FacturesSectionAdmin({
               </SelectContent>
             </Select>
 
-            <Select value={filterAgent} onValueChange={setFilterAgent}>
+            <Select value={filterAgent} onValueChange={handleFilterAgent}>
               <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <User className="w-4 h-4 mr-2" />
                 <SelectValue placeholder="Agent" />
@@ -339,7 +354,7 @@ export function FacturesSectionAdmin({
               </SelectContent>
             </Select>
 
-            <Select value={filterMonth} onValueChange={setFilterMonth}>
+            <Select value={filterMonth} onValueChange={handleFilterMonth}>
               <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <SelectValue placeholder="Mois" />
               </SelectTrigger>
@@ -353,7 +368,7 @@ export function FacturesSectionAdmin({
               </SelectContent>
             </Select>
 
-            <Select value={filterYear} onValueChange={setFilterYear}>
+            <Select value={filterYear} onValueChange={handleFilterYear}>
               <SelectTrigger className="text-white bg-[#2C2E3A] border border-[#2C2E3A] text-xs sm:text-sm h-8 sm:h-9">
                 <SelectValue placeholder="Année" />
               </SelectTrigger>
@@ -384,7 +399,7 @@ export function FacturesSectionAdmin({
         </Card>
       ) : (
         <div className="grid grid-cols-1 gap-4">
-          {filteredInvoices.map((invoice) => {
+          {paginatedInvoices.map((invoice) => {
             const agentDetails = getAgentDetails(invoice.agentId, agents);
 
             return (
@@ -492,6 +507,44 @@ export function FacturesSectionAdmin({
               </Card>
             );
           })}
+        </div>
+      )}
+
+      {/* Pagination */}
+      {!isLoading && usePagination && filteredInvoices.length > 0 && (
+        <div className="flex items-center justify-between bg-[#1F2128] border border-[#313442] rounded-lg px-4 py-3">
+          <p className="text-xs text-gray-400">
+            {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredInvoices.length)} sur {filteredInvoices.length} factures
+          </p>
+          <div className="flex items-center gap-1.5">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              ← Préc.
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={`w-7 h-7 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
+                  page === currentPage
+                    ? "bg-violet-600 text-white"
+                    : "border border-[#313442] text-gray-400 hover:bg-white/5"
+                }`}
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+            >
+              Suiv. →
+            </button>
+          </div>
         </div>
       )}
 

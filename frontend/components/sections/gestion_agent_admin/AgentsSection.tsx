@@ -143,6 +143,8 @@ export function AgentsSection({
   const [lightboxAgent, setLightboxAgent] = useState<Agent | null>(null);
   const [photoAgent, setPhotoAgent] = useState<Agent | null>(null);
   const [localAgents, setLocalAgents] = useState<Agent[]>([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 7;
 
   const effectiveAgents = localAgents.length ? localAgents : agents;
   const activeAgents = effectiveAgents.filter((a) => !a.archived);
@@ -155,6 +157,16 @@ export function AgentsSection({
       return false;
     return true;
   });
+
+  // Pagination
+  const totalPages = Math.ceil(filteredAgents.length / ITEMS_PER_PAGE);
+  const usePagination = filteredAgents.length > ITEMS_PER_PAGE;
+  const paginatedAgents = usePagination
+    ? filteredAgents.slice((currentPage - 1) * ITEMS_PER_PAGE, currentPage * ITEMS_PER_PAGE)
+    : filteredAgents;
+
+  // Reset to page 1 when filters change
+  const resetPage = () => setCurrentPage(1);
 
   const handleViewDetails = (agent: Agent) => {
     setSelectedAgent(agent);
@@ -169,6 +181,17 @@ export function AgentsSection({
   const handleArchive = (agent: Agent) => {
     setSelectedAgent(agent);
     setShowArchiveModal(true);
+  };
+
+  // Reset page when switching archived/active or profile filter
+  const handleToggleArchived = (show: boolean) => {
+    resetPage();
+    onToggleArchived(show);
+  };
+
+  const handleSetFilterProfile = (v: FilterProfileType) => {
+    resetPage();
+    setFilterProfile(v);
   };
 
   const handleConfirmArchive = (reason: string) => {
@@ -252,14 +275,14 @@ export function AgentsSection({
           <div className="flex gap-1.5">
             <FilterBtn
               active={!showArchived}
-              onClick={() => onToggleArchived(false)}
+              onClick={() => handleToggleArchived(false)}
             >
               <Users size={11} className="inline mr-1" />
               Actifs ({activeAgents.length})
             </FilterBtn>
             <FilterBtn
               active={showArchived}
-              onClick={() => onToggleArchived(true)}
+              onClick={() => handleToggleArchived(true)}
             >
               <Archive size={11} className="inline mr-1" />
               Archivés ({archivedAgents.length})
@@ -268,19 +291,19 @@ export function AgentsSection({
           <div className="flex gap-1.5">
             <FilterBtn
               active={filterProfile === "all"}
-              onClick={() => setFilterProfile("all")}
+              onClick={() => handleSetFilterProfile("all")}
             >
               Tous
             </FilterBtn>
             <FilterBtn
               active={filterProfile === "stagiaire"}
-              onClick={() => setFilterProfile("stagiaire")}
+              onClick={() => handleSetFilterProfile("stagiaire")}
             >
               Stagiaires
             </FilterBtn>
             <FilterBtn
               active={filterProfile === "prestataire"}
-              onClick={() => setFilterProfile("prestataire")}
+              onClick={() => handleSetFilterProfile("prestataire")}
             >
               Prestataires
             </FilterBtn>
@@ -324,7 +347,7 @@ export function AgentsSection({
           <>
           {/* Mobile card layout */}
           <div className="lg:hidden divide-y divide-[#313442]/50">
-            {filteredAgents.map((agent) => (
+            {paginatedAgents.map((agent) => (
               <div
                 key={agent._id}
                 className={`p-3 sm:p-4 transition-colors ${
@@ -453,7 +476,7 @@ export function AgentsSection({
                 </tr>
               </thead>
               <tbody>
-                {filteredAgents.map((agent) => (
+                {paginatedAgents.map((agent) => (
                   <tr
                     key={agent._id}
                     className={`border-b border-[#313442]/50 transition-colors ${
@@ -579,6 +602,43 @@ export function AgentsSection({
               </tbody>
             </table>
           </div>
+          {/* Pagination */}
+          {usePagination && (
+            <div className="flex items-center justify-between px-5 py-3 border-t border-[#313442]">
+              <p className="text-xs text-gray-400">
+                {(currentPage - 1) * ITEMS_PER_PAGE + 1}–{Math.min(currentPage * ITEMS_PER_PAGE, filteredAgents.length)} sur {filteredAgents.length} agents
+              </p>
+              <div className="flex items-center gap-1.5">
+                <button
+                  onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                >
+                  ← Préc.
+                </button>
+                {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+                  <button
+                    key={page}
+                    onClick={() => setCurrentPage(page)}
+                    className={`w-7 h-7 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
+                      page === currentPage
+                        ? "bg-[#6C4EA8] text-white"
+                        : "border border-[#313442] text-gray-400 hover:bg-white/5"
+                    }`}
+                  >
+                    {page}
+                  </button>
+                ))}
+                <button
+                  onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="px-3 py-1.5 text-xs rounded-lg border border-[#313442] text-gray-300 hover:bg-white/5 disabled:opacity-40 disabled:cursor-not-allowed transition-colors cursor-pointer"
+                >
+                  Suiv. →
+                </button>
+              </div>
+            </div>
+          )}
           </>
         )}
       </div>
