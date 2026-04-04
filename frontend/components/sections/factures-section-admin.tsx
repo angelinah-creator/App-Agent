@@ -92,17 +92,17 @@ const getAgentDetails = (agentId: string | any, agents: Agent[]) => {
   const agent = agents.find((a) => a._id === agentId);
   return agent
     ? {
-        name: `${agent.prenoms} ${agent.nom}`,
-        email: agent.email,
-        profile: agent.profile,
-        id: agent._id,
-      }
+      name: `${agent.prenoms} ${agent.nom}`,
+      email: agent.email,
+      profile: agent.profile,
+      id: agent._id,
+    }
     : {
-        name: "Agent inconnu",
-        email: "N/A",
-        profile: "N/A",
-        id: "unknown",
-      };
+      name: "Agent inconnu",
+      email: "N/A",
+      profile: "N/A",
+      id: "unknown",
+    };
 };
 
 export function FacturesSectionAdmin({
@@ -178,7 +178,11 @@ export function FacturesSectionAdmin({
         matchesMonth &&
         matchesYear
       );
-    });
+    })
+    .sort(
+      (a, b) =>
+        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
+    );
 
   // Pagination
   const totalPages = Math.ceil(filteredInvoices.length / ITEMS_PER_PAGE);
@@ -528,11 +532,10 @@ export function FacturesSectionAdmin({
               <button
                 key={page}
                 onClick={() => setCurrentPage(page)}
-                className={`w-7 h-7 text-xs rounded-lg font-medium transition-colors cursor-pointer ${
-                  page === currentPage
+                className={`w-7 h-7 text-xs rounded-lg font-medium transition-colors cursor-pointer ${page === currentPage
                     ? "bg-violet-600 text-white"
                     : "border border-[#313442] text-gray-400 hover:bg-white/5"
-                }`}
+                  }`}
               >
                 {page}
               </button>
