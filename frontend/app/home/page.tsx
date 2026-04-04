@@ -931,39 +931,41 @@ function HomePage() {
           />
         </div>
 
-        {/* Contenu avec espace réservé pour header */}
-        <div className="flex-1 overflow-auto mt-30 bg ">
+        {/* Breadcrumb fil d'Ariane - fixed sous le header */}
+        {isAdmin && SECTION_TO_GROUP[activeSection] && (
+          <div className="fixed top-[65px] left-0 lg:left-50 right-0 z-10 bg-[#0F0F12] border-b border-[#313442] px-3 sm:px-8 py-3">
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => setActiveSection(SECTION_TO_GROUP[activeSection]!.groupId)}
+                className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white bg-[#1F2128] border border-[#313442] px-3 py-1.5 rounded-lg transition-colors hover:bg-white/5 cursor-pointer shrink-0"
+              >
+                <ArrowLeft className="w-3 h-3" />
+                Retour
+              </button>
+              <div className="flex items-center gap-1.5 text-xs text-gray-500">
+                <span
+                  className="text-gray-400 hover:text-violet-400 cursor-pointer transition-colors"
+                  onClick={() => setActiveSection(SECTION_TO_GROUP[activeSection]!.groupId)}
+                >
+                  {SECTION_TO_GROUP[activeSection]!.groupLabel}
+                </span>
+                <ChevronRight className="w-3 h-3" />
+                <span className="text-white font-semibold">
+                  {SECTION_TO_GROUP[activeSection]!.sectionLabel}
+                </span>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Contenu avec espace réservé pour header + breadcrumb éventuel */}
+        <div className={`flex-1 overflow-auto bg ${isAdmin && SECTION_TO_GROUP[activeSection] ? "mt-[120px]" : "mt-30"}`}>
           {" "}
-          {/* mt-16 = hauteur du header */}
+          {/* mt-30 = hauteur du header, mt-[120px] = header + breadcrumb */}
           <div className="p-3 sm:p-8">
             {isAdmin && (
               <>
-                {/* ── Breadcrumb fil d'Ariane (sections groupées uniquement) ── */}
-                {SECTION_TO_GROUP[activeSection] && (
-                  <div className="pb-4">
-                    <div className="flex items-center gap-3 mb-6 -mt-2 sm:-mt-6 border-b border-[#313442] pb-4">
-                    <button
-                      onClick={() => setActiveSection(SECTION_TO_GROUP[activeSection]!.groupId)}
-                      className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white bg-[#1F2128] border border-[#313442] px-3 py-1.5 rounded-lg transition-colors hover:bg-white/5 cursor-pointer shrink-0"
-                    >
-                      <ArrowLeft className="w-3 h-3" />
-                      Retour
-                    </button>
-                    <div className="flex items-center gap-1.5 text-xs text-gray-500">
-                      <span
-                        className="text-gray-400 hover:text-violet-400 cursor-pointer transition-colors"
-                        onClick={() => setActiveSection(SECTION_TO_GROUP[activeSection]!.groupId)}
-                      >
-                        {SECTION_TO_GROUP[activeSection]!.groupLabel}
-                      </span>
-                      <ChevronRight className="w-3 h-3" />
-                      <span className="text-white font-semibold">
-                        {SECTION_TO_GROUP[activeSection]!.sectionLabel}
-                      </span>
-                    </div>
-                  </div>
-                  </div>
-                )}
+                {/* ── Breadcrumb désormais fixe (voir au-dessus) ── */}
                 {activeSection === "agents" && (
                   <AgentsSection
                     agents={agents}
