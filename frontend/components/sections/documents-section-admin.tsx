@@ -83,7 +83,7 @@ export function DocumentsSectionAdmin({
   const selectedAgentData = agents.find(a => a._id === selectedAgent)
 
   return (
-    <div className="space-y-4 sm:space-y-6 -mt-2 sm:-mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 sm:space-y-6 mt-2 sm:-mt-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête */}
       <div>
         <h1 className="text-white font-extrabold text-xl sm:text-2xl">

@@ -750,7 +750,7 @@ export function RapportCollaboSection() {
   };
 
   return (
-    <div className="space-y-4 p-2 sm:p-4 bg-[#0F0F12] -mt-2 sm:-mt-8">
+    <div className="space-y-4 p-2 sm:p-4 bg-[#0F0F12] mt-2 sm:-mt-2">
       <div className="bg-[#1F2128] rounded-lg border border-[#313442] p-2 sm:p-3">
         <div className="flex flex-wrap items-center gap-2">
           <Users className="text-purple-400" size={16} />

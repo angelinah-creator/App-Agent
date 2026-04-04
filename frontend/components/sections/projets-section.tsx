@@ -152,7 +152,7 @@ export function ProjetsSection({ userRole }: ProjetsSectionProps) {
   // ─── Render ───────────────────────────────────────────────────────────────────
 
   return (
-    <div className="space-y-6 -mt-2 sm:-mt-8">
+    <div className="space-y-6 mt-2 sm:-mt-2">
       {dialog}
 
       {/* Header */}

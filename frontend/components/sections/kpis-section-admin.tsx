@@ -189,7 +189,7 @@ export function KPIsSectionAdmin({
     .filter((item) => item.count > 0);
 
   return (
-    <div className="space-y-4 sm:space-y-6 -mt-2 sm:-mt-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
+    <div className="space-y-4 sm:space-y-6 mt-2 sm:-mt-2 animate-in fade-in slide-in-from-bottom-4 duration-500">
       {/* En-tête avec statistiques */}
       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
         <div>
