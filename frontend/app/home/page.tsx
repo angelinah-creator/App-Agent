@@ -940,7 +940,8 @@ function HomePage() {
               <>
                 {/* ── Breadcrumb fil d'Ariane (sections groupées uniquement) ── */}
                 {SECTION_TO_GROUP[activeSection] && (
-                  <div className="flex items-center gap-3 mb-6 -mt-2 sm:-mt-6 pb-4 border-b border-[#313442]">
+                  <div className="pb-4">
+                    <div className="flex items-center gap-3 mb-6 -mt-2 sm:-mt-6 border-b border-[#313442] pb-4">
                     <button
                       onClick={() => setActiveSection(SECTION_TO_GROUP[activeSection]!.groupId)}
                       className="flex items-center gap-1.5 text-xs text-gray-400 hover:text-white bg-[#1F2128] border border-[#313442] px-3 py-1.5 rounded-lg transition-colors hover:bg-white/5 cursor-pointer shrink-0"
@@ -960,6 +961,7 @@ function HomePage() {
                         {SECTION_TO_GROUP[activeSection]!.sectionLabel}
                       </span>
                     </div>
+                  </div>
                   </div>
                 )}
                 {activeSection === "agents" && (

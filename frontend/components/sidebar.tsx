@@ -65,8 +65,8 @@ export function Sidebar({
       { id: "video_admin", label: "Onboarding", icon: Video },
       { id: "agents", label: "Agents", icon: Users },
       { id: "groupe_dossiers", label: "Dossiers Agents", icon: FolderOpen },
-      { id: "absences", label: "Absences", icon: CalendarX },
       { id: "groupe_espaces", label: "Espaces & Projets", icon: Layers },
+      { id: "absences", label: "Absences", icon: CalendarX },
       { id: "rendez_vous", label: "Rendez-vous", icon: CalendarCheck },
       { id: "profil", label: "Profil", icon: User },
     ];
