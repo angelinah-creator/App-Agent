@@ -33,7 +33,7 @@ export function ContractsSectionAdmin({
   const [filterType, setFilterType] = useState<string>("all")
   const [filterAgent, setFilterAgent] = useState<string>("all")
   const [currentPage, setCurrentPage] = useState(1)
-  const ITEMS_PER_PAGE = 7
+  const ITEMS_PER_PAGE = 5
 
   // Filtrage
   const filteredContracts = contracts.filter((contract) => {

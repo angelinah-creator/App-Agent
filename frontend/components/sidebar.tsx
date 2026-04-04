@@ -98,7 +98,7 @@ export function Sidebar({
     ];
 
     const collaborateurItems = [
-        { id: "video", label: "Onboarding", icon: Video },
+      { id: "video", label: "Onboarding", icon: Video },
       { id: "dashboard", label: "Dashboard", icon: LayoutDashboard },
       { id: "documents", label: "Documents", icon: FileText },
       { id: "factures", label: "Factures", icon: Receipt },

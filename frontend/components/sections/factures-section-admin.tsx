@@ -407,7 +407,7 @@ export function FacturesSectionAdmin({
                 key={invoice._id}
                 className="hover:shadow-lg transition-shadow text-white bg-[#1F2128] border-[#313442]"
               >
-                <CardContent className="p-3">
+                <CardContent className="px-3 py-1">
                   <div className="flex flex-col sm:flex-row items-start sm:justify-between gap-3">
                     <div className="flex items-start gap-4 flex-1">
                       <div className="p-3 bg-gray-500/30 rounded-xl">

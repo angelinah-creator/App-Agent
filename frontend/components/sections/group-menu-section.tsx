@@ -55,18 +55,18 @@ export function GroupMenuSection({
             <button
               key={item.id}
               onClick={() => onSelect(item.id)}
-              className="group relative flex flex-col items-start gap-4 p-5 rounded-xl bg-[#1F2128] border border-[#313442] hover:border-[#6C4EA8]/60 transition-all duration-200 hover:shadow-lg hover:shadow-[#6C4EA8]/10 text-left cursor-pointer overflow-hidden"
+              className="group relative flex flex-col items-center gap-4 p-5 rounded-xl bg-[#1F2128] border border-[#313442] hover:border-[#6C4EA8]/60 transition-all duration-200 hover:shadow-lg hover:shadow-[#6C4EA8]/10 text-left cursor-pointer overflow-hidden"
             >
               {/* Accent gradient sur hover */}
               <div className="absolute inset-0 bg-gradient-to-br from-[#6C4EA8]/0 to-[#6C4EA8]/0 group-hover:from-[#6C4EA8]/5 group-hover:to-transparent transition-all duration-300 rounded-xl" />
 
               {/* Icône */}
-              <div className="relative z-10 p-3 rounded-xl bg-violet-500/15 transition-transform duration-200 group-hover:scale-110">
-                <Icon className="w-6 h-6 text-violet-400" />
+              <div className="relative z-10 p-3 rounded-xl transition-transform duration-200 group-hover:scale-110">
+                <Icon className="w-12 h-12 text-violet-400" />
               </div>
 
               {/* Texte */}
-              <div className="relative z-10 flex-1">
+              <div className="relative z-10 flex-1 text-center">
                 <h3 className="font-semibold text-white text-base group-hover:text-violet-300 transition-colors duration-200">
                   {item.label}
                 </h3>

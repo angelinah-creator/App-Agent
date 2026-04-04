@@ -67,6 +67,7 @@ import {
   Layers,
   ArrowLeft,
   ChevronRight,
+  FileText,
 } from "lucide-react";
 
 // Mapping section → groupe parent (pour le breadcrumb et l'état actif du sidebar)
@@ -999,7 +1000,7 @@ function HomePage() {
                         id: "contracts",
                         label: "Contrats",
                         description: "Gérer les contrats de stage et de prestation des agents",
-                        icon: FileCheck,
+                        icon: FileText,
                       },
                       {
                         id: "ndas",
