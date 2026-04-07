@@ -35,7 +35,7 @@ export function ValidateInvoiceModal({
           : ""
       );
       setTransferReference(invoice.transferReference || "");
-      setStatus(invoice.status || "paid");
+      setStatus(invoice.status === "pending" ? "paid" : (invoice.status || "paid"));
     }
   }, [isOpen, invoice]);
 

@@ -501,8 +501,9 @@ function HomePage() {
   const validateInvoiceMutation = useMutation({
     mutationFn: ({ invoiceId, data }: { invoiceId: string; data: any }) =>
       invoiceService.updateInvoice(invoiceId, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ["all-invoices"] });
+    onSuccess: async () => {
+      await queryClient.invalidateQueries({ queryKey: ["all-invoices"] });
+      await queryClient.refetchQueries({ queryKey: ["all-invoices"] });
     },
     onError: (error: any) => {
       console.error("Erreur validation facture:", error);

@@ -179,10 +179,11 @@ export function FacturesSectionAdmin({
         matchesYear
       );
     })
-    .sort(
-      (a, b) =>
-        new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()
-    );
+    .sort((a, b) => {
+      if (a.status === "pending" && b.status !== "pending") return -1;
+      if (a.status !== "pending" && b.status === "pending") return 1;
+      return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
+    });
 
   // Pagination
   const totalPages = Math.ceil(filteredInvoices.length / ITEMS_PER_PAGE);

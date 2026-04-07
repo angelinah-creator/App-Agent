@@ -98,6 +98,10 @@ export function FacturesSection({
     const statusMatch =
       selectedStatus === "all" || invoice.status === selectedStatus;
     return yearMatch && monthMatch && statusMatch;
+  }).sort((a, b) => {
+    if (a.status === "pending" && b.status !== "pending") return -1;
+    if (a.status !== "pending" && b.status === "pending") return 1;
+    return new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime();
   });
 
   const getStatusInfo = (status: string) => {
